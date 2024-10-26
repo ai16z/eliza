@@ -228,10 +228,38 @@ const startAgents = async () => {
 
 startAgents();
 
-// way for user input to quit
-const stdin = process.stdin;
+import readline from 'readline';
 
-stdin.resume();
-stdin.setEncoding("utf8");
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
-console.log("Press Ctrl+C to quit");
+function chat() {
+  rl.question('You: ', async (input) => {
+    if (input.toLowerCase() === 'exit') {
+      rl.close();
+      return;
+    }
+
+    const agentId = characters[0].name.toLowerCase(); // Assuming we're using the first character
+    const response = await fetch(`http://localhost:3000/${agentId}/message`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: input,
+        userId: 'user',
+        userName: 'User',
+      }),
+    });
+
+    const data = await response.json();
+    console.log(`${characters[0].name}: ${data.text}`);
+    chat();
+  });
+}
+
+console.log("Chat started. Type 'exit' to quit.");
+chat();
