@@ -1,18 +1,18 @@
-import { addHeader, composeContext } from "./context.ts";
+import { addHeader, composeContext } from "./context.ts"
 import {
   defaultEvaluators,
   evaluationTemplate,
   formatEvaluatorExamples,
   formatEvaluatorNames,
-  formatEvaluators,
-} from "./evaluators.ts";
-import { embeddingZeroVector, MemoryManager } from "./memory.ts";
+  formatEvaluators
+} from "./evaluators.ts"
+import { embeddingZeroVector, MemoryManager } from "./memory.ts"
 import {
   parseBooleanFromText,
   parseJsonArrayFromText,
   parseJSONObjectFromText,
-  parseShouldRespondFromText,
-} from "./parsing.ts";
+  parseShouldRespondFromText
+} from "./parsing.ts"
 import {
   Character,
   Content,
@@ -31,38 +31,38 @@ import {
   State,
   type Action,
   type Evaluator,
-  type Memory,
-} from "./types.ts";
+  type Memory
+} from "./types.ts"
 
 import {
   default as tiktoken,
   default as TikToken,
-  TiktokenModel,
-} from "tiktoken";
-import { names, uniqueNamesGenerator } from "unique-names-generator";
-import { formatFacts } from "../evaluators/fact.ts";
-import { BrowserService } from "../services/browser.ts";
-import ImageDescriptionService from "../services/image.ts";
-import LlamaService from "../services/llama.ts";
-import { PdfService } from "../services/pdf.ts";
-import { SpeechService } from "../services/speech.ts";
-import { TranscriptionService } from "../services/transcription.ts";
-import { VideoService } from "../services/video.ts";
-import { wordsToPunish } from "../services/wordsToPunish.ts";
+  TiktokenModel
+} from "tiktoken"
+import { names, uniqueNamesGenerator } from "unique-names-generator"
+import { formatFacts } from "../evaluators/fact.ts"
+import { BrowserService } from "../services/browser.ts"
+import ImageDescriptionService from "../services/image.ts"
+import LlamaService from "../services/llama.ts"
+import { PdfService } from "../services/pdf.ts"
+import { SpeechService } from "../services/speech.ts"
+import { TranscriptionService } from "../services/transcription.ts"
+import { VideoService } from "../services/video.ts"
+import { wordsToPunish } from "../services/wordsToPunish.ts"
 import {
   composeActionExamples,
   formatActionNames,
-  formatActions,
-} from "./actions.ts";
-import defaultCharacter from "./defaultCharacter.ts";
-import { formatGoalsAsString, getGoals } from "./goals.ts";
-import { formatActors, formatMessages, getActorDetails } from "./messages.ts";
-import { formatPosts } from "./posts.ts";
-import { defaultProviders, getProviders } from "./providers.ts";
-import settings from "./settings.ts";
-import { UUID, type Actor } from "./types.ts";
-import { stringToUuid } from "./uuid.ts";
-import { Keypair } from "@solana/web3.js";
+  formatActions
+} from "./actions.ts"
+import defaultCharacter from "./defaultCharacter.ts"
+import { formatGoalsAsString, getGoals } from "./goals.ts"
+import { formatActors, formatMessages, getActorDetails } from "./messages.ts"
+import { formatPosts } from "./posts.ts"
+import { defaultProviders, getProviders } from "./providers.ts"
+import settings from "./settings.ts"
+import { UUID, type Actor } from "./types.ts"
+import { stringToUuid } from "./uuid.ts"
+import { Keypair } from "@solana/web3.js"
 
 /**
  * Represents the runtime environment for an agent, handling message processing,
@@ -73,109 +73,109 @@ export class AgentRuntime implements IAgentRuntime {
    * Default count for recent messages to be kept in memory.
    * @private
    */
-  readonly #conversationLength = 32 as number;
+  readonly #conversationLength = 32 as number
   /**
    * The ID of the agent
    */
-  agentId: UUID;
+  agentId: UUID
   /**
    * The base URL of the server where the agent's requests are processed.
    */
-  serverUrl = "http://localhost:7998";
+  serverUrl = "http://localhost:7998"
 
   /**
    * The database adapter used for interacting with the database.
    */
-  databaseAdapter: IDatabaseAdapter;
+  databaseAdapter: IDatabaseAdapter
 
   /**
    * Authentication token used for securing requests.
    */
-  token: string | null;
+  token: string | null
 
   /**
    * Custom actions that the agent can perform.
    */
-  actions: Action[] = [];
+  actions: Action[] = []
 
   /**
    * Evaluators used to assess and guide the agent's responses.
    */
-  evaluators: Evaluator[] = [];
+  evaluators: Evaluator[] = []
 
   /**
    * Context providers used to provide context for message generation.
    */
-  providers: Provider[] = [];
+  providers: Provider[] = []
 
   /**
    * The model to use for completion.
    */
-  model = settings.XAI_MODEL || "gpt-4o-mini";
+  model = settings.XAI_MODEL || "gpt-4o-mini"
 
   /**
    * The model to use for embedding.
    */
-  embeddingModel = "text-embedding-3-small";
+  embeddingModel = "text-embedding-3-small"
 
   /**
    * Local Llama if no OpenAI key is present
    */
-  llamaService: LlamaService | null = null;
+  llamaService: LlamaService | null = null
 
   // services
-  speechService: typeof SpeechService;
+  speechService: typeof SpeechService
 
-  transcriptionService: ITranscriptionService;
+  transcriptionService: ITranscriptionService
 
-  imageDescriptionService: IImageRecognitionService;
+  imageDescriptionService: IImageRecognitionService
 
-  browserService: IBrowserService;
+  browserService: IBrowserService
 
-  videoService: IVideoService;
+  videoService: IVideoService
 
-  pdfService: IPdfService;
+  pdfService: IPdfService
 
   /**
    * Fetch function to use
    * Some environments may not have access to the global fetch function and need a custom fetch override.
    */
-  fetch = fetch;
+  fetch = fetch
 
   /**
    * The character to use for the agent
    */
-  character: Character;
+  character: Character
 
   /**
    * Store messages that are sent and received by the agent.
    */
-  messageManager: IMemoryManager;
+  messageManager: IMemoryManager
 
   /**
    * Store and recall descriptions of users based on conversations.
    */
-  descriptionManager: IMemoryManager;
+  descriptionManager: IMemoryManager
 
   /**
    * Manage the fact and recall of facts.
    */
-  factManager: IMemoryManager;
+  factManager: IMemoryManager
 
   /**
    * Manage the creation and recall of static information (documents, historical game lore, etc)
    */
-  loreManager: IMemoryManager;
+  loreManager: IMemoryManager
 
   /**
    * Hold large documents that can be referenced
    */
-  documentsManager: IMemoryManager;
+  documentsManager: IMemoryManager
 
   /**
    * Searchable document fragments
    */
-  fragmentsManager: IMemoryManager;
+  fragmentsManager: IMemoryManager
 
   /**
    * Creates an instance of AgentRuntime.
@@ -194,103 +194,105 @@ export class AgentRuntime implements IAgentRuntime {
    */
 
   constructor(opts: {
-    conversationLength?: number; // number of messages to hold in the recent message cache
-    agentId?: UUID; // ID of the agent
-    character?: Character; // The character to use for the agent
-    token: string; // JWT token, can be a JWT token if outside worker, or an OpenAI token if inside worker
-    serverUrl?: string; // The URL of the worker
-    actions?: Action[]; // Optional custom actions
-    evaluators?: Evaluator[]; // Optional custom evaluators
-    providers?: Provider[];
-    model?: string; // The model to use for completion
-    embeddingModel?: string; // The model to use for embedding
-    databaseAdapter: IDatabaseAdapter; // The database adapter used for interacting with the database
-    fetch?: typeof fetch | unknown;
-    speechModelPath?: string;
+    conversationLength?: number // number of messages to hold in the recent message cache
+    agentId?: UUID // ID of the agent
+    character?: Character // The character to use for the agent
+    token: string // JWT token, can be a JWT token if outside worker, or an OpenAI token if inside worker
+    serverUrl?: string // The URL of the worker
+    actions?: Action[] // Optional custom actions
+    evaluators?: Evaluator[] // Optional custom evaluators
+    providers?: Provider[]
+    model?: string // The model to use for completion
+    embeddingModel?: string // The model to use for embedding
+    databaseAdapter: IDatabaseAdapter // The database adapter used for interacting with the database
+    fetch?: typeof fetch | unknown
+    speechModelPath?: string
   }) {
     this.#conversationLength =
-      opts.conversationLength ?? this.#conversationLength;
-    this.databaseAdapter = opts.databaseAdapter;
+      opts.conversationLength ?? this.#conversationLength
+    this.databaseAdapter = opts.databaseAdapter
     // use the character id if it exists, otherwise use the agentId if it is passed in, otherwise use the character name
     this.agentId =
-      opts.character.id ?? opts.agentId ?? stringToUuid(opts.character.name);
-    this.fetch = (opts.fetch as typeof fetch) ?? this.fetch;
-    this.character = opts.character || defaultCharacter;
+      opts.character.id ?? opts.agentId ?? stringToUuid(opts.character.name)
+    this.fetch = (opts.fetch as typeof fetch) ?? this.fetch
+    this.character = opts.character || defaultCharacter
     if (!opts.databaseAdapter) {
-      throw new Error("No database adapter provided");
+      throw new Error("No database adapter provided")
     }
 
     this.messageManager = new MemoryManager({
       runtime: this,
-      tableName: "messages",
-    });
+      tableName: "messages"
+    })
 
     this.descriptionManager = new MemoryManager({
       runtime: this,
-      tableName: "descriptions",
-    });
+      tableName: "descriptions"
+    })
 
     this.factManager = new MemoryManager({
       runtime: this,
-      tableName: "facts",
-    });
+      tableName: "facts"
+    })
 
     this.loreManager = new MemoryManager({
       runtime: this,
-      tableName: "lore",
-    });
+      tableName: "lore"
+    })
 
     this.documentsManager = new MemoryManager({
       runtime: this,
-      tableName: "documents",
-    });
+      tableName: "documents"
+    })
 
     this.fragmentsManager = new MemoryManager({
       runtime: this,
-      tableName: "fragments",
-    });
+      tableName: "fragments"
+    })
 
-    this.serverUrl = opts.serverUrl ?? this.serverUrl;
-    this.model = this.character.settings?.model ?? opts.model ?? this.model;
+    this.serverUrl = opts.serverUrl ?? this.serverUrl
+    this.model = this.getSetting("XAI_MODEL")
     this.embeddingModel =
       this.character.settings?.embeddingModel ??
       opts.embeddingModel ??
-      this.embeddingModel;
+      this.embeddingModel
     if (!this.serverUrl) {
-      console.warn("No serverUrl provided, defaulting to localhost");
+      console.warn("No serverUrl provided, defaulting to localhost")
     }
 
-    this.token = opts.token;
-
-    (opts.actions ?? []).forEach((action) => {
-      this.registerAction(action);
-    });
-
-    (opts.evaluators ?? defaultEvaluators).forEach((evaluator) => {
-      this.registerEvaluator(evaluator);
-    });
-    (opts.providers ?? defaultProviders).forEach((provider) => {
-      this.registerContextProvider(provider);
-    });
+    this.token = opts.token
+    ;(opts.actions ?? []).forEach((action) => {
+      this.registerAction(action)
+    })
+    ;(opts.evaluators ?? defaultEvaluators).forEach((evaluator) => {
+      this.registerEvaluator(evaluator)
+    })
+    ;(opts.providers ?? defaultProviders).forEach((provider) => {
+      this.registerContextProvider(provider)
+    })
 
     if (!this.getSetting("OPENAI_API_KEY") && !this.llamaService) {
-      this.llamaService = LlamaService.getInstance();
+      this.llamaService = LlamaService.getInstance()
     }
 
-    this.transcriptionService = TranscriptionService.getInstance(this);
+    this.transcriptionService = TranscriptionService.getInstance(this)
 
-    this.imageDescriptionService = ImageDescriptionService.getInstance(this);
+    this.imageDescriptionService = ImageDescriptionService.getInstance(this)
 
-    this.browserService = BrowserService.getInstance(this);
+    this.browserService = BrowserService.getInstance(this)
 
-    this.videoService = VideoService.getInstance(this);
+    this.videoService = VideoService.getInstance(this)
 
-    this.pdfService = new PdfService();
+    this.pdfService = new PdfService()
 
     // static class, no need to instantiate but we can access it like a class instance
-    this.speechService = SpeechService;
+    this.speechService = SpeechService
 
-    if (opts.character && opts.character.knowledge && opts.character.knowledge.length > 0) {
+    if (
+      opts.character &&
+      opts.character.knowledge &&
+      opts.character.knowledge.length > 0
+    ) {
       // this.processCharacterKnowledge(opts.character.knowledge);
     }
   }
@@ -303,16 +305,26 @@ export class AgentRuntime implements IAgentRuntime {
    */
   private async processCharacterKnowledge(knowledge: string[]) {
     // ensure the room exists and the agent exists in the room
-    this.ensureRoomExists(this.agentId);
-    this.ensureUserExists(this.agentId, this.character.name, this.character.name);
-    this.ensureParticipantExists(this.agentId, this.agentId);
+    this.ensureRoomExists(this.agentId)
+    this.ensureUserExists(
+      this.agentId,
+      this.character.name,
+      this.character.name
+    )
+    this.ensureParticipantExists(this.agentId, this.agentId)
 
     for (const knowledgeItem of knowledge) {
-      continue;
-      const knowledgeId = stringToUuid(knowledgeItem);
-      const existingDocument = await this.documentsManager.getMemoryById(knowledgeId);
+      continue
+      const knowledgeId = stringToUuid(knowledgeItem)
+      const existingDocument =
+        await this.documentsManager.getMemoryById(knowledgeId)
       if (!existingDocument) {
-        console.log("Processing knowledge for ", this.character.name, " - ",  knowledgeItem.slice(0, 100))
+        console.log(
+          "Processing knowledge for ",
+          this.character.name,
+          " - ",
+          knowledgeItem.slice(0, 100)
+        )
         await this.documentsManager.createMemory({
           embedding: embeddingZeroVector,
           id: knowledgeId,
@@ -320,12 +332,12 @@ export class AgentRuntime implements IAgentRuntime {
           userId: this.agentId,
           createdAt: Date.now(),
           content: {
-            text: knowledgeItem,
-          },
-        });
-        const fragments = await this.splitChunks(knowledgeItem, 1200, 200);
+            text: knowledgeItem
+          }
+        })
+        const fragments = await this.splitChunks(knowledgeItem, 1200, 200)
         for (const fragment of fragments) {
-          const embedding = await this.embed(fragment);
+          const embedding = await this.embed(fragment)
           await this.fragmentsManager.createMemory({
             id: stringToUuid(fragment),
             roomId: this.agentId,
@@ -333,31 +345,17 @@ export class AgentRuntime implements IAgentRuntime {
             createdAt: Date.now(),
             content: {
               source: knowledgeId,
-              text: fragment,
+              text: fragment
             },
-            embedding,
-          });
+            embedding
+          })
         }
       }
     }
   }
 
   getSetting(key: string) {
-    // check if the key is in the character.settings.secrets object
-    if (this.character.settings?.secrets?.[key]) {
-      return this.character.settings.secrets[key];
-    }
-    // if not, check if it's in the settings object
-    if (this.character.settings?.[key]) {
-      return this.character.settings[key];
-    }
-
-    // if not, check if it's in the settings object
-    if (settings[key]) {
-      return settings[key];
-    }
-
-    return null;
+    return process.env[key] || null
   }
 
   /**
@@ -365,7 +363,7 @@ export class AgentRuntime implements IAgentRuntime {
    * @returns The number of recent messages to be kept in memory.
    */
   getConversationLength() {
-    return this.#conversationLength;
+    return this.#conversationLength
   }
 
   /**
@@ -373,7 +371,7 @@ export class AgentRuntime implements IAgentRuntime {
    * @param action The action to register.
    */
   registerAction(action: Action) {
-    this.actions.push(action);
+    this.actions.push(action)
   }
 
   /**
@@ -381,7 +379,7 @@ export class AgentRuntime implements IAgentRuntime {
    * @param evaluator The evaluator to register.
    */
   registerEvaluator(evaluator: Evaluator) {
-    this.evaluators.push(evaluator);
+    this.evaluators.push(evaluator)
   }
 
   /**
@@ -389,7 +387,7 @@ export class AgentRuntime implements IAgentRuntime {
    * @param provider The context provider to register.
    */
   registerContextProvider(provider: Provider) {
-    this.providers.push(provider);
+    this.providers.push(provider)
   }
 
   /**
@@ -414,48 +412,47 @@ export class AgentRuntime implements IAgentRuntime {
     token = this.token,
     serverUrl = this.serverUrl,
     max_context_length = this.getSetting("OPENAI_API_KEY") ? 127000 : 8000,
-    max_response_length = this.getSetting("OPENAI_API_KEY") ? 8192 : 4096,
+    max_response_length = this.getSetting("OPENAI_API_KEY") ? 8192 : 4096
   }): Promise<string> {
-
-    let retryLength = 1000; // exponential backoff
+    let retryLength = 1000 // exponential backoff
     for (let triesLeft = 5; triesLeft > 0; triesLeft--) {
       try {
         context = await this.trimTokens(
           context,
           max_context_length,
-          "gpt-4o-mini",
-        );
+          "gpt-4o-mini"
+        )
         if (!this.getSetting("OPENAI_API_KEY")) {
-          console.log("queueing text completion");
+          console.log("queueing text completion")
           const result = await this.llamaService.queueTextCompletion(
             context,
             temperature,
             stop,
             frequency_penalty,
             presence_penalty,
-            max_response_length,
-          );
-          return result;
+            max_response_length
+          )
+          return result
         } else {
-          const biasValue = -20.0;
-          const encoding = TikToken.encoding_for_model("gpt-4o-mini");
+          const biasValue = -20.0
+          const encoding = TikToken.encoding_for_model("gpt-4o-mini")
 
           const mappedWords = wordsToPunish.map(
-            (word) => encoding.encode(word, [], "all")[0],
-          );
+            (word) => encoding.encode(word, [], "all")[0]
+          )
 
-          const tokenIds = [...new Set(mappedWords)];
+          const tokenIds = [...new Set(mappedWords)]
 
           const logit_bias = tokenIds.reduce((acc, tokenId) => {
-            acc[tokenId] = biasValue;
-            return acc;
-          }, {});
+            acc[tokenId] = biasValue
+            return acc
+          }, {})
 
           const requestOptions = {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${token}`
             },
             body: {
               stop,
@@ -468,71 +465,70 @@ export class AgentRuntime implements IAgentRuntime {
               messages: [
                 {
                   role: "user",
-                  content: context,
-                },
-              ],
-            },
-          };
+                  content: context
+                }
+              ]
+            }
+          }
 
           // if the model includes llama, set reptition_penalty to frequency_penalty
           if (model.includes("llama")) {
-            (requestOptions.body as any).repetition_penalty = frequency_penalty ?? 1.4;
+            ;(requestOptions.body as any).repetition_penalty =
+              frequency_penalty ?? 1.4
             // delete presence_penalty and frequency_penalty
-            delete (requestOptions.body as any).presence_penalty;
-            delete (requestOptions.body as any).logit_bias;
-            delete (requestOptions.body as any).frequency_penalty;
+            delete (requestOptions.body as any).presence_penalty
+            delete (requestOptions.body as any).logit_bias
+            delete (requestOptions.body as any).frequency_penalty
           } else {
-            (requestOptions.body as any).frequency_penalty = frequency_penalty;
-            (requestOptions.body as any).presence_penalty = presence_penalty;
-            (requestOptions.body as any).logit_bias = logit_bias;
+            ;(requestOptions.body as any).frequency_penalty = frequency_penalty
+            ;(requestOptions.body as any).presence_penalty = presence_penalty
+            ;(requestOptions.body as any).logit_bias = logit_bias
           }
 
           // stringify the body
-          (requestOptions as any).body = JSON.stringify(requestOptions.body);
+          ;(requestOptions as any).body = JSON.stringify(requestOptions.body)
           console.log("requestOptions", requestOptions)
           const response = await fetch(
             `${serverUrl}/chat/completions`,
-            requestOptions as any,
-          );
+            requestOptions as any
+          )
 
           if (!response.ok) {
             console.log("response is", response)
             throw new Error(
-              "OpenAI API Error: " +
-                response.status +
-                " " +
-                response.statusText,
-            );
+              "OpenAI API Error: " + response.status + " " + response.statusText
+            )
           }
 
-          const body = await response.json();
+          const body = await response.json()
 
           interface OpenAIResponse {
-            choices: Array<{ message: { content: string } }>;
+            choices: Array<{ message: { content: string } }>
           }
 
           console.log("context is", context)
 
-          const content = (body as OpenAIResponse).choices?.[0]?.message?.content
+          const content = (body as OpenAIResponse).choices?.[0]?.message
+            ?.content
 
           console.log("Message is", content)
 
           if (!content) {
-            throw new Error("No content in response");
+            throw new Error("No content in response")
           }
-          return content;
+          return content
         }
       } catch (error) {
-        console.error("ERROR:", error);
+        console.error("ERROR:", error)
         // wait for 2 seconds
-        retryLength *= 2;
-        await new Promise((resolve) => setTimeout(resolve, retryLength));
-        console.log("Retrying...");
+        retryLength *= 2
+        await new Promise((resolve) => setTimeout(resolve, retryLength))
+        console.log("Retrying...")
       }
     }
     throw new Error(
-      "Failed to complete message after 5 tries, probably a network connectivity, model or API key issue",
-    );
+      "Failed to complete message after 5 tries, probably a network connectivity, model or API key issue"
+    )
   }
 
   /**
@@ -544,15 +540,15 @@ export class AgentRuntime implements IAgentRuntime {
    */
   trimTokens(context, maxTokens, model = this.model) {
     // Count tokens and truncate context if necessary
-    const encoding = tiktoken.encoding_for_model(model as TiktokenModel);
-    let tokens = encoding.encode(context);
-    const textDecoder = new TextDecoder();
+    const encoding = tiktoken.encoding_for_model(model as TiktokenModel)
+    let tokens = encoding.encode(context)
+    const textDecoder = new TextDecoder()
     if (tokens.length > maxTokens) {
-      tokens = tokens.reverse().slice(maxTokens).reverse();
+      tokens = tokens.reverse().slice(maxTokens).reverse()
 
-      context = textDecoder.decode(encoding.decode(tokens));
+      context = textDecoder.decode(encoding.decode(tokens))
     }
-    return context;
+    return context
   }
 
   async shouldRespondCompletion({
@@ -564,9 +560,9 @@ export class AgentRuntime implements IAgentRuntime {
     temperature = 0.3,
     serverUrl = this.serverUrl,
     max_context_length = this.getSetting("OPENAI_API_KEY") ? 127000 : 8000,
-    max_response_length = this.getSetting("OPENAI_API_KEY") ? 8192 : 4096,
+    max_response_length = this.getSetting("OPENAI_API_KEY") ? 8192 : 4096
   }): Promise<"RESPOND" | "IGNORE" | "STOP" | null> {
-    let retryDelay = 1000;
+    let retryDelay = 1000
 
     while (true) {
       try {
@@ -579,21 +575,21 @@ export class AgentRuntime implements IAgentRuntime {
           presence_penalty,
           temperature,
           max_context_length,
-          max_response_length,
-        });
+          max_response_length
+        })
 
-        const parsedResponse = parseShouldRespondFromText(response.trim());
+        const parsedResponse = parseShouldRespondFromText(response.trim())
         if (parsedResponse) {
-          return parsedResponse;
+          return parsedResponse
         } else {
-          console.log("shouldRespondCompletion no response");
+          console.log("shouldRespondCompletion no response")
         }
       } catch (error) {
-        console.error("Error in shouldRespondCompletion:", error);
+        console.error("Error in shouldRespondCompletion:", error)
       }
 
-      await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      retryDelay *= 2;
+      await new Promise((resolve) => setTimeout(resolve, retryDelay))
+      retryDelay *= 2
     }
   }
 
@@ -601,29 +597,29 @@ export class AgentRuntime implements IAgentRuntime {
     content: string,
     chunkSize: number,
     bleed: number = 100,
-    model = this.model,
+    model = this.model
   ): Promise<string[]> {
-    const encoding = tiktoken.encoding_for_model(model as TiktokenModel);
-    const tokens = encoding.encode(content);
-    const chunks: string[] = [];
-    const textDecoder = new TextDecoder();
+    const encoding = tiktoken.encoding_for_model(model as TiktokenModel)
+    const tokens = encoding.encode(content)
+    const chunks: string[] = []
+    const textDecoder = new TextDecoder()
 
     for (let i = 0; i < tokens.length; i += chunkSize) {
-      const chunk = tokens.slice(i, i + chunkSize);
-      const decodedChunk = textDecoder.decode(encoding.decode(chunk));
+      const chunk = tokens.slice(i, i + chunkSize)
+      const decodedChunk = textDecoder.decode(encoding.decode(chunk))
 
       // Append bleed characters from the previous chunk
-      const startBleed = i > 0 ? content.slice(i - bleed, i) : "";
+      const startBleed = i > 0 ? content.slice(i - bleed, i) : ""
       // Append bleed characters from the next chunk
       const endBleed =
         i + chunkSize < tokens.length
           ? content.slice(i + chunkSize, i + chunkSize + bleed)
-          : "";
+          : ""
 
-      chunks.push(startBleed + decodedChunk + endBleed);
+      chunks.push(startBleed + decodedChunk + endBleed)
     }
 
-    return chunks;
+    return chunks
   }
 
   async booleanCompletion({
@@ -636,9 +632,9 @@ export class AgentRuntime implements IAgentRuntime {
     serverUrl = this.serverUrl,
     token = this.token,
     max_context_length = this.getSetting("OPENAI_API_KEY") ? 127000 : 8000,
-    max_response_length = this.getSetting("OPENAI_API_KEY") ? 8192 : 4096,
+    max_response_length = this.getSetting("OPENAI_API_KEY") ? 8192 : 4096
   }): Promise<boolean> {
-    let retryDelay = 1000;
+    let retryDelay = 1000
 
     while (true) {
       try {
@@ -652,19 +648,19 @@ export class AgentRuntime implements IAgentRuntime {
           presence_penalty,
           temperature,
           max_context_length,
-          max_response_length,
-        });
+          max_response_length
+        })
 
-        const parsedResponse = parseBooleanFromText(response.trim());
+        const parsedResponse = parseBooleanFromText(response.trim())
         if (parsedResponse !== null) {
-          return parsedResponse;
+          return parsedResponse
         }
       } catch (error) {
-        console.error("Error in booleanCompletion:", error);
+        console.error("Error in booleanCompletion:", error)
       }
 
-      await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      retryDelay *= 2;
+      await new Promise((resolve) => setTimeout(resolve, retryDelay))
+      retryDelay *= 2
     }
   }
 
@@ -678,9 +674,9 @@ export class AgentRuntime implements IAgentRuntime {
     serverUrl = this.serverUrl,
     token = this.token,
     max_context_length = this.getSetting("OPENAI_API_KEY") ? 127000 : 8000,
-    max_response_length = this.getSetting("OPENAI_API_KEY") ? 8192 : 4096,
+    max_response_length = this.getSetting("OPENAI_API_KEY") ? 8192 : 4096
   }): Promise<string[]> {
-    let retryDelay = 1000;
+    let retryDelay = 1000
 
     while (true) {
       try {
@@ -694,19 +690,19 @@ export class AgentRuntime implements IAgentRuntime {
           presence_penalty,
           temperature,
           max_context_length,
-          max_response_length,
-        });
+          max_response_length
+        })
 
-        const parsedResponse = parseJsonArrayFromText(response);
+        const parsedResponse = parseJsonArrayFromText(response)
         if (parsedResponse) {
-          return parsedResponse;
+          return parsedResponse
         }
       } catch (error) {
-        console.error("Error in stringArrayCompletion:", error);
+        console.error("Error in stringArrayCompletion:", error)
       }
 
-      await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      retryDelay *= 2;
+      await new Promise((resolve) => setTimeout(resolve, retryDelay))
+      retryDelay *= 2
     }
   }
 
@@ -720,9 +716,9 @@ export class AgentRuntime implements IAgentRuntime {
     serverUrl = this.serverUrl,
     token = this.token,
     max_context_length = this.getSetting("OPENAI_API_KEY") ? 127000 : 8000,
-    max_response_length = this.getSetting("OPENAI_API_KEY") ? 8192 : 4096,
+    max_response_length = this.getSetting("OPENAI_API_KEY") ? 8192 : 4096
   }): Promise<any[]> {
-    let retryDelay = 1000;
+    let retryDelay = 1000
 
     while (true) {
       try {
@@ -736,19 +732,19 @@ export class AgentRuntime implements IAgentRuntime {
           presence_penalty,
           temperature,
           max_context_length,
-          max_response_length,
-        });
+          max_response_length
+        })
 
-        const parsedResponse = parseJsonArrayFromText(response);
+        const parsedResponse = parseJsonArrayFromText(response)
         if (parsedResponse) {
-          return parsedResponse;
+          return parsedResponse
         }
       } catch (error) {
-        console.error("Error in stringArrayCompletion:", error);
+        console.error("Error in stringArrayCompletion:", error)
       }
 
-      await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      retryDelay *= 2;
+      await new Promise((resolve) => setTimeout(resolve, retryDelay))
+      retryDelay *= 2
     }
   }
 
@@ -774,11 +770,11 @@ export class AgentRuntime implements IAgentRuntime {
     serverUrl = this.serverUrl,
     token = this.token,
     max_context_length = this.getSetting("OPENAI_API_KEY") ? 127000 : 8000,
-    max_response_length = this.getSetting("OPENAI_API_KEY") ? 8192 : 4096,
+    max_response_length = this.getSetting("OPENAI_API_KEY") ? 8192 : 4096
   }): Promise<Content> {
     console.log("messageCompletion serverUrl is", serverUrl)
-    context = this.trimTokens(context, max_context_length, "gpt-4o-mini");
-    let retryLength = 1000; // exponential backoff
+    context = this.trimTokens(context, max_context_length, "gpt-4o-mini")
+    let retryLength = 1000 // exponential backoff
     while (true) {
       try {
         const response = await this.completion({
@@ -791,29 +787,29 @@ export class AgentRuntime implements IAgentRuntime {
           presence_penalty,
           temperature,
           max_context_length,
-          max_response_length,
-        });
+          max_response_length
+        })
         console.log("response is", response)
         // try parsing the response as JSON, if null then try again
-        const parsedContent = parseJSONObjectFromText(response) as Content;
+        const parsedContent = parseJSONObjectFromText(response) as Content
         console.log("parsedContent is", parsedContent)
         if (!parsedContent) {
           console.log("parsedContent is null, retrying")
-          continue;
+          continue
         }
 
-        return parsedContent;
+        return parsedContent
       } catch (error) {
-        console.error("ERROR:", error);
+        console.error("ERROR:", error)
         // wait for 2 seconds
-        retryLength *= 2;
-        await new Promise((resolve) => setTimeout(resolve, retryLength));
-        console.log("Retrying...");
+        retryLength *= 2
+        await new Promise((resolve) => setTimeout(resolve, retryLength))
+        console.log("Retrying...")
       }
     }
     throw new Error(
-      "Failed to complete message after 5 tries, probably a network connectivity, model or API key issue",
-    );
+      "Failed to complete message after 5 tries, probably a network connectivity, model or API key issue"
+    )
   }
 
   /**
@@ -823,60 +819,60 @@ export class AgentRuntime implements IAgentRuntime {
    */
   async embed(input: string) {
     if (!this.getSetting("OPENAI_API_KEY")) {
-      return await this.llamaService.getEmbeddingResponse(input);
+      return await this.llamaService.getEmbeddingResponse(input)
     }
-    const embeddingModel = this.embeddingModel;
+    const embeddingModel = this.embeddingModel
 
     // Check if we already have the embedding in the lore
-    const cachedEmbedding = await this.retrieveCachedEmbedding(input);
+    const cachedEmbedding = await this.retrieveCachedEmbedding(input)
     if (cachedEmbedding) {
-      return cachedEmbedding;
+      return cachedEmbedding
     }
 
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.token}`
       },
       body: JSON.stringify({
         input,
         model: embeddingModel,
-        length: 1536,
-      }),
-    };
+        length: 1536
+      })
+    }
     try {
       const response = await fetch(
         `${this.serverUrl}/embeddings`,
-        requestOptions,
-      );
+        requestOptions
+      )
 
       if (!response.ok) {
         throw new Error(
-          "OpenAI API Error: " + response.status + " " + response.statusText,
-        );
+          "OpenAI API Error: " + response.status + " " + response.statusText
+        )
       }
 
       interface OpenAIEmbeddingResponse {
-        data: Array<{ embedding: number[] }>;
+        data: Array<{ embedding: number[] }>
       }
 
-      const data: OpenAIEmbeddingResponse = await response.json();
+      const data: OpenAIEmbeddingResponse = await response.json()
 
-      return data?.data?.[0].embedding;
+      return data?.data?.[0].embedding
     } catch (e) {
-      console.error(e);
-      throw e;
+      console.error(e)
+      throw e
     }
   }
 
   async retrieveCachedEmbedding(input: string) {
     const similaritySearchResult =
-      await this.messageManager.getCachedEmbeddings(input);
+      await this.messageManager.getCachedEmbeddings(input)
     if (similaritySearchResult.length > 0) {
-      return similaritySearchResult[0].embedding;
+      return similaritySearchResult[0].embedding
     }
-    return null;
+    return null
   }
 
   /**
@@ -888,21 +884,21 @@ export class AgentRuntime implements IAgentRuntime {
     message: Memory,
     responses: Memory[],
     state?: State,
-    callback?: HandlerCallback,
+    callback?: HandlerCallback
   ): Promise<void> {
     if (!responses[0].content?.action) {
-      return;
+      return
     }
 
     const normalizedAction = responses[0].content.action
       .toLowerCase()
-      .replace("_", "");
+      .replace("_", "")
 
     let action = this.actions.find(
       (a: { name: string }) =>
         a.name.toLowerCase().replace("_", "").includes(normalizedAction) ||
-        normalizedAction.includes(a.name.toLowerCase().replace("_", "")),
-    );
+        normalizedAction.includes(a.name.toLowerCase().replace("_", ""))
+    )
 
     if (!action) {
       // each action has a .similes array, lets see if we can find a match
@@ -910,24 +906,24 @@ export class AgentRuntime implements IAgentRuntime {
         const simileAction = _action.similes.find(
           (simile) =>
             simile.toLowerCase().replace("_", "").includes(normalizedAction) ||
-            normalizedAction.includes(simile.toLowerCase().replace("_", "")),
-        );
+            normalizedAction.includes(simile.toLowerCase().replace("_", ""))
+        )
         if (simileAction) {
-          action = _action;
-          break;
+          action = _action
+          break
         }
       }
     }
 
     if (!action) {
-      return console.warn("No action found for", responses[0].content.action);
+      return console.warn("No action found for", responses[0].content.action)
     }
 
     if (!action.handler) {
-      return;
+      return
     }
 
-    await action.handler(this, message, state, {}, callback);
+    await action.handler(this, message, state, {}, callback)
   }
 
   /**
@@ -940,51 +936,51 @@ export class AgentRuntime implements IAgentRuntime {
     const evaluatorPromises = this.evaluators.map(
       async (evaluator: Evaluator) => {
         if (!evaluator.handler) {
-          return null;
+          return null
         }
-        const result = await evaluator.validate(this, message, state);
+        const result = await evaluator.validate(this, message, state)
         if (result) {
-          return evaluator;
+          return evaluator
         }
-        return null;
-      },
-    );
+        return null
+      }
+    )
 
-    const resolvedEvaluators = await Promise.all(evaluatorPromises);
-    const evaluatorsData = resolvedEvaluators.filter(Boolean);
+    const resolvedEvaluators = await Promise.all(evaluatorPromises)
+    const evaluatorsData = resolvedEvaluators.filter(Boolean)
 
     // if there are no evaluators this frame, return
     if (evaluatorsData.length === 0) {
-      return [];
+      return []
     }
 
-    const evaluators = formatEvaluators(evaluatorsData as Evaluator[]);
-    const evaluatorNames = formatEvaluatorNames(evaluatorsData as Evaluator[]);
+    const evaluators = formatEvaluators(evaluatorsData as Evaluator[])
+    const evaluatorNames = formatEvaluatorNames(evaluatorsData as Evaluator[])
 
     const context = composeContext({
       state: {
         ...state,
         evaluators,
-        evaluatorNames,
+        evaluatorNames
       } as State,
-      template: evaluationTemplate,
-    });
+      template: evaluationTemplate
+    })
 
     const result = await this.completion({
-      context,
-    });
+      context
+    })
 
-    const parsedResult = parseJsonArrayFromText(result) as unknown as string[];
+    const parsedResult = parseJsonArrayFromText(result) as unknown as string[]
 
     this.evaluators
       .filter((evaluator: Evaluator) => parsedResult?.includes(evaluator.name))
       .forEach((evaluator: Evaluator) => {
-        if (!evaluator?.handler) return;
+        if (!evaluator?.handler) return
 
-        evaluator.handler(this, message);
-      });
+        evaluator.handler(this, message)
+      })
 
-    return parsedResult;
+    return parsedResult
   }
 
   /**
@@ -994,10 +990,10 @@ export class AgentRuntime implements IAgentRuntime {
    */
   async ensureParticipantExists(userId: UUID, roomId: UUID) {
     const participants =
-      await this.databaseAdapter.getParticipantsForAccount(userId);
+      await this.databaseAdapter.getParticipantsForAccount(userId)
 
     if (participants?.length === 0) {
-      await this.databaseAdapter.addParticipant(userId, roomId);
+      await this.databaseAdapter.addParticipant(userId, roomId)
     }
   }
 
@@ -1013,27 +1009,27 @@ export class AgentRuntime implements IAgentRuntime {
     userName: string | null,
     name: string | null,
     email?: string | null,
-    source?: string | null,
+    source?: string | null
   ) {
-    const account = await this.databaseAdapter.getAccountById(userId);
+    const account = await this.databaseAdapter.getAccountById(userId)
     if (!account) {
       await this.databaseAdapter.createAccount({
         id: userId,
         name: name || userName || "Unknown User",
         username: userName || name || "Unknown",
         email: email || (userName || "Bot") + "@" + source || "Unknown", // Temporary
-        details: { summary: "" },
-      });
-      console.log(`User ${userName} created successfully.`);
+        details: { summary: "" }
+      })
+      console.log(`User ${userName} created successfully.`)
     }
   }
 
   async ensureParticipantInRoom(userId: UUID, roomId: UUID) {
     const participants =
-      await this.databaseAdapter.getParticipantsForRoom(roomId);
+      await this.databaseAdapter.getParticipantsForRoom(roomId)
     if (!participants.includes(userId)) {
-      await this.databaseAdapter.addParticipant(userId, roomId);
-      console.log(`User ${userId} linked to room ${roomId} successfully.`);
+      await this.databaseAdapter.addParticipant(userId, roomId)
+      console.log(`User ${userId} linked to room ${roomId} successfully.`)
     }
   }
 
@@ -1045,10 +1041,10 @@ export class AgentRuntime implements IAgentRuntime {
    * @throws An error if the room cannot be created.
    */
   async ensureRoomExists(roomId: UUID) {
-    const room = await this.databaseAdapter.getRoom(roomId);
+    const room = await this.databaseAdapter.getRoom(roomId)
     if (!room) {
-      await this.databaseAdapter.createRoom(roomId);
-      console.log(`Room ${roomId} created successfully.`);
+      await this.databaseAdapter.createRoom(roomId)
+      console.log(`Room ${roomId} created successfully.`)
     }
   }
 
@@ -1059,41 +1055,41 @@ export class AgentRuntime implements IAgentRuntime {
    */
   async composeState(
     message: Memory,
-    additionalKeys: { [key: string]: unknown } = {},
+    additionalKeys: { [key: string]: unknown } = {}
   ) {
-    const { userId, roomId } = message;
+    const { userId, roomId } = message
 
-    const conversationLength = this.getConversationLength();
-    const recentFactsCount = Math.ceil(this.getConversationLength() / 2);
-    const relevantFactsCount = Math.ceil(this.getConversationLength() / 2);
+    const conversationLength = this.getConversationLength()
+    const recentFactsCount = Math.ceil(this.getConversationLength() / 2)
+    const relevantFactsCount = Math.ceil(this.getConversationLength() / 2)
 
     const [actorsData, recentMessagesData, recentFactsData, goalsData]: [
       Actor[],
       Memory[],
       Memory[],
-      Goal[],
+      Goal[]
     ] = await Promise.all([
       getActorDetails({ runtime: this, roomId }),
       this.messageManager.getMemories({
         roomId,
         count: conversationLength,
-        unique: false,
+        unique: false
       }),
       this.factManager.getMemories({
         roomId,
-        count: recentFactsCount,
+        count: recentFactsCount
       }),
       getGoals({
         runtime: this,
         count: 10,
         onlyInProgress: false,
-        roomId,
-      }),
-    ]);
+        roomId
+      })
+    ])
 
-    const goals = formatGoalsAsString({ goals: goalsData });
+    const goals = formatGoalsAsString({ goals: goalsData })
 
-    let relevantFactsData: Memory[] = [];
+    let relevantFactsData: Memory[] = []
 
     if (recentFactsData.length > recentFactsCount) {
       relevantFactsData = (
@@ -1101,68 +1097,68 @@ export class AgentRuntime implements IAgentRuntime {
           recentFactsData[0].embedding!,
           {
             roomId,
-            count: relevantFactsCount,
-          },
+            count: relevantFactsCount
+          }
         )
       ).filter((fact: Memory) => {
         return !recentFactsData.find(
-          (recentFact: Memory) => recentFact.id === fact.id,
-        );
-      });
+          (recentFact: Memory) => recentFact.id === fact.id
+        )
+      })
     }
 
-    const actors = formatActors({ actors: actorsData ?? [] });
+    const actors = formatActors({ actors: actorsData ?? [] })
 
     const recentMessages = formatMessages({
       messages: recentMessagesData,
-      actors: actorsData,
-    });
+      actors: actorsData
+    })
 
     const recentPosts = formatPosts({
       messages: recentMessagesData,
       actors: actorsData,
-      conversationHeader: false,
-    });
+      conversationHeader: false
+    })
 
-    const recentFacts = formatFacts(recentFactsData);
-    const relevantFacts = formatFacts(relevantFactsData);
+    const recentFacts = formatFacts(recentFactsData)
+    const relevantFacts = formatFacts(relevantFactsData)
 
     // const lore = formatLore(loreData);
 
     const senderName = actorsData?.find(
-      (actor: Actor) => actor.id === userId,
-    )?.name;
+      (actor: Actor) => actor.id === userId
+    )?.name
 
     // TODO: We may wish to consolidate and just accept character.name here instead of the actor name
     const agentName =
       actorsData?.find((actor: Actor) => actor.id === this.agentId)?.name ||
-      this.character.name;
+      this.character.name
 
-    let allAttachments = message.content.attachments || [];
+    let allAttachments = message.content.attachments || []
 
     if (recentMessagesData && Array.isArray(recentMessagesData)) {
       const lastMessageWithAttachment = recentMessagesData.find(
-        (msg) => msg.content.attachments && msg.content.attachments.length > 0,
-      );
+        (msg) => msg.content.attachments && msg.content.attachments.length > 0
+      )
 
       if (lastMessageWithAttachment) {
-        const lastMessageTime = lastMessageWithAttachment.createdAt;
-        const oneHourBeforeLastMessage = lastMessageTime - 60 * 60 * 1000; // 1 hour before last message
+        const lastMessageTime = lastMessageWithAttachment.createdAt
+        const oneHourBeforeLastMessage = lastMessageTime - 60 * 60 * 1000 // 1 hour before last message
 
         allAttachments = recentMessagesData
           .reverse()
           .map((msg) => {
-            const msgTime = msg.createdAt ?? Date.now();
-            const isWithinTime = msgTime >= oneHourBeforeLastMessage;
-            const attachments = msg.content.attachments || [];
+            const msgTime = msg.createdAt ?? Date.now()
+            const isWithinTime = msgTime >= oneHourBeforeLastMessage
+            const attachments = msg.content.attachments || []
             if (!isWithinTime) {
               attachments.forEach((attachment) => {
-                attachment.text = "[Hidden]";
-              });
+                attachment.text = "[Hidden]"
+              })
             }
-            return attachments;
+            return attachments
           })
-          .flat();
+          .flat()
       }
     }
 
@@ -1175,132 +1171,132 @@ URL: ${attachment.url}
 Type: ${attachment.source}
 Description: ${attachment.description}
 Text: ${attachment.text}
-  `,
+  `
       )
-      .join("\n");
+      .join("\n")
 
     // randomly get 3 bits of lore and join them into a paragraph, divided by \n
-    let lore = "";
+    let lore = ""
     // Assuming this.lore is an array of lore bits
     if (this.character.lore && this.character.lore.length > 0) {
       const shuffledLore = [...this.character.lore].sort(
-        () => Math.random() - 0.5,
-      );
-      const selectedLore = shuffledLore.slice(0, 3);
-      lore = selectedLore.join("\n");
+        () => Math.random() - 0.5
+      )
+      const selectedLore = shuffledLore.slice(0, 3)
+      lore = selectedLore.join("\n")
     }
 
     const formattedCharacterPostExamples = this.character.postExamples
       .sort(() => 0.5 - Math.random())
       .map((post) => {
-        let messageString = `${post}`;
-        return messageString;
+        let messageString = `${post}`
+        return messageString
       })
       .slice(0, 50)
-      .join("\n");
+      .join("\n")
 
     const formattedCharacterMessageExamples = this.character.messageExamples
       .sort(() => 0.5 - Math.random())
       .slice(0, 5)
       .map((example) => {
         const exampleNames = Array.from({ length: 5 }, () =>
-          uniqueNamesGenerator({ dictionaries: [names] }),
-        );
+          uniqueNamesGenerator({ dictionaries: [names] })
+        )
 
         return example
           .map((message) => {
-            let messageString = `${message.user}: ${message.content.text}`;
+            let messageString = `${message.user}: ${message.content.text}`
             exampleNames.forEach((name, index) => {
-              const placeholder = `{{user${index + 1}}}`;
-              messageString = messageString.replaceAll(placeholder, name);
-            });
-            return messageString;
+              const placeholder = `{{user${index + 1}}}`
+              messageString = messageString.replaceAll(placeholder, name)
+            })
+            return messageString
           })
-          .join("\n");
+          .join("\n")
       })
-      .join("\n\n");
+      .join("\n\n")
 
     const getRecentInteractions = async (
       userA: UUID,
-      userB: UUID,
+      userB: UUID
     ): Promise<Memory[]> => {
       // Find all rooms where userA and userB are participants
       const rooms = await this.databaseAdapter.getRoomsForParticipants([
         userA,
-        userB,
-      ]);
+        userB
+      ])
 
       // Check the existing memories in the database
       const existingMemories = await this.messageManager.getMemoriesByRoomIds({
         // filter out the current room id from rooms
-        roomIds: rooms.filter((room) => room !== roomId),
-      });
+        roomIds: rooms.filter((room) => room !== roomId)
+      })
 
       // Sort messages by timestamp in descending order
-      existingMemories.sort((a, b) => b.createdAt - a.createdAt);
+      existingMemories.sort((a, b) => b.createdAt - a.createdAt)
 
       // Take the most recent messages
-      const recentInteractionsData = existingMemories.slice(0, 20);
-      return recentInteractionsData;
-    };
+      const recentInteractionsData = existingMemories.slice(0, 20)
+      return recentInteractionsData
+    }
 
     const recentInteractions =
       userId !== this.agentId
         ? await getRecentInteractions(userId, this.agentId)
-        : [];
+        : []
 
     const getRecentMessageInteractions = async (
-      recentInteractionsData: Memory[],
+      recentInteractionsData: Memory[]
     ): Promise<string> => {
       // Format the recent messages
       const formattedInteractions = await recentInteractionsData
         .map(async (message) => {
-          const isSelf = message.userId === this.agentId;
-          let sender;
+          const isSelf = message.userId === this.agentId
+          let sender
           if (isSelf) {
-            sender = this.character.name;
+            sender = this.character.name
           } else {
             const accountId = await this.databaseAdapter.getAccountById(
-              message.userId,
-            );
-            sender = accountId?.username || "unknown";
+              message.userId
+            )
+            sender = accountId?.username || "unknown"
           }
-          return `${sender}: ${message.content.text}`;
+          return `${sender}: ${message.content.text}`
         })
-        .join("\n");
+        .join("\n")
 
-      return formattedInteractions;
-    };
+      return formattedInteractions
+    }
 
     const formattedMessageInteractions =
-      await getRecentMessageInteractions(recentInteractions);
+      await getRecentMessageInteractions(recentInteractions)
 
     const getRecentPostInteractions = async (
       recentInteractionsData: Memory[],
-      actors: Actor[],
+      actors: Actor[]
     ): Promise<string> => {
       const formattedInteractions = formatPosts({
         messages: recentInteractionsData,
         actors,
-        conversationHeader: true,
-      });
+        conversationHeader: true
+      })
 
-      return formattedInteractions;
-    };
+      return formattedInteractions
+    }
 
     const formattedPostInteractions = await getRecentPostInteractions(
       recentInteractions,
-      actorsData,
-    );
+      actorsData
+    )
 
     // if bio is a string, use it. if its an array, pick one at random
-    let bio = this.character.bio || "";
+    let bio = this.character.bio || ""
     if (Array.isArray(bio)) {
       // get three random bio strings and join them with " "
       bio = bio
         .sort(() => 0.5 - Math.random())
         .slice(0, 3)
-        .join(" ");
+        .join(" ")
     }
 
     const initialState = {
@@ -1336,13 +1332,13 @@ Text: ${attachment.text}
               .slice(0, 5)
               .map((topic, index) => {
                 if (index === this.character.topics.length - 2) {
-                  return topic + " and ";
+                  return topic + " and "
                 }
                 // if last topic, don't add a comma
                 if (index === this.character.topics.length - 1) {
-                  return topic;
+                  return topic
                 }
-                return topic + ", ";
+                return topic + ", "
               })
               .join("")
           : "",
@@ -1351,7 +1347,7 @@ Text: ${attachment.text}
         formattedCharacterPostExamples.replaceAll("\n", "").length > 0
           ? addHeader(
               `# Example Posts for ${this.character.name}`,
-              formattedCharacterPostExamples,
+              formattedCharacterPostExamples
             )
           : "",
       characterMessageExamples:
@@ -1359,7 +1355,7 @@ Text: ${attachment.text}
         formattedCharacterMessageExamples.replaceAll("\n", "").length > 0
           ? addHeader(
               `# Example Conversations for ${this.character.name}`,
-              formattedCharacterMessageExamples,
+              formattedCharacterMessageExamples
             )
           : "",
       messageDirections:
@@ -1368,14 +1364,14 @@ Text: ${attachment.text}
           ? addHeader(
               "# Message Directions for " + this.character.name,
               (() => {
-                const all = this.character?.style?.all || [];
-                const chat = this.character?.style?.chat || [];
+                const all = this.character?.style?.all || []
+                const chat = this.character?.style?.chat || []
                 const shuffled = [...all, ...chat].sort(
-                  () => 0.5 - Math.random(),
-                );
-                const allSliced = shuffled.slice(0, conversationLength / 2);
-                return allSliced.concat(allSliced).join("\n");
-              })(),
+                  () => 0.5 - Math.random()
+                )
+                const allSliced = shuffled.slice(0, conversationLength / 2)
+                return allSliced.concat(allSliced).join("\n")
+              })()
             )
           : "",
       postDirections:
@@ -1384,13 +1380,13 @@ Text: ${attachment.text}
           ? addHeader(
               "# Post Directions for " + this.character.name,
               (() => {
-                const all = this.character?.style?.all || [];
-                const post = this.character?.style?.post || [];
+                const all = this.character?.style?.all || []
+                const post = this.character?.style?.post || []
                 const shuffled = [...all, ...post].sort(
-                  () => 0.5 - Math.random(),
-                );
-                return shuffled.slice(0, conversationLength / 2).join("\n");
-              })(),
+                  () => 0.5 - Math.random()
+                )
+                return shuffled.slice(0, conversationLength / 2).join("\n")
+              })()
             )
           : "",
       // Agent runtime stuff
@@ -1402,7 +1398,7 @@ Text: ${attachment.text}
         goals && goals.length > 0
           ? addHeader(
               "# Goals\n{{agentName}} should prioritize accomplishing the objectives that are in progress.",
-              goals,
+              goals
             )
           : "",
       goalsData,
@@ -1429,33 +1425,33 @@ Text: ${attachment.text}
         formattedAttachments && formattedAttachments.length > 0
           ? addHeader("# Attachments", formattedAttachments)
           : "",
-      ...additionalKeys,
-    };
+      ...additionalKeys
+    }
 
     const actionPromises = this.actions.map(async (action: Action) => {
-      const result = await action.validate(this, message, initialState);
+      const result = await action.validate(this, message, initialState)
       if (result) {
-        return action;
+        return action
       }
-      return null;
-    });
+      return null
+    })
 
     const evaluatorPromises = this.evaluators.map(async (evaluator) => {
-      const result = await evaluator.validate(this, message, initialState);
+      const result = await evaluator.validate(this, message, initialState)
       if (result) {
-        return evaluator;
+        return evaluator
       }
-      return null;
-    });
+      return null
+    })
 
     const [resolvedEvaluators, resolvedActions, providers] = await Promise.all([
       Promise.all(evaluatorPromises),
       Promise.all(actionPromises),
-      getProviders(this, message, initialState),
-    ]);
+      getProviders(this, message, initialState)
+    ])
 
-    const evaluatorsData = resolvedEvaluators.filter(Boolean) as Evaluator[];
-    const actionsData = resolvedActions.filter(Boolean) as Action[];
+    const evaluatorsData = resolvedEvaluators.filter(Boolean) as Evaluator[]
+    const actionsData = resolvedActions.filter(Boolean) as Action[]
 
     const actionState = {
       actionNames:
@@ -1468,7 +1464,7 @@ Text: ${attachment.text}
         actionsData.length > 0
           ? addHeader(
               "# Action Examples",
-              composeActionExamples(actionsData, 10),
+              composeActionExamples(actionsData, 10)
             )
           : "",
       evaluatorsData,
@@ -1482,47 +1478,47 @@ Text: ${attachment.text}
           : "",
       providers: addHeader(
         `# Additional Information About ${this.character.name} and The World`,
-        providers,
-      ),
-    };
+        providers
+      )
+    }
 
-    return { ...initialState, ...actionState } as State;
+    return { ...initialState, ...actionState } as State
   }
 
   async updateRecentMessageState(state: State): Promise<State> {
-    const conversationLength = this.getConversationLength();
+    const conversationLength = this.getConversationLength()
     const recentMessagesData = await this.messageManager.getMemories({
       roomId: state.roomId,
       count: conversationLength,
-      unique: false,
-    });
+      unique: false
+    })
 
     const recentMessages = formatMessages({
       actors: state.actorsData ?? [],
       messages: recentMessagesData.map((memory: Memory) => {
-        const newMemory = { ...memory };
-        delete newMemory.embedding;
-        return newMemory;
-      }),
-    });
+        const newMemory = { ...memory }
+        delete newMemory.embedding
+        return newMemory
+      })
+    })
 
-    let allAttachments = [];
+    let allAttachments = []
 
     if (recentMessagesData && Array.isArray(recentMessagesData)) {
       const lastMessageWithAttachment = recentMessagesData.find(
-        (msg) => msg.content.attachments && msg.content.attachments.length > 0,
-      );
+        (msg) => msg.content.attachments && msg.content.attachments.length > 0
+      )
 
       if (lastMessageWithAttachment) {
-        const lastMessageTime = lastMessageWithAttachment.createdAt;
-        const oneHourBeforeLastMessage = lastMessageTime - 60 * 60 * 1000; // 1 hour before last message
+        const lastMessageTime = lastMessageWithAttachment.createdAt
+        const oneHourBeforeLastMessage = lastMessageTime - 60 * 60 * 1000 // 1 hour before last message
 
         allAttachments = recentMessagesData
           .filter((msg) => {
-            const msgTime = msg.createdAt;
-            return msgTime >= oneHourBeforeLastMessage;
+            const msgTime = msg.createdAt
+            return msgTime >= oneHourBeforeLastMessage
           })
-          .flatMap((msg) => msg.content.attachments || []);
+          .flatMap((msg) => msg.content.attachments || [])
       }
     }
 
@@ -1535,15 +1531,15 @@ URL: ${attachment.url}
 Type: ${attachment.source}
 Description: ${attachment.description}
 Text: ${attachment.text}
-    `,
+    `
       )
-      .join("\n");
+      .join("\n")
 
     return {
       ...state,
       recentMessages: addHeader("# Conversation Messages", recentMessages),
       recentMessagesData,
-      attachments: formattedAttachments,
-    } as State;
+      attachments: formattedAttachments
+    } as State
   }
 }
