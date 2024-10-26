@@ -26,7 +26,7 @@ https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
 
 ## Edit the character file
 - Check out the file `src/core/defaultCharacter.ts` - you can modify this
-- You can also load characters with the `--charaters=<path>` and run multiple bots at the same time.
+- You can also load characters with the `node --loader ts-node/esm src/index.ts --characters="path/to/your/character.json"` and run multiple bots at the same time.
 
 ### Linux Installation
 You might need these
