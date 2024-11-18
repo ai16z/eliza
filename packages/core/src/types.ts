@@ -636,6 +636,11 @@ export interface ModelConfiguration {
     maxInputTokens?: number;
 }
 
+export type Operator = {
+    client: Clients;
+    name: string;
+};
+
 /**
  * Configuration for an agent character
  */
@@ -689,6 +694,9 @@ export type Character = {
         slackShouldRespondTemplate?: string;
     };
 
+    /** List of operators the character can interact with */
+    operators?: Operator[];
+    
     /** Character biography */
     bio: string | string[];
 

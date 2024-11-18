@@ -62,6 +62,12 @@ const PluginSchema = z.object({
     clients: z.array(z.any()).optional(),
 });
 
+// Helper schemas for operator
+const OperatorSchema = z.object({
+    name: z.string(),
+    client: z.string(),
+});
+
 // Main Character schema
 export const CharacterSchema = z.object({
     id: z.string().uuid().optional(),
@@ -129,6 +135,7 @@ export const CharacterSchema = z.object({
             prompt: z.string().optional(),
         })
         .optional(),
+    operators: z.array(OperatorSchema).optional(),
 });
 
 // Type inference
