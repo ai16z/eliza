@@ -20,18 +20,17 @@ const MVX_NETWORK_CONFIG = {
     mainnet: {
         chainID: "1", // Mainnet chain ID
         apiURL: "https://api.multiversx.com", // Mainnet API URL
-        explorerURL: "https://explorer.multiversx.com"
+        explorerURL: "https://explorer.multiversx.com",
     },
     devnet: {
         chainID: "D", // Devnet chain ID
         apiURL: "https://devnet-api.multiversx.com", // Devnet API URL,
-        explorerURL: "https://devnet-explorer.multiversx.com"
-
+        explorerURL: "https://devnet-explorer.multiversx.com",
     },
     testnet: {
         chainID: "T", // Testnet chain ID
         apiURL: "https://testnet-api.multiversx.com", // Testnet API URL
-        explorerURL: "https://testnet-explorer.multiversx.com"
+        explorerURL: "https://testnet-explorer.multiversx.com",
     },
 };
 
@@ -84,12 +83,12 @@ export class WalletProvider {
         return account.balance.toString(); // Return balance as a string
     }
 
-     /**
+    /**
      * Sign a transaction using the wallet's private key
      * @param transaction - The transaction object to sign
      * @returns The transaction signature as a string
      */
-     public async signTransaction(transaction: Transaction) {
+    public async signTransaction(transaction: Transaction) {
         const computer = new TransactionComputer();
         const serializedTx = computer.computeBytesForSigning(transaction); // Prepare transaction for signing
         const signature = await this.signer.sign(serializedTx); // Sign the transaction
@@ -145,7 +144,9 @@ export class WalletProvider {
                 await this.apiNetworkProvider.sendTransaction(transaction);
 
             elizaLogger.log(`TxHash: ${txHash}`); // Log transaction hash
-            elizaLogger.log(`Transaction URL: ${this.explorerURL}/transactions/${txHash}`); // View Transaction
+            elizaLogger.log(
+                `Transaction URL: ${this.explorerURL}/transactions/${txHash}`
+            ); // View Transaction
             return txHash;
         } catch (error) {
             console.error("Error sending EGLD transaction:", error);
@@ -216,7 +217,9 @@ export class WalletProvider {
                 await this.apiNetworkProvider.sendTransaction(transaction);
 
             elizaLogger.log(`TxHash: ${txHash}`); // Log transaction hash
-            elizaLogger.log(`Transaction URL: ${this.explorerURL}/transactions/${txHash}`); // View Transaction
+            elizaLogger.log(
+                `Transaction URL: ${this.explorerURL}/transactions/${txHash}`
+            ); // View Transaction
             return txHash;
         } catch (error) {
             console.error("Error sending ESDT transaction:", error);
@@ -284,7 +287,9 @@ export class WalletProvider {
                 await this.apiNetworkProvider.sendTransaction(transaction);
 
             elizaLogger.log(`TxHash: ${txHash}`); // Log the transaction hash
-            elizaLogger.log(`Transaction URL: ${this.explorerURL}/transactions/${txHash}`); // View Transaction
+            elizaLogger.log(
+                `Transaction URL: ${this.explorerURL}/transactions/${txHash}`
+            ); // View Transaction
 
             return txHash; // Return the transaction hash
         } catch (error) {
