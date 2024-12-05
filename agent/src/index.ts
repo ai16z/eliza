@@ -451,7 +451,7 @@ export async function createAgent(
                 ? flowPlugin
                 : null,
             getSecret(character, "APTOS_PRIVATE_KEY") ? aptosPlugin : null,
-            getSecret(character, 'MVX_SECRET_KEY') ? multiversxPlugin : null
+            getSecret(character, 'MVX_PRIVATE_KEY') ? multiversxPlugin : null
         ].filter(Boolean),
         providers: [],
         actions: [],
