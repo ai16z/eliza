@@ -108,7 +108,7 @@ export default {
         }
 
         try {
-            const privateKey = runtime.getSetting("MVX_WALLET_SECRET_KEY");
+            const privateKey = runtime.getSetting("MVX_SECRET_KEY");
             const network = runtime.getSetting("MVX_NETWORK");
 
             const walletProvider = new WalletProvider(privateKey, network);
