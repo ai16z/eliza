@@ -1,17 +1,4 @@
 import {
-    UserWallet,
-    UserSigner,
-    Address,
-    Transaction,
-    TransactionPayload,
-    TransactionComputer,
-    ApiNetworkProvider,
-    UserSecretKey,
-    TokenTransfer,
-    TransferTransactionsFactory,
-    GasEstimator,
-} from "@multiversx/sdk-core";
-import {
     elizaLogger,
     ActionExample,
     Content,
@@ -24,22 +11,23 @@ import {
     generateObject,
     type Action,
 } from "@ai16z/eliza";
+import { WalletProvider } from "../providers/wallet";
+import { validateMultiversxConfig } from "../enviroment";
 
 export interface TransferContent extends Content {
     tokenAddress: string;
-    amount: string | number;
+    amount: string;
     tokenIdentifier?: string;
 }
 
 function isTransferContent(
-    runtime: IAgentRuntime,
+    _runtime: IAgentRuntime,
     content: any
 ): content is TransferContent {
     console.log("Content for transfer", content);
     return (
         typeof content.tokenAddress === "string" &&
-        (typeof content.amount === "string" ||
-            typeof content.amount === "number")
+        typeof content.amount === "string"
     );
 }
 
@@ -73,27 +61,11 @@ export default {
         "PAY",
     ],
     validate: async (runtime: IAgentRuntime, message: Memory) => {
-        console.log("Executing transfer from user:", message.userId);
-        //add custom validate logic here
-        /*
-            const adminIds = runtime.getSetting("ADMIN_USER_IDS")?.split(",") || [];
-            //console.log("Admin IDs from settings:", adminIds);
-
-            const isAdmin = adminIds.includes(message.userId);
-
-            if (isAdmin) {
-                //console.log(`Authorized transfer from user: ${message.userId}`);
-                return true;
-            }
-            else
-            {
-                //console.log(`Unauthorized transfer attempt from user: ${message.userId}`);
-                return false;
-            }
-            */
+        console.log("Validating config for user:", message.userId);
+        await validateMultiversxConfig(runtime);
         return true;
     },
-    description: "Transfer tokens from the agent's wallet to another address",
+    description: "Transfer tokens from the agent wallet to another address",
     handler: async (
         runtime: IAgentRuntime,
         message: Memory,
@@ -136,84 +108,27 @@ export default {
         }
 
         try {
-            const password = runtime.getSetting("MVX_WALLET_PASSWORD");
-            const secretKeyHex = runtime.getSetting("MVX_WALLET_SECRET_KEY");
+            const privateKey = runtime.getSetting("MVX_WALLET_SECRET_KEY");
+            const network = runtime.getSetting("MVX_NETWORK");
 
-            const secretKey = UserSecretKey.fromString(secretKeyHex);
-            const userWallet = UserWallet.fromSecretKey({
-                secretKey,
-                password,
-            });
-
-            const signer = UserSigner.fromWallet(userWallet.toJSON(), password);
-            const address = signer.getAddress();
-            const computer = new TransactionComputer();
-            const apiNetworkProvider = new ApiNetworkProvider(
-                "https://devnet-api.multiversx.com",
-                { clientName: "eliza-mvx" }
-            );
-            const account = await apiNetworkProvider.getAccount(address);
+            const walletProvider = new WalletProvider(privateKey, network);
 
             if (
                 content.tokenIdentifier &&
                 content.tokenIdentifier.toLowerCase() !== "egld"
             ) {
-                console.log(`Sending ESDT ${content.tokenIdentifier}...`);
-                const factory = new TransferTransactionsFactory(
-                    new GasEstimator()
-                );
-                const token =
-                    await apiNetworkProvider.getFungibleTokenOfAccount(
-                        address,
-                        content.tokenIdentifier
-                    );
-                const transfer1 = TokenTransfer.fungibleFromAmount(
-                    content.tokenIdentifier,
-                    content.amount,
-                    Number(token.rawResponse.decimals)
-                );
-
-                const esdtTx = factory.createESDTTransfer({
-                    tokenTransfer: transfer1,
-                    nonce: 7,
-                    sender: address,
-                    receiver: new Address(content.tokenAddress),
-                    chainID: "D",
+                await walletProvider.sendESDT({
+                    receiverAddress: content.tokenAddress,
+                    amount: content.amount,
+                    identifier: content.tokenIdentifier,
                 });
-
-                esdtTx.nonce = BigInt(account.nonce);
-                const serializedTx = computer.computeBytesForSigning(esdtTx);
-                esdtTx.signature = await signer.sign(serializedTx);
-
-                const txHash = await apiNetworkProvider.sendTransaction(esdtTx);
-                console.log("TX hash:", txHash);
-
                 return true;
             }
 
-            const recipient = new Address(content.tokenAddress);
-            const value = Number(content.amount) * 10 ** 18;
-            const gasLimit = 500000;
-
-            const payloadData = new TransactionPayload("");
-            const transaction = new Transaction({
-                nonce: account.nonce + 1,
-                value,
-                receiver: recipient,
-                sender: address,
-                gasLimit,
-                data: payloadData,
-                chainID: "D",
-                version: 1,
+            await walletProvider.sendEGLD({
+                receiverAddress: content.tokenAddress,
+                amount: content.amount,
             });
-
-            const serializedTx = computer.computeBytesForSigning(transaction);
-            transaction.signature = await signer.sign(serializedTx);
-
-            const txHash =
-                await apiNetworkProvider.sendTransaction(transaction);
-            console.log("TX hash:", txHash);
-
             return true;
         } catch (error) {
             console.error("Error during token transfer:", error);
@@ -223,7 +138,7 @@ export default {
                     content: { error: error.message },
                 });
             }
-            return false;
+            return "";
         }
     },
 

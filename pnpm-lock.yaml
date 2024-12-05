@@ -1094,6 +1094,9 @@ importers:
       '@multiversx/sdk-core':
         specifier: 13.15.0
         version: 13.15.0(bignumber.js@9.1.2)(protobufjs@7.4.0)
+      bignumber.js:
+        specifier: 9.1.2
+        version: 9.1.2
       browserify:
         specifier: ^17.0.1
         version: 17.0.1

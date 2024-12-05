@@ -2,6 +2,10 @@ import { IAgentRuntime } from "@ai16z/eliza";
 import { z } from "zod";
 
 export const multiversxEnvSchema = z.object({
+    MVX_WALLET_SECRET_KEY: z
+        .string()
+        .min(1, "MultiversX wallet private key is required"),
+    MVX_NETWORK: z.enum(["mainnet", "devnet", "testnet"]),
 });
 
 export type MultiversxConfig = z.infer<typeof multiversxEnvSchema>;
@@ -11,7 +15,11 @@ export async function validateMultiversxConfig(
 ): Promise<MultiversxConfig> {
     try {
         const config = {
-
+            MVX_WALLET_SECRET_KEY:
+                runtime.getSetting("MVX_WALLET_SECRET_KEY") ||
+                process.env.MVX_WALLET_SECRET_KEY,
+            MVX_NETWORK:
+                runtime.getSetting("MVX_NETWORK") || process.env.MVX_NETWORK,
         };
 
         return multiversxEnvSchema.parse(config);
