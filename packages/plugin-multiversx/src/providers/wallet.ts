@@ -16,7 +16,7 @@ import {
 import { denominateAmount } from "../utils/amount";
 
 // Network configuration object for different environments (mainnet, devnet, testnet)
-const MVX_NETWORK = {
+const MVX_NETWORK_CONFIG = {
     mainnet: {
         chainID: "1", // Mainnet chain ID
         apiURL: "https://api.multiversx.com", // Mainnet API URL
@@ -48,11 +48,11 @@ export class WalletProvider {
      * @param network - Target network (mainnet, devnet, or testnet)
      */
     constructor(privateKey: string, network: string) {
-        if (!MVX_NETWORK[network]) {
+        if (!MVX_NETWORK_CONFIG[network]) {
             throw new Error(`Unsupported network: ${network}`); // Validate network
         }
 
-        const networkConfig = MVX_NETWORK[network];
+        const networkConfig = MVX_NETWORK_CONFIG[network];
         this.chainID = networkConfig.chainID;
         this.explorerURL = networkConfig.explorerURL;
 
