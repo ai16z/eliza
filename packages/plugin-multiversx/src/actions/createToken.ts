@@ -1,14 +1,4 @@
 import {
-    UserWallet,
-    UserSigner,
-    ApiNetworkProvider,
-    UserSecretKey,
-    TransactionsFactoryConfig,
-    TokenManagementTransactionsFactory,
-    Address,
-    TransactionComputer,
-} from "@multiversx/sdk-core";
-import {
     elizaLogger,
     ActionExample,
     Content,
@@ -21,6 +11,8 @@ import {
     composeContext,
     type Action,
 } from "@ai16z/eliza";
+import { WalletProvider } from "../providers/wallet";
+import { validateMultiversxConfig } from "../enviroment";
 
 export interface CreateTokenContent extends Content {
     tokenName: string;
@@ -29,17 +21,12 @@ export interface CreateTokenContent extends Content {
     amount: string;
 }
 
-function isTransferContent(
+function isCreateTokenContent(
     runtime: IAgentRuntime,
     content: any
 ): content is CreateTokenContent {
     console.log("Content for create token", content);
-    return (
-        content.tokenName &&
-        content.tokenTicker &&
-        content.decimals &&
-        content.amount
-    );
+    return content.tokenName && content.tokenTicker && content.amount;
 }
 
 const createTokenTemplate = `Respond with a JSON markdown block containing only the extracted values. Use null for any values that cannot be determined.
@@ -68,24 +55,8 @@ export default {
     name: "CREATE_TOKEN",
     similes: ["DEPLOY_TOKEN"],
     validate: async (runtime: IAgentRuntime, message: Memory) => {
-        console.log("Starting new token creation from user:", message.userId);
-        //add custom validate logic here
-        /*
-            const adminIds = runtime.getSetting("ADMIN_USER_IDS")?.split(",") || [];
-            //console.log("Admin IDs from settings:", adminIds);
-
-            const isAdmin = adminIds.includes(message.userId);
-
-            if (isAdmin) {
-                //console.log(`Authorized transfer from user: ${message.userId}`);
-                return true;
-            }
-            else
-            {
-                //console.log(`Unauthorized transfer attempt from user: ${message.userId}`);
-                return false;
-            }
-            */
+        console.log("Validating config for user:", message.userId);
+        await validateMultiversxConfig(runtime);
         return true;
     },
     description: "Create a new token.",
@@ -119,7 +90,7 @@ export default {
         });
 
         // Validate transfer content
-        if (!isTransferContent(runtime, content)) {
+        if (!isCreateTokenContent(runtime, content)) {
             console.error("Invalid content for TRANSFER_TOKEN action.");
             if (callback) {
                 callback({
@@ -131,54 +102,17 @@ export default {
         }
 
         try {
-            const password = runtime.getSetting("MVX_WALLET_PASSWORD");
-            const secretKeyHex = runtime.getSetting("MVX_WALLET_SECRET_KEY");
+            const privateKey = runtime.getSetting("MVX_WALLET_SECRET_KEY");
+            const network = runtime.getSetting("MVX_NETWORK");
 
-            const secretKey = UserSecretKey.fromString(secretKeyHex);
+            const walletProvider = new WalletProvider(privateKey, network);
 
-            const signer = new UserSigner(secretKey);
-            const address = signer.getAddress();
-
-            const apiNetworkProvider = new ApiNetworkProvider(
-                "https://devnet-api.multiversx.com",
-                { clientName: "eliza-mvx" }
-            );
-
-            const factoryConfig = new TransactionsFactoryConfig({
-                chainID: "D",
-            });
-            const factory = new TokenManagementTransactionsFactory({
-                config: factoryConfig,
-            });
-
-            const decimals = parseInt(content.decimals);
-            const amount =
-                Number(content.amount) * 10 ** Number(content.decimals);
-
-            const account = await apiNetworkProvider.getAccount(address);
-
-            const transaction = factory.createTransactionForIssuingFungible({
-                sender: new Address(address),
+            await walletProvider.createESDT({
                 tokenName: content.tokenName,
-                tokenTicker: content.tokenTicker.toUpperCase(),
-                initialSupply: BigInt(amount),
-                numDecimals: BigInt(decimals),
-                canFreeze: false,
-                canWipe: false,
-                canPause: false,
-                canChangeOwner: false,
-                canUpgrade: false,
-                canAddSpecialRoles: false,
+                amount: content.amount,
+                decimals: Number(content.decimals) || 18,
+                tokenTicker: content.tokenTicker,
             });
-
-            const computer = new TransactionComputer();
-            transaction.nonce = BigInt(account.nonce);
-            const serializedTx = computer.computeBytesForSigning(transaction);
-            transaction.signature = await signer.sign(serializedTx);
-
-            const txHash =
-                await apiNetworkProvider.sendTransaction(transaction);
-            console.log("TxHash", txHash);
             return true;
         } catch (error) {
             console.error("Error during creating token:", error);
@@ -197,7 +131,22 @@ export default {
             {
                 user: "{{user1}}",
                 content: {
-                    text: "Create a token called TEST with ticker TST, 18 decimals and amount of 10000",
+                    text: "Create a token XTREME with ticker XTR and supply of 10000",
+                    action: "CREATE_TOKEN",
+                },
+            },
+            {
+                user: "{{user2}}",
+                content: {
+                    text: "Succesfully created token.",
+                },
+            },
+        ],
+        [
+            {
+                user: "{{user1}}",
+                content: {
+                    text: "Create a token TEST with ticker TST, 18 decimals and su of 10000",
                     action: "CREATE_TOKEN",
                 },
             },

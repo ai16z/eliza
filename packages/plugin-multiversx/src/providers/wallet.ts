@@ -11,6 +11,7 @@ import {
     TransactionsFactoryConfig,
     Token,
     Transaction,
+    TokenManagementTransactionsFactory,
 } from "@multiversx/sdk-core";
 import { denominateAmount } from "../utils/amount";
 
@@ -19,14 +20,18 @@ const MVX_NETWORK = {
     mainnet: {
         chainID: "1", // Mainnet chain ID
         apiURL: "https://api.multiversx.com", // Mainnet API URL
+        explorerURL: "https://explorer.multiversx.com"
     },
     devnet: {
         chainID: "D", // Devnet chain ID
-        apiURL: "https://devnet-api.multiversx.com", // Devnet API URL
+        apiURL: "https://devnet-api.multiversx.com", // Devnet API URL,
+        explorerURL: "https://devnet-explorer.multiversx.com"
+
     },
     testnet: {
         chainID: "T", // Testnet chain ID
         apiURL: "https://testnet-api.multiversx.com", // Testnet API URL
+        explorerURL: "https://testnet-explorer.multiversx.com"
     },
 };
 
@@ -35,6 +40,7 @@ export class WalletProvider {
     private signer: UserSigner; // Handles cryptographic signing
     private apiNetworkProvider: ApiNetworkProvider; // Interacts with the MultiversX network
     private chainID: string; // Current network chain ID
+    private explorerURL: string; // Current network explorer URL
 
     /**
      * Constructor to initialize WalletProvider with a private key and network configuration
@@ -48,6 +54,7 @@ export class WalletProvider {
 
         const networkConfig = MVX_NETWORK[network];
         this.chainID = networkConfig.chainID;
+        this.explorerURL = networkConfig.explorerURL;
 
         // Initialize the signer with the user's private key
         const secretKey = UserSecretKey.fromString(privateKey);
@@ -75,6 +82,18 @@ export class WalletProvider {
         const address = new Address(this.getAddress());
         const account = await this.apiNetworkProvider.getAccount(address);
         return account.balance.toString(); // Return balance as a string
+    }
+
+     /**
+     * Sign a transaction using the wallet's private key
+     * @param transaction - The transaction object to sign
+     * @returns The transaction signature as a string
+     */
+     public async signTransaction(transaction: Transaction) {
+        const computer = new TransactionComputer();
+        const serializedTx = computer.computeBytesForSigning(transaction); // Prepare transaction for signing
+        const signature = await this.signer.sign(serializedTx); // Sign the transaction
+        return signature;
     }
 
     /**
@@ -126,6 +145,7 @@ export class WalletProvider {
                 await this.apiNetworkProvider.sendTransaction(transaction);
 
             elizaLogger.log(`TxHash: ${txHash}`); // Log transaction hash
+            elizaLogger.log(`Transaction URL: ${this.explorerURL}/transactions/${txHash}`); // View Transaction
             return txHash;
         } catch (error) {
             console.error("Error sending EGLD transaction:", error);
@@ -133,18 +153,6 @@ export class WalletProvider {
                 `Failed to send EGLD: ${error.message || "Unknown error"}`
             );
         }
-    }
-
-    /**
-     * Sign a transaction using the wallet's private key
-     * @param transaction - The transaction object to sign
-     * @returns The transaction signature as a string
-     */
-    public async signTransaction(transaction: Transaction) {
-        const computer = new TransactionComputer();
-        const serializedTx = computer.computeBytesForSigning(transaction); // Prepare transaction for signing
-        const signature = await this.signer.sign(serializedTx); // Sign the transaction
-        return signature;
     }
 
     /**
@@ -208,12 +216,82 @@ export class WalletProvider {
                 await this.apiNetworkProvider.sendTransaction(transaction);
 
             elizaLogger.log(`TxHash: ${txHash}`); // Log transaction hash
+            elizaLogger.log(`Transaction URL: ${this.explorerURL}/transactions/${txHash}`); // View Transaction
             return txHash;
         } catch (error) {
             console.error("Error sending ESDT transaction:", error);
             throw new Error(
                 `Failed to send ESDT: ${error.message || "Unknown error"}`
             );
+        }
+    }
+
+    /**
+     * Create a new Elrond Standard Digital Token (ESDT).
+     * @param tokenName - The name of the token to be created.
+     * @param tokenTicker - The ticker symbol for the token.
+     * @param amount - The initial supply of the token.
+     * @param decimals - The number of decimal places for the token.
+     * @returns The transaction hash of the created ESDT.
+     */
+    public async createESDT({
+        tokenName,
+        tokenTicker,
+        amount,
+        decimals,
+    }: {
+        tokenName: string;
+        tokenTicker: string;
+        amount: string;
+        decimals: number;
+    }): Promise<string> {
+        try {
+            const address = this.getAddress(); // Retrieve the sender's address
+
+            const factoryConfig = new TransactionsFactoryConfig({
+                chainID: this.chainID, // Set the chain ID for the transaction factory
+            });
+            const factory = new TokenManagementTransactionsFactory({
+                config: factoryConfig, // Initialize the factory with the configuration
+            });
+
+            const totalSupply = denominateAmount({ amount, decimals });
+
+            // Create a transaction for issuing a fungible token
+            const transaction = factory.createTransactionForIssuingFungible({
+                sender: new Address(address), // Specify the sender's address
+                tokenName, // Name of the token
+                tokenTicker: tokenTicker.toUpperCase(), // Token ticker in uppercase
+                initialSupply: BigInt(totalSupply), // Initial supply as a BigInt
+                numDecimals: BigInt(decimals), // Number of decimals as a BigInt
+                canFreeze: false, // Token cannot be frozen
+                canWipe: false, // Token cannot be wiped
+                canPause: false, // Token cannot be paused
+                canChangeOwner: true, // Ownership can be changed
+                canUpgrade: true, // Token can be upgraded
+                canAddSpecialRoles: true, // Special roles can be added
+            });
+
+            // Fetch the account details to set the nonce
+            const account = await this.apiNetworkProvider.getAccount(address);
+            transaction.nonce = BigInt(account.nonce); // Set the nonce for the transaction
+
+            const signature = await this.signTransaction(transaction); // Sign the transaction
+            transaction.signature = signature; // Attach the signature to the transaction
+
+            // Send the transaction to the network and get the transaction hash
+            const txHash =
+                await this.apiNetworkProvider.sendTransaction(transaction);
+
+            elizaLogger.log(`TxHash: ${txHash}`); // Log the transaction hash
+            elizaLogger.log(`Transaction URL: ${this.explorerURL}/transactions/${txHash}`); // View Transaction
+
+            return txHash; // Return the transaction hash
+        } catch (error) {
+            console.error("Error creating ESDT:", error);
+            throw new Error(
+                `Failed to create ESDT: ${error.message || "Unknown error"}`
+            ); // Throw an error if creation fails
         }
     }
 }
