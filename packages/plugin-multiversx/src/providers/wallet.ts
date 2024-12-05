@@ -230,7 +230,7 @@ export class WalletProvider {
     }
 
     /**
-     * Create a new Elrond Standard Digital Token (ESDT).
+     * Create a new eStandard Digital Token (ESDT).
      * @param tokenName - The name of the token to be created.
      * @param tokenTicker - The ticker symbol for the token.
      * @param amount - The initial supply of the token.
