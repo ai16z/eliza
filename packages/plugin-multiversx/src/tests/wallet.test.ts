@@ -1,6 +1,5 @@
-// src/tests/wallet.test.ts
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { WalletProvider } from "../providers/wallet"; // Update the path to your WalletProvider
+import { describe, it, expect, beforeEach } from "vitest";
+import { WalletProvider } from "../providers/wallet";
 
 describe("WalletProvider", () => {
     let walletProvider: WalletProvider;

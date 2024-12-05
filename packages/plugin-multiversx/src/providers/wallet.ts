@@ -1,4 +1,3 @@
-// Importing required modules and classes for logging, user signing, transactions, and network operations
 import { elizaLogger } from "@ai16z/eliza";
 import {
     UserSigner,
