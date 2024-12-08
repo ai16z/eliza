@@ -176,3 +176,23 @@ export interface AdvancedTradeContent {
 export const isAdvancedTradeContent = (object: any): object is AdvancedTradeContent => {
     return AdvancedTradeSchema.safeParse(object).success;
 };
+
+export interface ReadContractContent {
+    contractAddress: `0x${string}`;
+    method: string;
+    networkId: string;
+    args: Record<string, any>;
+    abi?: any[];
+}
+
+export const ReadContractSchema = z.object({
+    contractAddress: z.string().describe("The address of the contract to read from"),
+    method: z.string().describe("The view/pure method to call on the contract"),
+    networkId: z.string().describe("The network ID to use"),
+    args: z.record(z.string(), z.any()).describe("The arguments to pass to the contract method"),
+    abi: z.array(z.any()).optional().describe("The contract ABI (optional)")
+});
+
+export const isReadContractContent = (obj: any): obj is ReadContractContent => {
+    return ReadContractSchema.safeParse(obj).success;
+};

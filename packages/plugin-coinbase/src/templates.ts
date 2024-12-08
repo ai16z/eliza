@@ -323,3 +323,55 @@ Example for creating a webhook on the Sepolia testnet for ERC20 transfers origin
 Here are the recent user messages for context:
 {{recentMessages}}
 `;
+
+export const readContractTemplate = `
+Extract the following details for reading from a smart contract using the Coinbase SDK:
+- **contractAddress** (string): The address of the contract to read from (must start with 0x)
+- **method** (string): The view/pure method to call on the contract
+- **networkId** (string): The network ID based on networks configured in Coinbase SDK
+Allowed values are:
+    static networks: {
+        readonly BaseSepolia: "base-sepolia";
+        readonly BaseMainnet: "base-mainnet";
+        readonly EthereumHolesky: "ethereum-holesky";
+        readonly EthereumMainnet: "ethereum-mainnet";
+        readonly PolygonMainnet: "polygon-mainnet";
+        readonly SolanaDevnet: "solana-devnet";
+        readonly SolanaMainnet: "solana-mainnet";
+        readonly ArbitrumMainnet: "arbitrum-mainnet";
+    };
+- **args** (object): The arguments to pass to the contract method
+- **abi** (array, optional): The contract ABI if needed for complex interactions
+
+Provide the details in the following JSON format:
+
+\`\`\`json
+{
+    "contractAddress": "<0x-prefixed-address>",
+    "method": "<method_name>",
+    "networkId": "<network_id>",
+    "args": {
+        "<arg_name>": "<arg_value>"
+    },
+    "abi": [
+        // Optional ABI array
+    ]
+}
+\`\`\`
+
+Example for reading the balance of an ERC20 token:
+
+\`\`\`json
+{
+    "contractAddress": "0x37f2131ebbc8f97717edc3456879ef56b9f4b97b",
+    "method": "balanceOf",
+    "networkId": "eth-mainnet",
+    "args": {
+        "account": "0xbcF7C64B880FA89a015970dC104E848d485f99A3"
+    }
+}
+\`\`\`
+
+Here are the recent user messages for context:
+{{recentMessages}}
+`;

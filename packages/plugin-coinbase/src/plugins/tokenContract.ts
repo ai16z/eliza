@@ -1,4 +1,4 @@
-import { Coinbase, SmartContract } from "@coinbase/coinbase-sdk";
+import { Coinbase, readContract, SmartContract } from "@coinbase/coinbase-sdk";
 import {
     Action,
     Plugin,
@@ -15,23 +15,43 @@ import { initializeWallet } from "../utils";
 import {
     contractInvocationTemplate,
     tokenContractTemplate,
+    readContractTemplate,
 } from "../templates";
 import {
     ContractInvocationSchema,
     TokenContractSchema,
     isContractInvocationContent,
     isTokenContractContent,
+    ReadContractSchema,
+    isReadContractContent,
 } from "../types";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createArrayCsvWriter } from "csv-writer";
 import fs from "fs";
+import { ABI } from "../constants";
 
 // Dynamically resolve the file path to the src/plugins directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const baseDir = path.resolve(__dirname, "../../plugin-coinbase/src/plugins");
 const contractsCsvFilePath = path.join(baseDir, "contracts.csv");
+
+// Add this helper at the top level
+const serializeBigInt = (value: any): any => {
+    if (typeof value === 'bigint') {
+        return value.toString();
+    }
+    if (Array.isArray(value)) {
+        return value.map(serializeBigInt);
+    }
+    if (typeof value === 'object' && value !== null) {
+        return Object.fromEntries(
+            Object.entries(value).map(([k, v]) => [k, serializeBigInt(v)])
+        );
+    }
+    return value;
+};
 
 export const deployTokenContractAction: Action = {
     name: "DEPLOY_TOKEN_CONTRACT",
@@ -329,228 +349,7 @@ export const invokeContractAction: Action = {
             const invocationOptions = {
                 contractAddress,
                 method,
-                abi: [
-                    {
-                        constant: true,
-                        inputs: [],
-                        name: "name",
-                        outputs: [
-                            {
-                                name: "",
-                                type: "string",
-                            },
-                        ],
-                        payable: false,
-                        stateMutability: "view",
-                        type: "function",
-                    },
-                    {
-                        constant: false,
-                        inputs: [
-                            {
-                                name: "_spender",
-                                type: "address",
-                            },
-                            {
-                                name: "_value",
-                                type: "uint256",
-                            },
-                        ],
-                        name: "approve",
-                        outputs: [
-                            {
-                                name: "",
-                                type: "bool",
-                            },
-                        ],
-                        payable: false,
-                        stateMutability: "nonpayable",
-                        type: "function",
-                    },
-                    {
-                        constant: true,
-                        inputs: [],
-                        name: "totalSupply",
-                        outputs: [
-                            {
-                                name: "",
-                                type: "uint256",
-                            },
-                        ],
-                        payable: false,
-                        stateMutability: "view",
-                        type: "function",
-                    },
-                    {
-                        constant: false,
-                        inputs: [
-                            {
-                                name: "_from",
-                                type: "address",
-                            },
-                            {
-                                name: "_to",
-                                type: "address",
-                            },
-                            {
-                                name: "_value",
-                                type: "uint256",
-                            },
-                        ],
-                        name: "transferFrom",
-                        outputs: [
-                            {
-                                name: "",
-                                type: "bool",
-                            },
-                        ],
-                        payable: false,
-                        stateMutability: "nonpayable",
-                        type: "function",
-                    },
-                    {
-                        constant: true,
-                        inputs: [],
-                        name: "decimals",
-                        outputs: [
-                            {
-                                name: "",
-                                type: "uint8",
-                            },
-                        ],
-                        payable: false,
-                        stateMutability: "view",
-                        type: "function",
-                    },
-                    {
-                        constant: true,
-                        inputs: [
-                            {
-                                name: "_owner",
-                                type: "address",
-                            },
-                        ],
-                        name: "balanceOf",
-                        outputs: [
-                            {
-                                name: "balance",
-                                type: "uint256",
-                            },
-                        ],
-                        payable: false,
-                        stateMutability: "view",
-                        type: "function",
-                    },
-                    {
-                        constant: true,
-                        inputs: [],
-                        name: "symbol",
-                        outputs: [
-                            {
-                                name: "",
-                                type: "string",
-                            },
-                        ],
-                        payable: false,
-                        stateMutability: "view",
-                        type: "function",
-                    },
-                    {
-                        constant: false,
-                        inputs: [
-                            {
-                                name: "_to",
-                                type: "address",
-                            },
-                            {
-                                name: "_value",
-                                type: "uint256",
-                            },
-                        ],
-                        name: "transfer",
-                        outputs: [
-                            {
-                                name: "",
-                                type: "bool",
-                            },
-                        ],
-                        payable: false,
-                        stateMutability: "nonpayable",
-                        type: "function",
-                    },
-                    {
-                        constant: true,
-                        inputs: [
-                            {
-                                name: "_owner",
-                                type: "address",
-                            },
-                            {
-                                name: "_spender",
-                                type: "address",
-                            },
-                        ],
-                        name: "allowance",
-                        outputs: [
-                            {
-                                name: "",
-                                type: "uint256",
-                            },
-                        ],
-                        payable: false,
-                        stateMutability: "view",
-                        type: "function",
-                    },
-                    {
-                        payable: true,
-                        stateMutability: "payable",
-                        type: "fallback",
-                    },
-                    {
-                        anonymous: false,
-                        inputs: [
-                            {
-                                indexed: true,
-                                name: "owner",
-                                type: "address",
-                            },
-                            {
-                                indexed: true,
-                                name: "spender",
-                                type: "address",
-                            },
-                            {
-                                indexed: false,
-                                name: "value",
-                                type: "uint256",
-                            },
-                        ],
-                        name: "Approval",
-                        type: "event",
-                    },
-                    {
-                        anonymous: false,
-                        inputs: [
-                            {
-                                indexed: true,
-                                name: "from",
-                                type: "address",
-                            },
-                            {
-                                indexed: true,
-                                name: "to",
-                                type: "address",
-                            },
-                            {
-                                indexed: false,
-                                name: "value",
-                                type: "uint256",
-                            },
-                        ],
-                        name: "Transfer",
-                        type: "event",
-                    },
-                ],
+                abi: ABI,
                 args,
                 ...(amount && assetId ? { amount, assetId } : {}),
             };
@@ -641,9 +440,108 @@ Contract invocation has been logged to the CSV file.`,
     similes: ["CALL_CONTRACT", "EXECUTE_CONTRACT", "INTERACT_WITH_CONTRACT"],
 };
 
+export const readContractAction: Action = {
+    name: "READ_CONTRACT",
+    description: "Read data from a deployed smart contract using the Coinbase SDK",
+    validate: async (runtime: IAgentRuntime, _message: Memory) => {
+        elizaLogger.log("Validating runtime for READ_CONTRACT...");
+        return !!(
+            runtime.character.settings.secrets?.COINBASE_API_KEY ||
+            process.env.COINBASE_API_KEY
+        ) && !!(
+            runtime.character.settings.secrets?.COINBASE_PRIVATE_KEY ||
+            process.env.COINBASE_PRIVATE_KEY
+        );
+    },
+    handler: async (
+        runtime: IAgentRuntime,
+        _message: Memory,
+        state: State,
+        _options: any,
+        callback: HandlerCallback
+    ) => {
+        elizaLogger.log("Starting READ_CONTRACT handler...");
+
+        try {
+            Coinbase.configure({
+                apiKeyName: runtime.getSetting("COINBASE_API_KEY") ?? process.env.COINBASE_API_KEY,
+                privateKey: runtime.getSetting("COINBASE_PRIVATE_KEY") ?? process.env.COINBASE_PRIVATE_KEY,
+            });
+
+            const context = composeContext({
+                state,
+                template: readContractTemplate,
+            });
+
+            const readDetails = await generateObjectV2({
+                runtime,
+                context,
+                modelClass: ModelClass.SMALL,
+                schema: ReadContractSchema,
+            });
+
+            if (!isReadContractContent(readDetails.object)) {
+                callback(
+                    {
+                        text: "Invalid contract read details. Please check the inputs.",
+                    },
+                    []
+                );
+                return;
+            }
+
+            const { contractAddress, method, args, networkId, abi } = readDetails.object;
+            elizaLogger.log("Reading contract:", { contractAddress, method, args, networkId, abi });
+
+            const result = await readContract({
+                networkId,
+                contractAddress,
+                method,
+                args,
+                abi: ABI as any,
+            });
+
+            // Serialize the result before using it
+            const serializedResult = serializeBigInt(result);
+
+            elizaLogger.info("Contract read result:", serializedResult);
+
+            callback({
+                text: `Contract read successful: ${JSON.stringify(serializedResult, null, 2)}`
+            }, []);
+
+        } catch (error) {
+            elizaLogger.error("Error reading contract:", error);
+            callback({
+                text: `Failed to read contract: ${error instanceof Error ? error.message : "Unknown error"}`
+            }, []);
+        }
+    },
+    examples: [
+        [
+            {
+                user: "{{user1}}",
+                content: {
+                    text: "Read the balance of address 0xbcF7C64B880FA89a015970dC104E848d485f99A3 from the ERC20 contract at 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 on eth",
+                },
+            },
+            {
+                user: "{{agentName}}",
+                content: {
+                    text: `Contract read successful:
+- Contract Address: 0x37f2131ebbc8f97717edc3456879ef56b9f4b97b
+- Method: balanceOf
+- Network: eth
+- Result: "1000000"`,
+                },
+            },
+        ],
+    ],
+    similes: ["READ_CONTRACT", "GET_CONTRACT_DATA", "QUERY_CONTRACT"],
+};
+
 export const tokenContractPlugin: Plugin = {
     name: "tokenContract",
-    description:
-        "Enables deployment and invoking of ERC20, ERC721, and ERC1155 token contracts using the Coinbase SDK",
-    actions: [deployTokenContractAction],
+    description: "Enables deployment, invocation, and reading of ERC20, ERC721, and ERC1155 token contracts using the Coinbase SDK",
+    actions: [deployTokenContractAction, invokeContractAction, readContractAction],
 };
