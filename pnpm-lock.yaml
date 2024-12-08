@@ -168,6 +168,9 @@ importers:
       '@ai16z/plugin-tee':
         specifier: workspace:*
         version: link:../packages/plugin-tee
+      '@ai16z/plugin-tee-marlin':
+        specifier: workspace:*
+        version: link:../packages/plugin-tee-marlin
       readline:
         specifier: 1.3.0
         version: 1.3.0
@@ -1331,6 +1334,18 @@ importers:
       viem:
         specifier: 2.21.53
         version: 2.21.53(bufferutil@4.0.8)(typescript@5.6.3)(utf-8-validate@5.0.10)(zod@3.23.8)
+      whatwg-url:
+        specifier: 7.1.0
+        version: 7.1.0
+
+  packages/plugin-tee-marlin:
+    dependencies:
+      '@ai16z/eliza':
+        specifier: workspace:*
+        version: link:../core
+      tsup:
+        specifier: 8.3.5
+        version: 8.3.5(@swc/core@1.10.0(@swc/helpers@0.5.15))(jiti@2.4.0)(postcss@8.4.49)(typescript@5.6.3)(yaml@2.6.1)
       whatwg-url:
         specifier: 7.1.0
         version: 7.1.0
