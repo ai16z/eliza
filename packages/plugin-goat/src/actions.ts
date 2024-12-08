@@ -1,10 +1,9 @@
 import {
     type WalletClient,
     type Plugin,
-    getDeferredTools,
     addParametersToDescription,
-    type ChainForWalletClient,
-    type DeferredTool,
+    type Tool,
+    getTools,
 } from "@goat-sdk/core";
 import {
     type Action,
@@ -19,10 +18,8 @@ import {
 } from "@ai16z/eliza";
 
 type GetOnChainActionsParams<TWalletClient extends WalletClient> = {
-    chain: ChainForWalletClient<TWalletClient>;
-    getWalletClient: (runtime: IAgentRuntime) => Promise<TWalletClient>;
+    wallet: TWalletClient;
     plugins: Plugin<TWalletClient>[];
-    supportsSmartWallets?: boolean;
 };
 
 /**
@@ -32,16 +29,13 @@ type GetOnChainActionsParams<TWalletClient extends WalletClient> = {
  * @returns
  */
 export async function getOnChainActions<TWalletClient extends WalletClient>({
-    getWalletClient,
+    wallet,
     plugins,
-    chain,
-    supportsSmartWallets,
 }: GetOnChainActionsParams<TWalletClient>): Promise<Action[]> {
-    const tools = await getDeferredTools<TWalletClient>({
+    const tools = await getTools<TWalletClient>({
+        wallet,
         plugins,
         wordForTool: "action",
-        chain,
-        supportsSmartWallets,
     });
 
     return tools
@@ -49,13 +43,10 @@ export async function getOnChainActions<TWalletClient extends WalletClient>({
             ...action,
             name: action.name.toUpperCase(),
         }))
-        .map((tool) => createAction(tool, getWalletClient));
+        .map((tool) => createAction(tool));
 }
 
-function createAction<TWalletClient extends WalletClient>(
-    tool: DeferredTool<TWalletClient>,
-    getWalletClient: (runtime: IAgentRuntime) => Promise<TWalletClient>
-): Action {
+function createAction(tool: Tool): Action {
     return {
         name: tool.name,
         similes: [],
@@ -69,7 +60,6 @@ function createAction<TWalletClient extends WalletClient>(
             callback?: HandlerCallback
         ): Promise<boolean> => {
             try {
-                const walletClient = await getWalletClient(runtime);
                 let currentState =
                     state ?? (await runtime.composeState(message));
                 currentState =
@@ -94,10 +84,7 @@ function createAction<TWalletClient extends WalletClient>(
                     return false;
                 }
 
-                const result = await tool.method(
-                    walletClient,
-                    parsedParameters.data
-                );
+                const result = await tool.method(parsedParameters.data);
                 const responseContext = composeResponseContext(
                     tool,
                     result,
@@ -124,10 +111,7 @@ function createAction<TWalletClient extends WalletClient>(
     };
 }
 
-function composeParameterContext<TWalletClient extends WalletClient>(
-    tool: DeferredTool<TWalletClient>,
-    state: State
-): string {
+function composeParameterContext(tool: Tool, state: State): string {
     const contextTemplate = `{{recentMessages}}
 
 Given the recent messages, extract the following information for the action "${tool.name}":
@@ -136,10 +120,10 @@ ${addParametersToDescription("", tool.parameters)}
     return composeContext({ state, template: contextTemplate });
 }
 
-async function generateParameters<TWalletClient extends WalletClient>(
+async function generateParameters(
     runtime: IAgentRuntime,
     context: string,
-    tool: DeferredTool<TWalletClient>
+    tool: Tool
 ): Promise<unknown> {
     const { object } = await generateObjectV2({
         runtime,
@@ -151,8 +135,8 @@ async function generateParameters<TWalletClient extends WalletClient>(
     return object;
 }
 
-function composeResponseContext<TWalletClient extends WalletClient>(
-    tool: DeferredTool<TWalletClient>,
+function composeResponseContext(
+    tool: Tool,
     result: unknown,
     state: State
 ): string {
