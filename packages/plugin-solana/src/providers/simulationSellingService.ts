@@ -12,6 +12,7 @@ import { IAgentRuntime } from "@ai16z/eliza";
 import { WalletProvider } from "./wallet.ts";
 import * as amqp from "amqplib";
 import { ProcessedTokenData } from "../types/token.ts";
+import { getWalletKey } from "../keypairUtils.ts";
 
 interface SellDetails {
     sell_amount: number;
@@ -39,13 +40,7 @@ export class SimulationSellingService {
         this.trustScoreDb = trustScoreDb;
 
         this.connection = new Connection(runtime.getSetting("RPC_URL"));
-        this.walletProvider = new WalletProvider(
-            this.connection,
-            new PublicKey(
-                runtime.getSetting("SOLANA_PUBLIC_KEY") ??
-                    runtime.getSetting("WALLET_PUBLIC_KEY")
-            )
-        );
+        this.initializeWalletProvider();
         this.baseMint = new PublicKey(
             runtime.getSetting("BASE_MINT") ||
                 "So11111111111111111111111111111111111111112"
@@ -173,6 +168,17 @@ export class SimulationSellingService {
                 error
             );
         }
+    }
+
+    /**
+     * Derives the public key based on the TEE (Trusted Execution Environment) mode and initializes the wallet provider.
+     * If TEE mode is enabled, derives a keypair using the DeriveKeyProvider with the wallet secret salt and agent ID.
+     * If TEE mode is disabled, uses the provided Solana public key or wallet public key from settings.
+     */
+    private async initializeWalletProvider(): Promise<void> {
+        const { publicKey } = await getWalletKey(this.runtime, false);
+
+        this.walletProvider = new WalletProvider(this.connection, publicKey);
     }
 
     public async startService() {

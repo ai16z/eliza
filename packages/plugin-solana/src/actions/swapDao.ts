@@ -6,6 +6,7 @@ import {
 } from "@ai16z/eliza";
 import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import { getQuote } from "./swapUtils.ts";
+import { getWalletKey } from "../keypairUtils.ts";
 
 async function invokeSwapDao(
     connection: Connection,
@@ -66,15 +67,9 @@ export const executeSwapForDAO: Action = {
             const connection = new Connection(
                 runtime.getSetting("RPC_URL") as string
             );
-            const authority = Keypair.fromSecretKey(
-                Uint8Array.from(
-                    Buffer.from(
-                        runtime.getSetting("SOLANA_PRIVATE_KEY") ??
-                            runtime.getSetting("WALLET_PRIVATE_KEY"), // should be the authority private key
-                        "base64"
-                    )
-                )
-            );
+
+            const { keypair: authority } = await getWalletKey(runtime, true);
+
             const daoMint = new PublicKey(runtime.getSetting("DAO_MINT")); // DAO mint address
 
             // Derive PDAs

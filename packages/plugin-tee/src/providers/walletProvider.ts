@@ -4,6 +4,7 @@ import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import BigNumber from "bignumber.js";
 import NodeCache from "node-cache";
 import { DeriveKeyProvider } from "./deriveKeyProvider";
+import { RemoteAttestationQuote } from "../types/tee";
 // Provider configuration
 const PROVIDER_CONFIG = {
     BIRDEYE_API: "https://public-api.birdeye.so",
@@ -272,6 +273,9 @@ const walletProvider: Provider = {
         _message: Memory,
         _state?: State
     ): Promise<string> => {
+        const agentId = runtime.agentId;
+        const teeMode = runtime.getSetting("TEE_MODE");
+        const deriveKeyProvider = new DeriveKeyProvider(teeMode);
         try {
             // Validate wallet configuration
             if (!runtime.getSetting("WALLET_SECRET_SALT")) {
@@ -283,13 +287,13 @@ const walletProvider: Provider = {
 
             let publicKey: PublicKey;
             try {
-                const deriveKeyProvider = new DeriveKeyProvider();
-                const derivedKeyPair: Keypair =
+                const derivedKeyPair: { keypair: Keypair, attestation: RemoteAttestationQuote } =
                     await deriveKeyProvider.deriveEd25519Keypair(
                         "/",
-                        runtime.getSetting("WALLET_SECRET_SALT")
+                        runtime.getSetting("WALLET_SECRET_SALT"),
+                        agentId
                     );
-                publicKey = derivedKeyPair.publicKey;
+                publicKey = derivedKeyPair.keypair.publicKey;
                 console.log("Wallet Public Key: ", publicKey.toBase58());
             } catch (error) {
                 console.error("Error creating PublicKey:", error);

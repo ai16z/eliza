@@ -102,6 +102,11 @@ const sidebars = {
           id: "advanced/autonomous-trading",
           label: "Autonomous Trading",
         },
+        {
+          type: "doc",
+          id: "advanced/eliza-in-tee",
+          label: "Eliza in TEE",
+        },
       ],
     },
     {
