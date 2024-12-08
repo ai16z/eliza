@@ -562,10 +562,10 @@ export type Media = {
  */
 export type Client = {
     /** Start client connection */
-    start: (runtime?: IAgentRuntime) => Promise<unknown>;
+    start: (runtime: IAgentRuntime) => Promise<unknown>;
 
     /** Stop client connection */
-    stop: (runtime?: IAgentRuntime) => Promise<unknown>;
+    stop: (runtime: IAgentRuntime) => Promise<unknown>;
 };
 
 /**

@@ -885,6 +885,15 @@ importers:
         specifier: 0.7.1
         version: 0.7.1(bufferutil@4.0.8)(typescript@5.6.3)(utf-8-validate@5.0.10)
 
+  packages/plugin-echochambers:
+    dependencies:
+      '@ai16z/eliza':
+        specifier: workspace:*
+        version: link:../core
+      '@ai16z/plugin-node':
+        specifier: workspace:*
+        version: link:../plugin-node
+
   packages/plugin-evm:
     dependencies:
       '@ai16z/eliza':
