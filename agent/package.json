@@ -41,6 +41,7 @@
         "@ai16z/plugin-solana": "workspace:*",
         "@ai16z/plugin-starknet": "workspace:*",
         "@ai16z/plugin-tee": "workspace:*",
+        "@ai16z/plugin-multiversx": "workspace:*",
         "readline": "1.3.0",
         "ws": "8.18.0",
         "yargs": "17.7.2"

@@ -44,6 +44,7 @@ import { solanaPlugin } from "@ai16z/plugin-solana";
 import { aptosPlugin, TransferAptosToken } from "@ai16z/plugin-aptos";
 import { flowPlugin } from "@ai16z/plugin-flow";
 import { teePlugin } from "@ai16z/plugin-tee";
+import { multiversxPlugin } from '@ai16z/plugin-multiversx';
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
@@ -415,6 +416,7 @@ export function createAgent(
                 ? flowPlugin
                 : null,
             getSecret(character, "APTOS_PRIVATE_KEY") ? aptosPlugin : null,
+            getSecret(character, 'MVX_PRIVATE_KEY') ? multiversxPlugin : null
         ].filter(Boolean),
         providers: [],
         actions: [],
