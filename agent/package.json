@@ -40,6 +40,7 @@
         "@ai16z/plugin-node": "workspace:*",
         "@ai16z/plugin-solana": "workspace:*",
         "@ai16z/plugin-starknet": "workspace:*",
+        "@ai16z/plugin-sui": "workspace:*",
         "@ai16z/plugin-tee": "workspace:*",
         "readline": "1.3.0",
         "ws": "8.18.0",
