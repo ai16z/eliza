@@ -10,7 +10,20 @@ transaction(evmContractAddressHex: String, calldata: String, gasLimit: UInt64, v
     prepare(signer: auth(BorrowValue) &Account) {
         self.evmAddress = EVM.addressFromString(evmContractAddressHex)
 
-        self.coa = signer.storage.borrow<auth(EVM.Call) &EVM.CadenceOwnedAccount>(from: /storage/evm)
+        let storagePath = StoragePath(identifier: "evm")!
+        let publicPath = PublicPath(identifier: "evm")!
+
+        // Reference signer's COA if one exists
+        let coa = signer.storage.borrow<auth(EVM.Withdraw) &EVM.CadenceOwnedAccount>(from: storagePath)
+        if coa == nil {
+            let coa <- EVM.createCadenceOwnedAccount()
+            signer.storage.save<@EVM.CadenceOwnedAccount>(<-coa, to: storagePath)
+            let addressableCap = signer.capabilities.storage.issue<&EVM.CadenceOwnedAccount>(storagePath)
+            signer.capabilities.unpublish(publicPath)
+            signer.capabilities.publish(addressableCap, at: publicPath)
+        }
+
+        self.coa = signer.storage.borrow<auth(EVM.Call) &EVM.CadenceOwnedAccount>(from: storagePath)
             ?? panic("Could not borrow COA from provided gateway address")
     }
 

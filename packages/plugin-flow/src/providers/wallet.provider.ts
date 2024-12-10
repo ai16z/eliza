@@ -232,7 +232,12 @@ const flowWalletProvider: Provider = {
                 elizaLogger.error("Invalid account info");
                 return null;
             }
-            return `Flow Wallet Address: ${walletProvider.address}\nBalance: ${info.balance} FLOW\nFlow COA(EVM) Address: ${info.coaAddress || "unknown"}\nFLOW COA(EVM) Balance: ${info.coaBalance ?? 0} FLOW`;
+            let output = `Here is user<${runtime.character.name}>'s wallet status:\n`;
+            output += `Flow wallet address: ${walletProvider.address}\n`;
+            output += `FLOW balance: ${info.balance} FLOW\n`;
+            output += `Flow wallet's COA(EVM) address: ${info.coaAddress || "unknown"}\n`;
+            output += `FLOW balance in COA(EVM) address: ${info.coaBalance ?? 0} FLOW`;
+            return output;
         } catch (error) {
             elizaLogger.error("Error in Flow wallet provider:", error.message);
             return null;
