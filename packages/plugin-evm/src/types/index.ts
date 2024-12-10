@@ -8,8 +8,10 @@ import type {
     PublicClient,
     WalletClient,
 } from "viem";
+import * as viemChains from "viem/chains";
 
-export type SupportedChain = "ethereum" | "base";
+const SupportedChainList = Object.keys(viemChains) as Array<keyof typeof viemChains>;
+export type SupportedChain = (typeof SupportedChainList)[number];
 
 // Transaction types
 export interface Transaction {

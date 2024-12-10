@@ -1,8 +1,9 @@
 import { ByteArray, parseEther, type Hex } from "viem";
+import type { IAgentRuntime, Memory, State } from "@ai16z/eliza";
+
 import { WalletProvider } from "../providers/wallet";
 import type { Transaction, TransferParams } from "../types";
 import { transferTemplate } from "../templates";
-import type { IAgentRuntime, Memory, State } from "@ai16z/eliza";
 
 export { transferTemplate };
 export class TransferAction {
@@ -12,10 +13,12 @@ export class TransferAction {
         runtime: IAgentRuntime,
         params: TransferParams
     ): Promise<Transaction> {
-        const walletClient = this.walletProvider.getWalletClient();
+        const walletClient = this.walletProvider.getWalletClient(
+            params.fromChain
+        );
         const [fromAddress] = await walletClient.getAddresses();
 
-        await this.walletProvider.switchChain(runtime, params.fromChain);
+        this.walletProvider.switchChain(params.fromChain);
 
         try {
             const hash = await walletClient.sendTransaction({
@@ -59,7 +62,10 @@ export const transferAction = {
         state: State,
         options: any
     ) => {
-        const walletProvider = new WalletProvider(runtime);
+        const privateKey = runtime.getSetting(
+            "EVM_PRIVATE_KEY"
+        ) as `0x${string}`;
+        const walletProvider = new WalletProvider(privateKey);
         const action = new TransferAction(walletProvider);
         return action.transfer(runtime, options);
     },
