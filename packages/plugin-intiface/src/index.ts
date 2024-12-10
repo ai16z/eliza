@@ -1,5 +1,5 @@
 import { ButtplugClient, ButtplugNodeWebsocketClientConnector } from "buttplug";
-import { validateButtplugConfig, type ButtplugConfig } from "./environment";
+import { validateIntifaceConfig, type IntifaceConfig } from "./environment";
 import type {
     Action,
     HandlerCallback,
@@ -15,7 +15,7 @@ import {
     shutdownIntifaceEngine,
 } from "./utils";
 
-export interface IButtplugService extends Service {
+export interface IIntifaceService extends Service {
     vibrate(strength: number, duration: number): Promise<void>;
     rotate?(strength: number, duration: number): Promise<void>;
     getBatteryLevel?(): Promise<number>;
@@ -23,14 +23,14 @@ export interface IButtplugService extends Service {
     getDevices(): any[];
 }
 
-export class ButtplugService extends Service implements IButtplugService {
-    static serviceType: ServiceType = ServiceType.BUTTPLUG;
+export class IntifaceService extends Service implements IIntifaceService {
+    static serviceType: ServiceType = ServiceType.INTIFACE;
     private client: ButtplugClient;
     private connected = false;
     private devices: Map<string, any> = new Map();
     private vibrateQueue: VibrateEvent[] = [];
     private isProcessingQueue = false;
-    private config: ButtplugConfig | null = null;
+    private config: IntifaceConfig | null = null;
     private maxVibrationIntensity = 1;
     private rampUpAndDown = false;
     private rampSteps = 20;
@@ -62,16 +62,16 @@ export class ButtplugService extends Service implements IButtplugService {
             }
             await shutdownIntifaceEngine();
         } catch (error) {
-            console.error("[ButtplugService] Cleanup error:", error);
+            console.error("[IntifaceService] Cleanup error:", error);
         }
     }
 
-    getInstance(): IButtplugService {
+    getInstance(): IIntifaceService {
         return this;
     }
 
     async initialize(runtime: IAgentRuntime): Promise<void> {
-        this.config = await validateButtplugConfig(runtime);
+        this.config = await validateIntifaceConfig(runtime);
         this.preferredDeviceName = this.config.DEVICE_NAME;
         this.client = new ButtplugClient(this.config.INTIFACE_NAME);
 
@@ -118,7 +118,7 @@ export class ButtplugService extends Service implements IButtplugService {
                     await new Promise((r) => setTimeout(r, 2000));
                 } else {
                     console.error(
-                        "Failed to connect to Buttplug server after all retries:",
+                        "Failed to connect to Intiface server after all retries:",
                         error
                     );
                     throw error;
@@ -144,7 +144,7 @@ export class ButtplugService extends Service implements IButtplugService {
 
     private async ensureDeviceAvailable() {
         if (!this.connected) {
-            throw new Error("Not connected to Buttplug server");
+            throw new Error("Not connected to Intiface server");
         }
 
         if (this.devices.size === 0) {
@@ -325,7 +325,7 @@ const vibrateAction: Action = {
     description: "Control vibration intensity of connected devices",
     validate: async (runtime: IAgentRuntime, _message: Memory) => {
         try {
-            await validateButtplugConfig(runtime);
+            await validateIntifaceConfig(runtime);
             return true;
         } catch {
             return false;
@@ -338,11 +338,11 @@ const vibrateAction: Action = {
         options: any,
         callback: HandlerCallback
     ) => {
-        const service = runtime.getService<IButtplugService>(
-            ServiceType.BUTTPLUG
+        const service = runtime.getService<IIntifaceService>(
+            ServiceType.INTIFACE
         );
         if (!service) {
-            throw new Error("Buttplug service not available");
+            throw new Error("Intiface service not available");
         }
 
         // Extract intensity and duration from message
@@ -435,7 +435,7 @@ const rotateAction: Action = {
     description: "Control rotation intensity of connected devices",
     validate: async (runtime: IAgentRuntime, _message: Memory) => {
         try {
-            await validateButtplugConfig(runtime);
+            await validateIntifaceConfig(runtime);
             return true;
         } catch {
             return false;
@@ -448,8 +448,8 @@ const rotateAction: Action = {
         options: any,
         callback: HandlerCallback
     ) => {
-        const service = runtime.getService<IButtplugService>(
-            ServiceType.BUTTPLUG
+        const service = runtime.getService<IIntifaceService>(
+            ServiceType.INTIFACE
         );
         if (!service || !service.rotate) {
             throw new Error("Rotation not supported");
@@ -493,7 +493,7 @@ const batteryAction: Action = {
     description: "Check battery level of connected devices",
     validate: async (runtime: IAgentRuntime, _message: Memory) => {
         try {
-            await validateButtplugConfig(runtime);
+            await validateIntifaceConfig(runtime);
             return true;
         } catch {
             return false;
@@ -506,8 +506,8 @@ const batteryAction: Action = {
         options: any,
         callback: HandlerCallback
     ) => {
-        const service = runtime.getService<IButtplugService>(
-            ServiceType.BUTTPLUG
+        const service = runtime.getService<IIntifaceService>(
+            ServiceType.INTIFACE
         );
         if (!service || !service.getBatteryLevel) {
             throw new Error("Battery level check not supported");
@@ -573,13 +573,13 @@ interface VibrateEvent {
     deviceId?: number;
 }
 
-export const buttplugPlugin: Plugin = {
-    name: "buttplug",
+export const intifacePlugin: Plugin = {
+    name: "intiface",
     description: "Controls intimate hardware devices",
     actions: [vibrateAction, rotateAction, batteryAction],
     evaluators: [],
     providers: [],
-    services: [new ButtplugService()],
+    services: [new IntifaceService()],
 };
 
-export default buttplugPlugin;
+export default intifacePlugin;

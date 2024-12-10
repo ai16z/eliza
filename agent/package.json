@@ -29,7 +29,7 @@
         "@ai16z/plugin-0g": "workspace:*",
         "@ai16z/plugin-aptos": "workspace:*",
         "@ai16z/plugin-bootstrap": "workspace:*",
-        "@ai16z/plugin-buttplug": "workspace:*",
+        "@ai16z/plugin-intiface": "workspace:*",
         "@ai16z/plugin-coinbase": "workspace:*",
         "@ai16z/plugin-conflux": "workspace:*",
         "@ai16z/plugin-evm": "workspace:*",

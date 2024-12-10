@@ -683,7 +683,7 @@ export type Character = {
     /** Optional configuration */
     settings?: {
         secrets?: { [key: string]: string };
-        buttplug?: boolean;
+        intiface?: boolean;
         voice?: {
             model?: string; // For VITS
             url?: string; // Legacy VITS support
@@ -1145,7 +1145,7 @@ export enum ServiceType {
     BROWSER = "browser",
     SPEECH_GENERATION = "speech_generation",
     PDF = "pdf",
-    BUTTPLUG = "buttplug",
+    INTIFACE = "intiface",
 }
 
 export enum LoggingLevel {

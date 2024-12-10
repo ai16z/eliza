@@ -1,10 +1,10 @@
 import { IAgentRuntime } from "@ai16z/eliza";
 import { z } from "zod";
 
-export const buttplugEnvSchema = z
+export const intifaceEnvSchema = z
     .object({
         INTIFACE_URL: z.string().default("ws://localhost:12345"),
-        INTIFACE_NAME: z.string().default("Eliza Buttplug Client"),
+        INTIFACE_NAME: z.string().default("Eliza Intiface Client"),
         DEVICE_NAME: z.string().default("Lovense Nora"),
     })
     .refine(
@@ -20,11 +20,11 @@ export const buttplugEnvSchema = z
         }
     );
 
-export type ButtplugConfig = z.infer<typeof buttplugEnvSchema>;
+export type IntifaceConfig = z.infer<typeof intifaceEnvSchema>;
 
-export async function validateButtplugConfig(
+export async function validateIntifaceConfig(
     runtime: IAgentRuntime
-): Promise<ButtplugConfig> {
+): Promise<IntifaceConfig> {
     try {
         const config = {
             INTIFACE_URL:
@@ -36,14 +36,14 @@ export async function validateButtplugConfig(
                 runtime.getSetting("DEVICE_NAME") || process.env.DEVICE_NAME,
         };
 
-        return buttplugEnvSchema.parse(config);
+        return intifaceEnvSchema.parse(config);
     } catch (error) {
         if (error instanceof z.ZodError) {
             const errorMessages = error.errors
                 .map((err) => `${err.path.join(".")}: ${err.message}`)
                 .join("\n");
             throw new Error(
-                `Buttplug configuration validation failed:\n${errorMessages}`
+                `Intiface configuration validation failed:\n${errorMessages}`
             );
         }
         throw error;
