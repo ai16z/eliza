@@ -6,7 +6,8 @@ import {
     ExtendedChain,
     getRoutes,
 } from "@lifi/sdk";
-import { getChainConfigs, WalletProvider } from "../providers/wallet";
+import { WalletProvider } from "../providers/wallet";
+import { getChainConfigs } from "../providers/chainConfigs";
 import { bridgeTemplate } from "../templates";
 import type { BridgeParams, Transaction } from "../types";
 

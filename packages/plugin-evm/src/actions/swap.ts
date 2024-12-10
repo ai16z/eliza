@@ -6,7 +6,8 @@ import {
     ExtendedChain,
     getRoutes,
 } from "@lifi/sdk";
-import { getChainConfigs, WalletProvider } from "../providers/wallet";
+import { WalletProvider } from "../providers/wallet";
+import { getChainConfigs } from "../providers/chainConfigs";
 import { swapTemplate } from "../templates";
 import type { SwapParams, Transaction } from "../types";
 
