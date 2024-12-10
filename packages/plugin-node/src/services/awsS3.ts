@@ -1,0 +1,239 @@
+import {
+    IAgentRuntime,
+    IAwsS3Service,
+    Service,
+    ServiceType,
+} from "@ai16z/eliza";
+import {
+    GetObjectCommand,
+    PutObjectCommand,
+    S3Client,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import * as fs from "fs";
+import * as path from "path";
+
+interface UploadResult {
+    success: boolean;
+    url?: string;
+    error?: string;
+}
+
+interface JsonUploadResult extends UploadResult {
+    key?: string;  // Add storage key
+}
+
+export class AwsS3Service extends Service implements IAwsS3Service {
+    static serviceType: ServiceType = ServiceType.AWS_S3;
+
+    private s3Client: S3Client;
+    private bucket: string;
+    private fileUploadPath: string;
+    getInstance(): IAwsS3Service {
+        return AwsS3Service.getInstance();
+    }
+    private runtime: IAgentRuntime | null = null;
+
+    async initialize(runtime: IAgentRuntime): Promise<void> {
+        console.log("Initializing AwsS3Service");
+        this.runtime = runtime;
+        const AWS_ACCESS_KEY_ID = runtime.getSetting("AWS_ACCESS_KEY_ID");
+        const AWS_SECRET_ACCESS_KEY = runtime.getSetting(
+            "AWS_SECRET_ACCESS_KEY"
+        );
+        const AWS_REGION = runtime.getSetting("AWS_REGION");
+        const AWS_S3_BUCKET = runtime.getSetting("AWS_S3_BUCKET");
+        if (
+            !AWS_ACCESS_KEY_ID ||
+            !AWS_SECRET_ACCESS_KEY ||
+            !AWS_REGION ||
+            !AWS_S3_BUCKET
+        ) {
+            throw new Error(
+                "Missing required AWS credentials in environment variables"
+            );
+        }
+
+        this.s3Client = new S3Client({
+            region: AWS_REGION,
+            credentials: {
+                accessKeyId: AWS_ACCESS_KEY_ID,
+                secretAccessKey: AWS_SECRET_ACCESS_KEY,
+            },
+        });
+        this.fileUploadPath = runtime.getSetting("AWS_S3_UPLOAD_PATH") ?? "";
+        this.bucket = AWS_S3_BUCKET;
+    }
+
+    async uploadFile(
+        filePath: string,
+        useSignedUrl: boolean = false,
+        expiresIn: number = 900
+    ): Promise<UploadResult> {
+        try {
+            if (!fs.existsSync(filePath)) {
+                return {
+                    success: false,
+                    error: "File does not exist",
+                };
+            }
+
+            const fileContent = fs.readFileSync(filePath);
+
+            const baseFileName = `${Date.now()}-${path.basename(filePath)}`;
+            // Determine storage path based on public access
+            const fileName =`${this.fileUploadPath}/${baseFileName}`.replaceAll('//', '/');
+            // Set upload parameters
+            const uploadParams = {
+                Bucket: this.bucket,
+                Key: fileName,
+                Body: fileContent,
+                ContentType: this.getContentType(filePath),
+            };
+
+            // Upload file
+            await this.s3Client.send(new PutObjectCommand(uploadParams));
+
+            // Build result object
+            const result: UploadResult = {
+                success: true,
+            };
+
+            // If not using signed URL, return public access URL
+            if (!useSignedUrl) {
+                result.url = `https://${this.bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+            } else {
+                const getObjectCommand = new GetObjectCommand({
+                    Bucket: this.bucket,
+                    Key: fileName,
+                });
+                result.url = await getSignedUrl(
+                    this.s3Client,
+                    getObjectCommand,
+                    {
+                        expiresIn, // 15 minutes in seconds
+                    }
+                );
+            }
+
+            return result;
+        } catch (error) {
+            return {
+                success: false,
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : "Unknown error occurred",
+            };
+        }
+    }
+
+    /**
+     * Generate signed URL for existing file
+     */
+    async generateSignedUrl(
+        fileName: string,
+        expiresIn: number = 900
+    ): Promise<string> {
+        const command = new GetObjectCommand({
+            Bucket: this.bucket,
+            Key: fileName,
+        });
+
+        return await getSignedUrl(this.s3Client, command, { expiresIn });
+    }
+
+    private getContentType(filePath: string): string {
+        const ext = path.extname(filePath).toLowerCase();
+        const contentTypes: { [key: string]: string } = {
+            ".png": "image/png",
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".gif": "image/gif",
+            ".webp": "image/webp",
+        };
+        return contentTypes[ext] || "application/octet-stream";
+    }
+
+    /**
+     * Upload JSON object to S3
+     * @param jsonData JSON data to upload
+     * @param fileName File name (optional, without path)
+     * @param subDirectory Subdirectory (optional)
+     * @param useSignedUrl Whether to use signed URL
+     * @param expiresIn Signed URL expiration time (seconds)
+     */
+    async uploadJson(
+        jsonData: any,
+        fileName?: string,
+        subDirectory?: string,
+        useSignedUrl: boolean = false,
+        expiresIn: number = 900
+    ): Promise<JsonUploadResult> {
+        try {
+            // Validate input
+            if (!jsonData) {
+                return {
+                    success: false,
+                    error: "JSON data is required",
+                };
+            }
+
+            // Generate filename (if not provided)
+            const timestamp = Date.now();
+            const actualFileName = fileName || `${timestamp}.json`;
+
+            // Build complete file path
+            let fullPath = this.fileUploadPath || '';
+            if (subDirectory) {
+                fullPath = `${fullPath}/${subDirectory}`.replace(/\/+/g, '/');
+            }
+            const key = `${fullPath}/${actualFileName}`.replace(/\/+/g, '/');
+
+            // Convert JSON to string
+            const jsonString = JSON.stringify(jsonData, null, 2);
+
+            // Set upload parameters
+            const uploadParams = {
+                Bucket: this.bucket,
+                Key: key,
+                Body: jsonString,
+                ContentType: 'application/json',
+            };
+
+            // Upload file
+            await this.s3Client.send(new PutObjectCommand(uploadParams));
+
+            // Build result
+            const result: JsonUploadResult = {
+                success: true,
+                key: key,
+            };
+
+            // Return corresponding URL based on requirements
+            if (!useSignedUrl) {
+                result.url = `https://${this.bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+            } else {
+                const getObjectCommand = new GetObjectCommand({
+                    Bucket: this.bucket,
+                    Key: key,
+                });
+                result.url = await getSignedUrl(
+                    this.s3Client,
+                    getObjectCommand,
+                    { expiresIn }
+                );
+            }
+
+            return result;
+
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : "Unknown error occurred",
+            };
+        }
+    }
+}
+
+export default AwsS3Service;
