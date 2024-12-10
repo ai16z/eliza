@@ -118,7 +118,7 @@ export const models: Models = {
         imageSettings: {
             steps: 4,
         },
-        endpoint: "https://api.together.ai/v1",
+        endpoint: "https://api.llamacloud.com/v1",
         model: {
             [ModelClass.SMALL]: "meta-llama/Llama-3.2-3B-Instruct-Turbo",
             [ModelClass.MEDIUM]: "meta-llama-3.1-8b-instruct",
