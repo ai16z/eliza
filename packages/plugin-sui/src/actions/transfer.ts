@@ -10,8 +10,8 @@ import {
     type Action,
 } from "@ai16z/eliza";
 import { composeContext } from "@ai16z/eliza";
-import { generateObjectDEPRECATED } from "@ai16z/eliza";
-
+import { generateObjectV2 } from "@ai16z/eliza";
+import { z } from "zod";
 
 import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
@@ -27,7 +27,7 @@ export interface TransferContent extends Content {
     amount: string | number;
 }
 
-function isTransferContent(content: any): content is TransferContent {
+function isTransferContent(content: Content): content is TransferContent {
     console.log("Content for transfer", content);
     return (
         typeof content.recipient === "string" &&
@@ -41,8 +41,8 @@ const transferTemplate = `Respond with a JSON markdown block containing only the
 Example response:
 \`\`\`json
 {
-    "recipient": "0x2badda48c062e861ef17a96a806c451fd296a49f45b272dee17f85b0e32663fd",
-    "amount": "1000"
+    "recipient": "0xaa000b3651bd1e57554ebd7308ca70df7c8c0e8e09d67123cc15c8a8a79342b3",
+    "amount": "1"
 }
 \`\`\`
 
@@ -82,7 +82,7 @@ export default {
                 return false;
             }
             */
-        return false;
+        return true;
     },
     description: "Transfer tokens from the agent's wallet to another address",
     handler: async (
@@ -104,21 +104,30 @@ export default {
             state = await runtime.updateRecentMessageState(state);
         }
 
+        // Define the schema for the expected output
+        const transferSchema = z.object({
+            recipient: z.string(),
+            amount: z.union([z.string(), z.number()]),
+        });
+
         // Compose transfer context
         const transferContext = composeContext({
             state,
             template: transferTemplate,
         });
 
-        // Generate transfer content
-        const content = await generateObjectDEPRECATED({
+        // Generate transfer content with the schema
+        const content = await generateObjectV2({
             runtime,
             context: transferContext,
+            schema: transferSchema,
             modelClass: ModelClass.SMALL,
         });
 
+        const transferContent = content.object as TransferContent;
+
         // Validate transfer content
-        if (!isTransferContent(content)) {
+        if (!isTransferContent(transferContent)) {
             console.error("Invalid content for TRANSFER_TOKEN action.");
             if (callback) {
                 callback({
@@ -131,21 +140,21 @@ export default {
 
         try {
             const privateKey = runtime.getSetting("SUI_PRIVATE_KEY");
-            const suiAccount = Ed25519Keypair.fromSecretKey(privateKey);
-            const network = runtime.getSetting("SUI_NETWORK")
+            const suiAccount = Ed25519Keypair.deriveKeypair(privateKey);
+            const network = runtime.getSetting("SUI_NETWORK");
             const suiClient = new SuiClient({
                 url: getFullnodeUrl(network as SuiNetwork),
             });
 
             const adjustedAmount = BigInt(
-                Number(content.amount) * Math.pow(10, SUI_DECIMALS)
+                Number(transferContent.amount) * Math.pow(10, SUI_DECIMALS)
             );
             console.log(
-                `Transferring: ${content.amount} tokens (${adjustedAmount} base units)`
+                `Transferring: ${transferContent.amount} tokens (${adjustedAmount} base units)`
             );
             const tx = new Transaction();
             const [coin] = tx.splitCoins(tx.gas, [adjustedAmount]);
-            tx.transferObjects([coin], content.recipient);
+            tx.transferObjects([coin], transferContent.recipient);
             const executedTransaction =
                 await suiClient.signAndExecuteTransaction({
                     signer: suiAccount,
@@ -156,12 +165,12 @@ export default {
 
             if (callback) {
                 callback({
-                    text: `Successfully transferred ${content.amount} SUI to ${content.recipient}, Transaction: ${executedTransaction.digest}`,
+                    text: `Successfully transferred ${transferContent.amount} SUI to ${transferContent.recipient}, Transaction: ${executedTransaction.digest}`,
                     content: {
                         success: true,
                         hash: executedTransaction.digest,
-                        amount: content.amount,
-                        recipient: content.recipient,
+                        amount: transferContent.amount,
+                        recipient: transferContent.recipient,
                     },
                 });
             }
@@ -184,20 +193,20 @@ export default {
             {
                 user: "{{user1}}",
                 content: {
-                    text: "Send 69 SUI tokens to 0x4f2e63be8e7fe287836e29cde6f3d5cbc96eefd0c0e3f3747668faa2ae7324b0",
+                    text: "Send 1 SUI tokens to 0x4f2e63be8e7fe287836e29cde6f3d5cbc96eefd0c0e3f3747668faa2ae7324b0",
                 },
             },
             {
                 user: "{{user2}}",
                 content: {
-                    text: "I'll send 69 SUI tokens now...",
+                    text: "I'll send 1 SUI tokens now...",
                     action: "SEND_TOKEN",
                 },
             },
             {
                 user: "{{user2}}",
                 content: {
-                    text: "Successfully sent 69 SUI tokens to 0x4f2e63be8e7fe287836e29cde6f3d5cbc96eefd0c0e3f3747668faa2ae7324b0, Transaction: 0x39a8c432d9bdad993a33cc1faf2e9b58fb7dd940c0425f1d6db3997e4b4b05c0",
+                    text: "Successfully sent 1 SUI tokens to 0x4f2e63be8e7fe287836e29cde6f3d5cbc96eefd0c0e3f3747668faa2ae7324b0, Transaction: 0x39a8c432d9bdad993a33cc1faf2e9b58fb7dd940c0425f1d6db3997e4b4b05c0",
                 },
             },
         ],
