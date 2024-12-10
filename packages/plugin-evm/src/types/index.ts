@@ -9,7 +9,7 @@ import type {
     WalletClient,
 } from "viem";
 
-export type SupportedChain = "ethereum" | "base";
+export type SupportedChain = "ethereum" | "apechain" | "base" | "curtis";
 
 // Transaction types
 export interface Transaction {
@@ -63,6 +63,13 @@ export interface TransferParams {
     toAddress: Address;
     amount: string;
     data?: `0x${string}`;
+}
+
+export interface CheckTokenBalanceParams {
+    tokenAddress: Address;
+    walletToCheck?: Address;
+    chainToCheck?: SupportedChain;
+    checkAgentTokenBalance?: boolean;
 }
 
 export interface SwapParams {

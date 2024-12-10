@@ -1,4 +1,10 @@
-import type { IAgentRuntime, Provider, Memory, State } from "@ai16z/eliza";
+import {
+    type IAgentRuntime,
+    type Provider,
+    type Memory,
+    type State,
+    elizaLogger,
+} from "@ai16z/eliza";
 import {
     createPublicClient,
     createWalletClient,
@@ -11,7 +17,7 @@ import {
     type Address,
     Account,
 } from "viem";
-import { mainnet, base } from "viem/chains";
+import { mainnet, base, apeChain, curtis } from "viem/chains";
 import type { SupportedChain, ChainConfig, ChainMetadata } from "../types";
 import { privateKeyToAccount } from "viem/accounts";
 
@@ -20,13 +26,25 @@ export const DEFAULT_CHAIN_CONFIGS: Record<SupportedChain, ChainMetadata> = {
         chainId: 1,
         name: "Ethereum",
         chain: mainnet,
-        rpcUrl: "https://eth.llamarpc.com",
+        rpcUrl: "https://eth-mainnet-public.unifra.io",
         nativeCurrency: {
             name: "Ether",
             symbol: "ETH",
             decimals: 18,
         },
         blockExplorerUrl: "https://etherscan.io",
+    },
+    apechain: {
+        chainId: 33139,
+        name: "ApeChain",
+        chain: apeChain,
+        rpcUrl: "https://apechain-mainnet.g.alchemy.com/v2/BCpvnI9ysI6XpozBGwcBcuPmwTByJtnM",
+        nativeCurrency: {
+            name: "ApeCoin",
+            symbol: "APE",
+            decimals: 18,
+        },
+        blockExplorerUrl: "https://apescan.io/",
     },
     base: {
         chainId: 8453,
@@ -40,6 +58,18 @@ export const DEFAULT_CHAIN_CONFIGS: Record<SupportedChain, ChainMetadata> = {
         },
         blockExplorerUrl: "https://basescan.org",
     },
+    curtis: {
+        chainId: 33111,
+        name: "Curtis Testnet",
+        chain: curtis,
+        rpcUrl: "https://apechain-curtis.g.alchemy.com/v2/BCpvnI9ysI6XpozBGwcBcuPmwTByJtnM",
+        nativeCurrency: {
+            name: "ApeCoin",
+            symbol: "APE",
+            decimals: 18,
+        },
+        blockExplorerUrl: "https://explorer.curtis.apechain.com",
+    },
 } as const;
 
 export const getChainConfigs = (runtime: IAgentRuntime) => {
@@ -51,7 +81,7 @@ export const getChainConfigs = (runtime: IAgentRuntime) => {
 
 export class WalletProvider {
     private chainConfigs: Record<SupportedChain, ChainConfig>;
-    private currentChain: SupportedChain = "ethereum";
+    private currentChain: SupportedChain = "apechain";
     private address: Address;
     runtime: IAgentRuntime;
 
@@ -82,7 +112,9 @@ export class WalletProvider {
 
         this.chainConfigs = {
             ethereum: createClients("ethereum"),
+            apechain: createClients("apechain"),
             base: createClients("base"),
+            curtis: createClients("curtis"),
         };
     }
 
@@ -114,6 +146,8 @@ export class WalletProvider {
     ): Promise<void> {
         const walletClient = this.chainConfigs[this.currentChain].walletClient;
         if (!walletClient) throw new Error("Wallet not connected");
+
+        elizaLogger.log("Switching chain to:", chain);
 
         try {
             await walletClient.switchChain({
@@ -184,7 +218,10 @@ export const evmWalletProvider: Provider = {
             const walletProvider = new WalletProvider(runtime);
             const address = walletProvider.getAddress();
             const balance = await walletProvider.getWalletBalance();
-            return `EVM Wallet Address: ${address}\nBalance: ${balance} ETH`;
+            const currentChain = walletProvider.getCurrentChain();
+            const chainConfig = walletProvider.getChainConfig(currentChain);
+
+            return `EVM Wallet Address: ${address}\nBalance: ${balance} ${chainConfig.nativeCurrency.symbol}`;
         } catch (error) {
             console.error("Error in EVM wallet provider:", error);
             return null;

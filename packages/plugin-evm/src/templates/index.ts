@@ -14,10 +14,34 @@ Respond with a JSON markdown block containing only the extracted values:
 
 \`\`\`json
 {
-    "chain": "ethereum" | "base" | null,
+    "fromChain": "ethereum" | "base" | "curtis" | "apechain" | null,
     "amount": string | null,
     "toAddress": string | null,
     "token": string | null
+}
+\`\`\`
+`;
+
+export const checkTokenBalanceTemplate = `Given the recent messages and wallet information below:
+
+{{recentMessages}}
+
+{{walletInfo}}
+
+Extract the following information about the requested token balance check:
+- Token address
+- Wallet to check (if specified)
+- Chain to check (if specified)
+- Check agent token balance (if specified)
+
+Respond with a JSON markdown block containing only the extracted values:
+
+\`\`\`json
+{
+    "tokenAddress": string | null,
+    "walletToCheck": string | null,
+    "chainToCheck": "ethereum" | "base" | "curtis" | "apechain" | null,
+    "checkAgentTokenBalance": boolean | null
 }
 \`\`\`
 `;
@@ -40,8 +64,8 @@ Respond with a JSON markdown block containing only the extracted values:
 \`\`\`json
 {
     "token": string | null,
-    "fromChain": "ethereum" | "base" | null,
-    "toChain": "ethereum" | "base" | null,
+    "fromChain": "ethereum" | "base" | "curtis" | "apechain" | null,
+    "toChain": "ethereum" | "base" | "curtis" | "apechain" | null,
     "amount": string | null,
     "toAddress": string | null
 }
@@ -67,7 +91,7 @@ Respond with a JSON markdown block containing only the extracted values. Use nul
     "inputToken": string | null,
     "outputToken": string | null,
     "amount": string | null,
-    "chain": "ethereum" | "base" | null,
+    "chain": "ethereum" | "base" | "curtis" | "apechain" | null,
     "slippage": number | null
 }
 \`\`\`

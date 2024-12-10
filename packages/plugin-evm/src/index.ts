@@ -9,6 +9,7 @@ import { bridgeAction } from "./actions/bridge";
 import { swapAction } from "./actions/swap";
 import { transferAction } from "./actions/transfer";
 import { evmWalletProvider } from "./providers/wallet";
+import { checkTokenBalanceAction } from "./actions/checkTokenBalance";
 
 export const evmPlugin: Plugin = {
     name: "evm",
@@ -16,7 +17,12 @@ export const evmPlugin: Plugin = {
     providers: [evmWalletProvider],
     evaluators: [],
     services: [],
-    actions: [transferAction, bridgeAction, swapAction],
+    actions: [
+        transferAction,
+        checkTokenBalanceAction,
+        bridgeAction,
+        swapAction,
+    ],
 };
 
 export default evmPlugin;

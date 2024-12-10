@@ -1,8 +1,25 @@
-import { ByteArray, parseEther, type Hex } from "viem";
-import { WalletProvider } from "../providers/wallet";
-import type { Transaction, TransferParams } from "../types";
+import {
+    Address,
+    ByteArray,
+    createWalletClient,
+    http,
+    HttpTransport,
+    parseEther,
+    type Hex,
+} from "viem";
+import { DEFAULT_CHAIN_CONFIGS, WalletProvider } from "../providers/wallet";
+import type { SupportedChain, Transaction, TransferParams } from "../types";
 import { transferTemplate } from "../templates";
-import type { IAgentRuntime, Memory, State } from "@ai16z/eliza";
+import {
+    composeContext,
+    elizaLogger,
+    generateMessageResponse,
+    ModelClass,
+    type IAgentRuntime,
+    type Memory,
+    type State,
+} from "@ai16z/eliza";
+import { privateKeyToAccount } from "viem/accounts";
 
 export { transferTemplate };
 export class TransferAction {
@@ -12,14 +29,16 @@ export class TransferAction {
         runtime: IAgentRuntime,
         params: TransferParams
     ): Promise<Transaction> {
+        elizaLogger.log("Transfer action called with params:", params);
+
         const walletClient = this.walletProvider.getWalletClient();
         const [fromAddress] = await walletClient.getAddresses();
 
-        await this.walletProvider.switchChain(runtime, params.fromChain);
+        elizaLogger.log("Current chain:", walletClient);
 
         try {
             const hash = await walletClient.sendTransaction({
-                account: fromAddress,
+                account: walletClient.account,
                 to: params.toAddress,
                 value: parseEther(params.amount),
                 data: params.data as Hex,
@@ -34,7 +53,7 @@ export class TransferAction {
                         throw new Error("Function not implemented.");
                     },
                 },
-                chain: undefined,
+                chain: walletClient.chain,
             });
 
             return {
@@ -61,7 +80,30 @@ export const transferAction = {
     ) => {
         const walletProvider = new WalletProvider(runtime);
         const action = new TransferAction(walletProvider);
-        return action.transfer(runtime, options);
+
+        const context = composeContext({
+            state,
+            template: transferTemplate,
+        });
+
+        const response = await generateMessageResponse({
+            runtime,
+            context,
+            modelClass: ModelClass.SMALL,
+        });
+
+        elizaLogger.log("Transfer response:", response);
+
+        const { fromChain, amount, toAddress } = response;
+
+        const transferParams: TransferParams = {
+            fromChain: fromChain as SupportedChain,
+            amount: amount as string,
+            toAddress: toAddress as Address,
+            data: "0x",
+        };
+
+        return action.transfer(runtime, transferParams);
     },
     template: transferTemplate,
     validate: async (runtime: IAgentRuntime) => {
