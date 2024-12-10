@@ -76,27 +76,49 @@ export async function generateText({
         runtime.character.modelEndpointOverride || models[provider].endpoint;
     let model = models[provider].model[modelClass];
 
-    // if runtime.getSetting("LLAMACLOUD_MODEL_LARGE") is true and modelProvider is LLAMACLOUD, then use the large model
-    if (
-        (runtime.getSetting("LLAMACLOUD_MODEL_LARGE") &&
-            provider === ModelProviderName.LLAMACLOUD) ||
-        (runtime.getSetting("TOGETHER_MODEL_LARGE") &&
-            provider === ModelProviderName.TOGETHER)
-    ) {
-        model =
-            runtime.getSetting("LLAMACLOUD_MODEL_LARGE") ||
-            runtime.getSetting("TOGETHER_MODEL_LARGE");
-    }
-
-    if (
-        (runtime.getSetting("LLAMACLOUD_MODEL_SMALL") &&
-            provider === ModelProviderName.LLAMACLOUD) ||
-        (runtime.getSetting("TOGETHER_MODEL_SMALL") &&
-            provider === ModelProviderName.TOGETHER)
-    ) {
-        model =
-            runtime.getSetting("LLAMACLOUD_MODEL_SMALL") ||
-            runtime.getSetting("TOGETHER_MODEL_SMALL");
+    // allow character.json settings => secrets to override models
+    // FIXME: add MODEL_MEDIUM support
+    switch(provider) {
+        // if runtime.getSetting("LLAMACLOUD_MODEL_LARGE") is true and modelProvider is LLAMACLOUD, then use the large model
+        case ModelProviderName.LLAMACLOUD: {
+            switch(modelClass) {
+                case ModelClass.LARGE: {
+                    model = runtime.getSetting("LLAMACLOUD_MODEL_LARGE") || model;
+                }
+                break;
+                case ModelClass.SMALL: {
+                    model = runtime.getSetting("LLAMACLOUD_MODEL_SMALL") || model;
+                }
+                break;
+            }
+        }
+        break;
+        case ModelProviderName.TOGETHER: {
+            switch(modelClass) {
+                case ModelClass.LARGE: {
+                    model = runtime.getSetting("TOGETHER_MODEL_LARGE") || model;
+                }
+                break;
+                case ModelClass.SMALL: {
+                    model = runtime.getSetting("TOGETHER_MODEL_SMALL") || model;
+                }
+                break;
+            }
+        }
+        break;
+        case ModelProviderName.OPENROUTER: {
+            switch(modelClass) {
+                case ModelClass.LARGE: {
+                    model = runtime.getSetting("LARGE_OPENROUTER_MODEL") || model;
+                }
+                break;
+                case ModelClass.SMALL: {
+                    model = runtime.getSetting("SMALL_OPENROUTER_MODEL") || model;
+                }
+                break;
+            }
+        }
+        break;
     }
 
     elizaLogger.info("Selected model:", model);
