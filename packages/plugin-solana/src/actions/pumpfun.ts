@@ -5,7 +5,6 @@ import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { CreateTokenMetadata, PriorityFee, PumpFunSDK } from "pumpdotfun-sdk";
 
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import bs58 from "bs58";
 import {
     settings,
     ActionExample,
@@ -241,6 +240,7 @@ const promptConfirmation = async (): Promise<boolean> => {
 // Save the base64 data to a file
 import * as fs from "fs";
 import * as path from "path";
+import { getWalletKey } from "../keypairUtils.ts";
 
 const pumpfunTemplate = `Respond with a JSON markdown block containing only the extracted values. Use null for any values that cannot be determined.
 
@@ -387,11 +387,10 @@ export default {
         const slippage = "2000";
         try {
             // Get private key from settings and create deployer keypair
-            const privateKeyString =
-                runtime.getSetting("SOLANA_PRIVATE_KEY") ??
-                runtime.getSetting("WALLET_PRIVATE_KEY");
-            const secretKey = bs58.decode(privateKeyString);
-            const deployerKeypair = Keypair.fromSecretKey(secretKey);
+            const { keypair: deployerKeypair } = await getWalletKey(
+                runtime,
+                true
+            );
 
             // Generate new mint keypair
             const mintKeypair = Keypair.generate();

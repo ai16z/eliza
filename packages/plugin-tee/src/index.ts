@@ -2,6 +2,10 @@ import { Plugin } from "@ai16z/eliza";
 import { remoteAttestationProvider } from "./providers/remoteAttestationProvider";
 import { deriveKeyProvider } from "./providers/deriveKeyProvider";
 
+export { DeriveKeyProvider } from "./providers/deriveKeyProvider";
+export { RemoteAttestationProvider } from "./providers/remoteAttestationProvider";
+export { RemoteAttestationQuote, TEEMode } from "./types/tee";
+
 export const teePlugin: Plugin = {
     name: "tee",
     description:

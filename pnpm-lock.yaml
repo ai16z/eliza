@@ -1226,6 +1226,9 @@ importers:
       '@ai16z/eliza':
         specifier: workspace:*
         version: link:../core
+      '@ai16z/plugin-tee':
+        specifier: workspace:*
+        version: link:../plugin-tee
       '@ai16z/plugin-trustdb':
         specifier: workspace:*
         version: link:../plugin-trustdb

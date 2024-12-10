@@ -1,12 +1,11 @@
-export interface DeriveKeyResponse {
-    key: string;
-    certificate_chain: string[];
-    asUint8Array: (max_length?: number) => Uint8Array;
+export enum TEEMode {
+    OFF = "OFF",
+    LOCAL = "LOCAL",           // For local development with simulator
+    DOCKER = "DOCKER",         // For docker development with simulator
+    PRODUCTION = "PRODUCTION"  // For production without simulator
 }
 
-export type Hex = `0x${string}`;
-
-export interface TdxQuoteResponse {
-    quote: Hex;
-    event_log: string;
+export interface RemoteAttestationQuote {
+    quote: string;
+    timestamp: number;
 }
