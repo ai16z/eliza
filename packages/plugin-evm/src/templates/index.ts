@@ -1,3 +1,6 @@
+export * from "./getbalance";
+export * from "./swap";
+
 export const transferTemplate = `Given the recent messages and wallet information below:
 
 {{recentMessages}}
@@ -5,21 +8,26 @@ export const transferTemplate = `Given the recent messages and wallet informatio
 {{walletInfo}}
 
 Extract the following information about the requested transfer:
-- Chain to execute on (ethereum or base)
+- Chain to execute on (ethereum, base, or sepolia)
 - Amount to transfer
 - Recipient address
-- Token symbol or address (if not native token)
 
-Respond with a JSON markdown block containing only the extracted values:
+Respond with a JSON markdown block containing only the extracted values in this exact format:
 
 \`\`\`json
 {
-    "chain": "ethereum" | "base" | null,
-    "amount": string | null,
-    "toAddress": string | null,
-    "token": string | null
+    "fromChain": "ethereum" | "base" | "sepolia",
+    "amount": "1.0",
+    "toAddress": "0x...",
+    "data": "0x" | null
 }
 \`\`\`
+
+Notes:
+- fromChain must be exactly "ethereum", "base", or "sepolia"
+- amount must be a string number like "1.0", "0.5", etc.
+- toAddress must be a full ethereum address starting with 0x
+- data is optional and defaults to null
 `;
 
 export const bridgeTemplate = `Given the recent messages and wallet information below:
@@ -44,31 +52,6 @@ Respond with a JSON markdown block containing only the extracted values:
     "toChain": "ethereum" | "base" | null,
     "amount": string | null,
     "toAddress": string | null
-}
-\`\`\`
-`;
-
-export const swapTemplate = `Given the recent messages and wallet information below:
-
-{{recentMessages}}
-
-{{walletInfo}}
-
-Extract the following information about the requested token swap:
-- Input token symbol or address (the token being sold)
-- Output token symbol or address (the token being bought)
-- Amount to swap
-- Chain to execute on (ethereum or base)
-
-Respond with a JSON markdown block containing only the extracted values. Use null for any values that cannot be determined:
-
-\`\`\`json
-{
-    "inputToken": string | null,
-    "outputToken": string | null,
-    "amount": string | null,
-    "chain": "ethereum" | "base" | null,
-    "slippage": number | null
 }
 \`\`\`
 `;

@@ -11,7 +11,7 @@ import {
     type Address,
     Account,
 } from "viem";
-import { mainnet, base } from "viem/chains";
+import { mainnet, base, sepolia } from "viem/chains";
 import type { SupportedChain, ChainConfig, ChainMetadata } from "../types";
 import { privateKeyToAccount } from "viem/accounts";
 
@@ -40,6 +40,18 @@ export const DEFAULT_CHAIN_CONFIGS: Record<SupportedChain, ChainMetadata> = {
         },
         blockExplorerUrl: "https://basescan.org",
     },
+    sepolia: {
+        chainId: 11155111,
+        name: "Sepolia",
+        chain: sepolia,
+        rpcUrl: "https://rpc.sepolia.org",
+        nativeCurrency: {
+            name: "Sepolia Ether",
+            symbol: "ETH",
+            decimals: 18,
+        },
+        blockExplorerUrl: "https://sepolia.etherscan.io",
+    },
 } as const;
 
 export const getChainConfigs = (runtime: IAgentRuntime) => {
@@ -66,14 +78,16 @@ export class WalletProvider {
 
         const createClients = (chain: SupportedChain): ChainConfig => {
             const transport = http(getChainConfigs(runtime)[chain].rpcUrl);
+            const chainConfig = getChainConfigs(runtime)[chain];
+
             return {
-                chain: getChainConfigs(runtime)[chain].chain,
+                chain: chainConfig.chain,
                 publicClient: createPublicClient<HttpTransport>({
-                    chain: getChainConfigs(runtime)[chain].chain,
+                    chain: chainConfig.chain,
                     transport,
                 }) as PublicClient<HttpTransport, Chain, Account | undefined>,
-                walletClient: createWalletClient<HttpTransport>({
-                    chain: getChainConfigs(runtime)[chain].chain,
+                walletClient: createWalletClient({
+                    chain: chainConfig.chain,
                     transport,
                     account,
                 }),
@@ -83,6 +97,7 @@ export class WalletProvider {
         this.chainConfigs = {
             ethereum: createClients("ethereum"),
             base: createClients("base"),
+            sepolia: createClients("sepolia"),
         };
     }
 
@@ -90,14 +105,14 @@ export class WalletProvider {
         return this.address;
     }
 
-    async getWalletBalance(): Promise<string | null> {
+    async getWalletBalance(): Promise<bigint | null> {
         try {
             const client = this.getPublicClient(this.currentChain);
             const walletClient = this.getWalletClient();
             const balance = await client.getBalance({
                 address: walletClient.account.address,
             });
-            return formatUnits(balance, 18);
+            return balance;
         } catch (error) {
             console.error("Error getting wallet balance:", error);
             return null;
@@ -112,39 +127,6 @@ export class WalletProvider {
         runtime: IAgentRuntime,
         chain: SupportedChain
     ): Promise<void> {
-        const walletClient = this.chainConfigs[this.currentChain].walletClient;
-        if (!walletClient) throw new Error("Wallet not connected");
-
-        try {
-            await walletClient.switchChain({
-                id: getChainConfigs(runtime)[chain].chainId,
-            });
-        } catch (error: any) {
-            if (error.code === 4902) {
-                console.log(
-                    "[WalletProvider] Chain not added to wallet (error 4902) - attempting to add chain first"
-                );
-                await walletClient.addChain({
-                    chain: {
-                        ...getChainConfigs(runtime)[chain].chain,
-                        rpcUrls: {
-                            default: {
-                                http: [getChainConfigs(runtime)[chain].rpcUrl],
-                            },
-                            public: {
-                                http: [getChainConfigs(runtime)[chain].rpcUrl],
-                            },
-                        },
-                    },
-                });
-                await walletClient.switchChain({
-                    id: getChainConfigs(runtime)[chain].chainId,
-                });
-            } else {
-                throw error;
-            }
-        }
-
         this.currentChain = chain;
     }
 

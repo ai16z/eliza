@@ -9,14 +9,14 @@ import type {
     WalletClient,
 } from "viem";
 
-export type SupportedChain = "ethereum" | "base";
+export type SupportedChain = "ethereum" | "base" | "sepolia";
 
 // Transaction types
 export interface Transaction {
     hash: Hash;
     from: Address;
     to: Address;
-    value: bigint;
+    value: string;
     data?: `0x${string}`;
     chainId?: number;
 }
