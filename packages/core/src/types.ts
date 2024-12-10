@@ -205,6 +205,7 @@ export type Models = {
     [ModelProviderName.GAIANET]: Model;
     [ModelProviderName.ALI_BAILIAN]: Model;
     [ModelProviderName.VOLENGINE]: Model;
+    [ModelProviderName.NANOGPT]: Model;
 };
 
 /**
@@ -230,6 +231,7 @@ export enum ModelProviderName {
     GAIANET = "gaianet",
     ALI_BAILIAN = "ali_bailian",
     VOLENGINE = "volengine",
+    NANOGPT = "nanogpt",
 }
 
 /**
