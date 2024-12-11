@@ -3,47 +3,47 @@ import { SqliteDatabaseAdapter } from "@ai16z/adapter-sqlite";
 import { AutoClientInterface } from "@ai16z/client-auto";
 import { DirectClientInterface } from "@ai16z/client-direct";
 import { DiscordClientInterface } from "@ai16z/client-discord";
+import { FarcasterAgentClient } from "@ai16z/client-farcaster";
 import { TelegramClientInterface } from "@ai16z/client-telegram";
 import { TwitterClientInterface } from "@ai16z/client-twitter";
-import { FarcasterAgentClient } from "@ai16z/client-farcaster";
 import {
     AgentRuntime,
     CacheManager,
     Character,
-    Clients,
     DbCacheAdapter,
+    defaultCharacter,
+    elizaLogger,
     FsCacheAdapter,
     IAgentRuntime,
     ICacheManager,
     IDatabaseAdapter,
     IDatabaseCacheAdapter,
     ModelProviderName,
-    defaultCharacter,
-    elizaLogger,
     settings,
     stringToUuid,
     validateCharacterConfig,
 } from "@ai16z/eliza";
 import { zgPlugin } from "@ai16z/plugin-0g";
-import createGoatPlugin from "@ai16z/plugin-goat";
 import { bootstrapPlugin } from "@ai16z/plugin-bootstrap";
+import { dominosPlugin } from "@ai16z/plugin-dominos";
+import createGoatPlugin from "@ai16z/plugin-goat";
 // import { intifacePlugin } from "@ai16z/plugin-intiface";
+import { aptosPlugin } from "@ai16z/plugin-aptos";
 import {
+    advancedTradePlugin,
     coinbaseCommercePlugin,
     coinbaseMassPaymentsPlugin,
-    tradePlugin,
     tokenContractPlugin,
+    tradePlugin,
     webhookPlugin,
-    advancedTradePlugin,
 } from "@ai16z/plugin-coinbase";
 import { confluxPlugin } from "@ai16z/plugin-conflux";
-import { imageGenerationPlugin } from "@ai16z/plugin-image-generation";
 import { evmPlugin } from "@ai16z/plugin-evm";
+import { flowPlugin } from "@ai16z/plugin-flow";
+import { imageGenerationPlugin } from "@ai16z/plugin-image-generation";
 import { createNodePlugin } from "@ai16z/plugin-node";
 import { solanaPlugin } from "@ai16z/plugin-solana";
-import { teePlugin, TEEMode } from "@ai16z/plugin-tee";
-import { aptosPlugin, TransferAptosToken } from "@ai16z/plugin-aptos";
-import { flowPlugin } from "@ai16z/plugin-flow";
+import { TEEMode, teePlugin } from "@ai16z/plugin-tee";
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
@@ -404,6 +404,7 @@ export async function createAgent(
         character,
         plugins: [
             bootstrapPlugin,
+            dominosPlugin,
             getSecret(character, "CONFLUX_CORE_PRIVATE_KEY")
                 ? confluxPlugin
                 : null,
