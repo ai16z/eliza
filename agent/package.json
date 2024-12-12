@@ -37,6 +37,7 @@
         "@ai16z/plugin-goat": "workspace:*",
         "@ai16z/plugin-icp": "workspace:*",
         "@ai16z/plugin-image-generation": "workspace:*",
+        "@ai16z/plugin-nft-generation": "workspace:*",
         "@ai16z/plugin-node": "workspace:*",
         "@ai16z/plugin-solana": "workspace:*",
         "@ai16z/plugin-starknet": "workspace:*",

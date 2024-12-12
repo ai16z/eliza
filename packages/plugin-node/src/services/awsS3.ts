@@ -63,6 +63,7 @@ export class AwsS3Service extends Service implements IAwsS3Service {
 
     async uploadFile(
         filePath: string,
+        subDirectory: string = '',
         useSignedUrl: boolean = false,
         expiresIn: number = 900
     ): Promise<UploadResult> {
@@ -85,7 +86,7 @@ export class AwsS3Service extends Service implements IAwsS3Service {
 
             const baseFileName = `${Date.now()}-${path.basename(filePath)}`;
             // Determine storage path based on public access
-            const fileName =`${this.fileUploadPath}/${baseFileName}`.replaceAll('//', '/');
+            const fileName =`${this.fileUploadPath}${subDirectory}/${baseFileName}`.replaceAll('//', '/');
             // Set upload parameters
             const uploadParams = {
                 Bucket: this.bucket,
