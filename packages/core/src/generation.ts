@@ -479,6 +479,31 @@ export async function generateText({
                 break;
             }
 
+            case ModelProviderName.VENICE: {
+                elizaLogger.debug("Initializing Venice model.");
+                const venice = createOpenAI({
+                    apiKey: apiKey,
+                    baseURL: endpoint
+                });
+
+                const { text: veniceResponse } = await aiGenerateText({
+                    model: venice.languageModel(model),
+                    prompt: context,
+                    system:
+                        runtime.character.system ??
+                        settings.SYSTEM_PROMPT ??
+                        undefined,
+                    temperature: temperature,
+                    maxTokens: max_response_length,
+                    frequencyPenalty: frequency_penalty,
+                    presencePenalty: presence_penalty,
+                });
+
+                response = veniceResponse;
+                elizaLogger.debug("Received response from Venice model.");
+                break;
+            }
+
             default: {
                 const errorMessage = `Unsupported provider: ${provider}`;
                 elizaLogger.error(errorMessage);
@@ -877,7 +902,8 @@ export const generateImage = async (
             : (runtime.getSetting("HEURIST_API_KEY") ??
               runtime.getSetting("TOGETHER_API_KEY") ??
               runtime.getSetting("FAL_API_KEY") ??
-              runtime.getSetting("OPENAI_API_KEY"));
+              runtime.getSetting("OPENAI_API_KEY") ??
+              runtime.getSetting("VENICE_API_KEY"));
 
     try {
         if (runtime.imageModelProvider === ModelProviderName.HEURIST) {

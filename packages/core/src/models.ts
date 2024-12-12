@@ -451,6 +451,21 @@ export const models: Models = {
             [ModelClass.IMAGE]: settings.IMAGE_HYPERBOLIC_MODEL || "FLUX.1-dev",
         },
     },
+    [ModelProviderName.VENICE]: {
+        endpoint: "https://api.venice.ai/api/v1",
+        settings: {
+            stop: [],
+            maxInputTokens: 128000,
+            maxOutputTokens: 8192,
+            temperature: 0.6,
+        },
+        model: {
+            [ModelClass.SMALL]: settings.SMALL_VENICE_MODEL || "llama-3.3-70b",
+            [ModelClass.MEDIUM]: settings.MEDIUM_VENICE_MODEL || "llama-3.3-70b",
+            [ModelClass.LARGE]: settings.LARGE_VENICE_MODEL || "llama-3.1-405b",
+            [ModelClass.IMAGE]: settings.IMAGE_VENICE_MODEL || "fluently-xl",
+        },
+    },
 };
 
 export function getModel(provider: ModelProviderName, type: ModelClass) {
