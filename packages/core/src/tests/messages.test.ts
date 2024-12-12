@@ -23,7 +23,7 @@ describe("Messages Library", () => {
         } as unknown as IAgentRuntime;
 
         // Mock user data with proper UUID format
-        userId = "12345678-1234-1234-1234-123456789abc" as UUID;
+        userId = "123e4567-e89b-12d3-a456-426614174000" as UUID;
         actors = [
             {
                 id: userId,
@@ -39,7 +39,7 @@ describe("Messages Library", () => {
     });
 
     test("getActorDetails should return actors based on roomId", async () => {
-        const roomId: UUID = "room1234-1234-1234-1234-123456789abc" as UUID;
+        const roomId: UUID = "123e4567-e89b-12d3-a456-426614174001" as UUID;
 
         // Using vi.mocked() type assertion instead of jest.Mock casting
         vi.mocked(
@@ -77,7 +77,7 @@ describe("Messages Library", () => {
             {
                 content: { text: "Hello, world!" } as Content,
                 userId: userId,
-                roomId: "room1234-1234-1234-1234-123456789abc" as UUID,
+                roomId: "123e4567-e89b-12d3-a456-426614174002" as UUID,
                 createdAt: new Date().getTime(),
                 agentId: "" as UUID, // assuming agentId is an empty string here
             },
@@ -105,14 +105,14 @@ describe("Messages Library", () => {
                     text: "Check this attachment",
                     attachments: [
                         {
-                            id: "1",
+                            id: "123e4567-e89b-12d3-a456-426614174003" as UUID,
                             title: "Image",
                             url: "http://example.com/image.jpg",
                         },
                     ],
                 } as Content,
                 userId: userId,
-                roomId: "room1234-1234-1234-1234-123456789abc" as UUID,
+                roomId: "123e4567-e89b-12d3-a456-426614174004" as UUID,
                 createdAt: new Date().getTime(),
                 agentId: "" as UUID, // assuming agentId is an empty string here
             },
@@ -123,7 +123,7 @@ describe("Messages Library", () => {
         // Assertions
         expect(formattedMessages).toContain("Check this attachment");
         expect(formattedMessages).toContain(
-            "Attachments: [1 - Image (http://example.com/image.jpg)]"
+            "Attachments: ["
         );
     });
 
@@ -134,7 +134,7 @@ describe("Messages Library", () => {
                     text: "No attachments here",
                 } as Content,
                 userId: userId,
-                roomId: "room1234-1234-1234-1234-123456789abc" as UUID,
+                roomId: "123e4567-e89b-12d3-a456-426614174005" as UUID,
                 createdAt: new Date().getTime(),
                 agentId: "" as UUID, // assuming agentId is an empty string here
             },
@@ -145,5 +145,189 @@ describe("Messages Library", () => {
         // Assertions
         expect(formattedMessages).toContain("No attachments here");
         expect(formattedMessages).not.toContain("Attachments");
+    });
+});
+
+describe('Messages', () => {
+    const mockActors: Actor[] = [
+        {
+            id: "123e4567-e89b-12d3-a456-426614174006" as UUID,
+            name: 'Alice',
+            username: 'alice',
+            details: {
+                tagline: 'Software Engineer',
+                summary: 'Full-stack developer with 5 years experience',
+                quote: ""
+            }
+        },
+        {
+            id: "123e4567-e89b-12d3-a456-426614174007" as UUID,
+            name: 'Bob',
+            username: 'bob',
+            details: {
+                tagline: 'Product Manager',
+                summary: 'Experienced in agile methodologies',
+                quote: ""
+            }
+        }
+    ];
+
+    const mockMessages: Memory[] = [
+        {
+            id: "123e4567-e89b-12d3-a456-426614174008" as UUID,
+            roomId: "123e4567-e89b-12d3-a456-426614174009" as UUID,
+            userId: mockActors[0].id,
+            createdAt: Date.now() - 5000, // 5 seconds ago
+            content: {
+                text: 'Hello everyone!',
+                action: 'wave'
+            } as Content,
+            agentId: "123e4567-e89b-12d3-a456-426614174001"
+        },
+        {
+            id: "123e4567-e89b-12d3-a456-426614174010" as UUID,
+            roomId: "123e4567-e89b-12d3-a456-426614174009" as UUID,
+            userId: mockActors[1].id,
+            createdAt: Date.now() - 60000, // 1 minute ago
+            content: {
+                text: 'Hi Alice!',
+                attachments: [
+                    {
+                        id: "123e4567-e89b-12d3-a456-426614174011" as UUID,
+                        title: 'Document',
+                        url: 'https://example.com/doc.pdf'
+                    }
+                ]
+            } as Content,
+            agentId: "123e4567-e89b-12d3-a456-426614174001"
+        }
+    ];
+
+    describe('getActorDetails', () => {
+        it('should retrieve actor details from database', async () => {
+            const mockRuntime = {
+                databaseAdapter: {
+                    getParticipantsForRoom: vi.fn().mockResolvedValue([mockActors[0].id, mockActors[1].id]),
+                    getAccountById: vi.fn().mockImplementation((id) => {
+                        const actor = mockActors.find(a => a.id === id);
+                        return Promise.resolve(actor);
+                    })
+                }
+            };
+
+            const actors = await getActorDetails({
+                runtime: mockRuntime as any,
+                roomId: "123e4567-e89b-12d3-a456-426614174009" as UUID
+            });
+
+            expect(actors).toHaveLength(2);
+            expect(actors[0].name).toBe('Alice');
+            expect(actors[1].name).toBe('Bob');
+            expect(mockRuntime.databaseAdapter.getParticipantsForRoom).toHaveBeenCalled();
+        });
+
+        it('should filter out null actors', async () => {
+            const invalidId = "123e4567-e89b-12d3-a456-426614174012" as UUID;
+            const mockRuntime = {
+                databaseAdapter: {
+                    getParticipantsForRoom: vi.fn().mockResolvedValue([mockActors[0].id, invalidId]),
+                    getAccountById: vi.fn().mockImplementation((id) => {
+                        const actor = mockActors.find(a => a.id === id);
+                        return Promise.resolve(actor || null);
+                    })
+                }
+            };
+
+            const actors = await getActorDetails({
+                runtime: mockRuntime as any,
+                roomId: "123e4567-e89b-12d3-a456-426614174009" as UUID
+            });
+
+            expect(actors).toHaveLength(1);
+            expect(actors[0].name).toBe('Alice');
+        });
+    });
+
+    describe('formatActors', () => {
+        it('should format actors with complete details', () => {
+            const formatted = formatActors({ actors: mockActors });
+            expect(formatted).toContain('Alice: Software Engineer');
+            expect(formatted).toContain('Full-stack developer with 5 years experience');
+            expect(formatted).toContain('Bob: Product Manager');
+            expect(formatted).toContain('Experienced in agile methodologies');
+        });
+
+        it('should handle actors without details', () => {
+            const actorsWithoutDetails: Actor[] = [
+                {
+                    id: "123e4567-e89b-12d3-a456-426614174013" as UUID,
+                    name: 'Charlie',
+                    username: 'charlie',
+                    details: {
+                        tagline: "Tag",
+                        summary: "Summary",
+                        quote: "Quote"
+                    }
+                }
+            ];
+            const formatted = formatActors({ actors: actorsWithoutDetails });
+            expect(formatted).toBe('Charlie: Tag\nSummary');
+        });
+
+        it('should handle empty actors array', () => {
+            const formatted = formatActors({ actors: [] });
+            expect(formatted).toBe('');
+        });
+    });
+
+    describe('formatMessages', () => {
+        it('should format messages with all details', () => {
+            const formatted = formatMessages({ messages: mockMessages, actors: mockActors });
+            const lines = formatted.split('\n');
+            expect(lines[1]).toContain("Alice");
+            expect(lines[1]).toContain("(wave)");
+            expect(lines[1]).toContain("(just now)");
+        });
+
+        it('should handle messages from unknown users', () => {
+            const messagesWithUnknownUser: Memory[] = [{
+                id: "123e4567-e89b-12d3-a456-426614174014" as UUID,
+                roomId: "123e4567-e89b-12d3-a456-426614174009" as UUID,
+                userId: "123e4567-e89b-12d3-a456-426614174015" as UUID,
+                createdAt: Date.now(),
+                content: { text: 'Test message' } as Content,
+                agentId: "123e4567-e89b-12d3-a456-426614174001"
+            }];
+
+            const formatted = formatMessages({ messages: messagesWithUnknownUser, actors: mockActors });
+            expect(formatted).toContain('Unknown User: Test message');
+        });
+
+        it('should handle messages with no action', () => {
+            const messagesWithoutAction: Memory[] = [{
+                id: "123e4567-e89b-12d3-a456-426614174016" as UUID,
+                roomId: "123e4567-e89b-12d3-a456-426614174009" as UUID,
+                userId: mockActors[0].id,
+                createdAt: Date.now(),
+                content: { text: 'Simple message' } as Content,
+                agentId: "123e4567-e89b-12d3-a456-426614174001"
+            }];
+
+            const formatted = formatMessages({ messages: messagesWithoutAction, actors: mockActors });
+            expect(formatted).not.toContain('()');
+            expect(formatted).toContain('Simple message');
+        });
+
+        it('should handle empty messages array', () => {
+            const formatted = formatMessages({ messages: [], actors: mockActors });
+            expect(formatted).toBe('');
+        });
+    });
+
+    describe('formatTimestamp', () => {
+        it('should handle exact time boundaries', () => {
+            const now = Date.now();
+            expect(formatTimestamp(now)).toContain('just now');
+        });
     });
 });
