@@ -18,22 +18,9 @@ export async function getActorDetails({
 }) {
     const participantIds =
         await runtime.databaseAdapter.getParticipantsForRoom(roomId);
-    const actors = await Promise.all(
-        participantIds.map(async (userId) => {
-            const account =
-                await runtime.databaseAdapter.getAccountById(userId);
-            if (account) {
-                return {
-                    id: account.id,
-                    name: account.name,
-                    username: account.username,
-                    details: account.details,
-                };
-            }
-            return null;
-        })
+    const actors = await runtime.databaseAdapter.getAccountsByIds(
+        participantIds
     );
-
     return actors.filter((actor): actor is Actor => actor !== null);
 }
 

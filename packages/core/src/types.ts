@@ -753,6 +753,9 @@ export interface IDatabaseAdapter {
     /** Get account by ID */
     getAccountById(userId: UUID): Promise<Account | null>;
 
+    /** Get accounts by IDs */
+    getAccountsByIds(userIds: UUID[]): Promise<Account[]>;
+
     /** Create new account */
     createAccount(account: Account): Promise<boolean>;
 
