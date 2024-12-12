@@ -21,6 +21,7 @@ import {
     parseJsonArrayFromText,
     parseJSONObjectFromText,
     parseShouldRespondFromText,
+    parseActionResponseFromText
 } from "./parsing.ts";
 import settings from "./settings.ts";
 import {
@@ -32,6 +33,7 @@ import {
     ModelProviderName,
     ServiceType,
     SearchResponse,
+    ActionResponse
 } from "./types.ts";
 import { fal } from "@fal-ai/client";
 
@@ -1495,4 +1497,46 @@ interface TogetherAIImageResponse {
         content_type?: string;
         image_type?: string;
     }>;
+}
+
+export async function generateTweetActions({
+    runtime,
+    context,
+    modelClass,
+}: {
+    runtime: IAgentRuntime;
+    context: string;
+    modelClass: string;
+}): Promise<ActionResponse | null> {
+    let retryDelay = 1000;
+    while (true) {
+        try {
+            const response = await generateText({
+                runtime,
+                context,
+                modelClass,
+            });
+            console.debug("Received response from generateText for tweet actions:", response);
+            const { actions } = parseActionResponseFromText(response.trim());
+            if (actions) {
+                console.debug("Parsed tweet actions:", actions);
+                return actions;
+            } else {
+                elizaLogger.debug("generateTweetActions no valid response");
+            }
+        } catch (error) {
+            elizaLogger.error("Error in generateTweetActions:", error);
+            if (
+                error instanceof TypeError &&
+                error.message.includes("queueTextCompletion")
+            ) {
+                elizaLogger.error(
+                    "TypeError: Cannot read properties of null (reading 'queueTextCompletion')"
+                );
+            }
+        }
+        elizaLogger.log(`Retrying in ${retryDelay}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        retryDelay *= 2;
+    }
 }

@@ -271,6 +271,46 @@ export class ClientBase extends EventEmitter {
         // });
     }
 
+    async fetchFeedTimeline(count: number): Promise<string> {
+        elizaLogger.debug("fetching home timeline");
+        const homeTimeline = await this.twitterClient.fetchHomeTimeline(count, []);
+        return homeTimeline
+            .filter(tweet => tweet.text || tweet.legacy?.full_text)
+            .sort((a, b) => {
+                const timestampA = new Date(a.createdAt ?? a.legacy?.created_at).getTime();
+                const timestampB = new Date(b.createdAt ?? b.legacy?.created_at).getTime();
+                return timestampB - timestampA;
+            })
+            .slice(0, count)
+            .map(tweet =>
+                `@${tweet.username || tweet.core?.user_results?.result?.legacy?.screen_name}: ${tweet.text ?? tweet.legacy?.full_text ?? ''}`
+            )
+            .join('\n');
+    }
+
+    async fetchTimelineForActions(count: number): Promise<Tweet[]> {
+        elizaLogger.debug("fetching timeline for actions");
+        const homeTimeline = await this.twitterClient.fetchHomeTimeline(count, []);
+
+        return homeTimeline.map(tweet => ({
+            id: tweet.rest_id,
+            name: tweet.core?.user_results?.result?.legacy?.name,
+            username: tweet.core?.user_results?.result?.legacy?.screen_name,
+            text: tweet.legacy?.full_text,
+            inReplyToStatusId: tweet.legacy?.in_reply_to_status_id_str,
+            timestamp: new Date(tweet.legacy?.created_at).getTime() / 1000,
+            userId: tweet.legacy?.user_id_str,
+            conversationId: tweet.legacy?.conversation_id_str,
+            permanentUrl: `https://twitter.com/${tweet.core?.user_results?.result?.legacy?.screen_name}/status/${tweet.rest_id}`,
+            hashtags: tweet.legacy?.entities?.hashtags || [],
+            mentions: tweet.legacy?.entities?.user_mentions || [],
+            photos: tweet.legacy?.entities?.media?.filter(media => media.type === "photo") || [],
+            thread: tweet.thread || [],
+            urls: tweet.legacy?.entities?.urls || [],
+            videos: tweet.legacy?.entities?.media?.filter(media => media.type === "video") || []
+        }));
+    }
+
     async fetchSearchTweets(
         query: string,
         maxTweets: number,
