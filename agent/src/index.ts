@@ -335,6 +335,7 @@ export async function initializeClients(
     }
 
     if (clientTypes.includes("twitter")) {
+        TwitterClientInterface.enableSearch = !isFalsish(getSecret(character, "TWITTER_SEARCH_ENABLE"));
         const twitterClients = await TwitterClientInterface.start(runtime);
         clients.push(twitterClients);
     }
@@ -356,6 +357,22 @@ export async function initializeClients(
     }
 
     return clients;
+}
+
+function isFalsish(input: any): boolean {
+    // If the input is exactly NaN, return true
+    if (Number.isNaN(input)) {
+        return true;
+    }
+
+    // Convert input to a string if it's not null or undefined
+    const value = input == null ? '' : String(input);
+
+    // List of common falsish string representations
+    const falsishValues = ['false', '0', 'no', 'n', 'off', 'null', 'undefined', ''];
+
+    // Check if the value (trimmed and lowercased) is in the falsish list
+    return falsishValues.includes(value.trim().toLowerCase());
 }
 
 function getSecret(character: Character, secret: string) {
