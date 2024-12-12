@@ -195,21 +195,22 @@ export class ImageDescriptionService
                     },
                 ];
 
-                const response = await fetch(
-                    "https://api.openai.com/v1/chat/completions",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${this.runtime.getSetting("OPENAI_API_KEY")}`,
-                        },
-                        body: JSON.stringify({
-                            model: "gpt-4o-mini",
-                            messages: [{ role: "user", content }],
-                            max_tokens: isGif ? 500 : 300,
-                        }),
-                    }
-                );
+                const endpoint =
+                    models[this.runtime.imageModelProvider].endpoint ??
+                    "https://api.openai.com/v1";
+
+                const response = await fetch(endpoint + "/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${this.runtime.getSetting("OPENAI_API_KEY")}`,
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4o-mini",
+                        messages: [{ role: "user", content }],
+                        max_tokens: isGif ? 500 : 300,
+                    }),
+                });
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
