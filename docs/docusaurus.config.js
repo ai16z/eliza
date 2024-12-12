@@ -1,4 +1,7 @@
 import { themes as prismThemes } from "prism-react-renderer";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const config = {
   title: "eliza",
@@ -217,6 +220,9 @@ const config = {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
     },
+  },
+  customFields: {
+    GITHUB_ACCESS_TOKEN: process.env.GITHUB_ACCESS_TOKEN,
   },
 };
 
