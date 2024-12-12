@@ -42,6 +42,7 @@ import { evmPlugin } from "@ai16z/plugin-evm";
 import { createNodePlugin } from "@ai16z/plugin-node";
 import { solanaPlugin } from "@ai16z/plugin-solana";
 import { teePlugin, TEEMode } from "@ai16z/plugin-tee";
+import { teeMarlinPlugin } from "@ai16z/plugin-tee-marlin";
 import { aptosPlugin, TransferAptosToken } from "@ai16z/plugin-aptos";
 import { flowPlugin } from "@ai16z/plugin-flow";
 import Database from "better-sqlite3";
@@ -450,6 +451,7 @@ export async function createAgent(
                 ? flowPlugin
                 : null,
             getSecret(character, "APTOS_PRIVATE_KEY") ? aptosPlugin : null,
+            getSecret(character, "TEE_MARLIN") ? teeMarlinPlugin : null,
         ].filter(Boolean),
         providers: [],
         actions: [],
