@@ -60,6 +60,12 @@ export const wait = (minTime: number = 1000, maxTime: number = 3000) => {
     return new Promise((resolve) => setTimeout(resolve, waitTime));
 };
 
+const logFetch = async (url: string, options: any) => {
+    elizaLogger.info(`Fetching ${url}`);
+    elizaLogger.info(options);
+    return fetch(url, options);
+};
+
 export function parseArguments(): {
     character?: string;
     characters?: string;
@@ -456,6 +462,7 @@ export async function createAgent(
         services: [],
         managers: [],
         cacheManager: cache,
+        fetch: logFetch,
     });
 }
 
