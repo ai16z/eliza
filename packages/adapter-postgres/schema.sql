@@ -42,6 +42,15 @@ CREATE TABLE IF NOT EXISTS accounts (
     "details" JSONB DEFAULT '{}'::jsonb
 );
 
+CREATE TABLE IF NOT EXISTS characters (
+    "id" UUID PRIMARY KEY,
+    "name" TEXT,
+    "characterState" JSONB NOT NULL,
+    "secretsIV" JSONB DEFAULT '{}'::jsonb,
+    "createdAt" TIMESTAMP DEFAULT now(),
+    "updatedAt" TIMESTAMP DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS rooms (
     "id" UUID PRIMARY KEY,
     "createdAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP

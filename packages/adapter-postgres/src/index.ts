@@ -19,6 +19,10 @@ import {
     type Relationship,
     type UUID,
     type IDatabaseCacheAdapter,
+    type IDatabaseAdapter,
+    type CharacterTable,
+    type Secrets,
+    type Character,
     Participant,
     elizaLogger,
     getEmbeddingConfig,
@@ -33,7 +37,7 @@ const __dirname = path.dirname(__filename); // get the name of the directory
 
 export class PostgresDatabaseAdapter
     extends DatabaseAdapter<Pool>
-    implements IDatabaseCacheAdapter
+    implements IDatabaseCacheAdapter, IDatabaseAdapter
 {
     private pool: Pool;
     private readonly maxRetries: number = 3;
@@ -60,6 +64,7 @@ export class PostgresDatabaseAdapter
             ...defaultConfig,
             ...connectionConfig, // Allow overriding defaults
         });
+        this.db = this.pool;
 
         this.pool.on("error", (err) => {
             elizaLogger.error("Unexpected pool error", err);
@@ -1445,6 +1450,48 @@ export class PostgresDatabaseAdapter
                 return false;
             }
         }, "deleteCache");
+    }
+
+    /**
+     * Loads characters from database
+     * @param characterIds Optional array of character UUIDs to load
+     * @returns Promise of tuple containing Characters array and their corresponding SecretsIV
+     */
+    async loadCharacters(
+        characterIds?: UUID[]
+    ): Promise<[Character[], Secrets[]]> {
+        const client = await this.pool.connect();
+        try {
+            let query =
+                'SELECT "id", "name", "characterState", "secretsIV" FROM characters';
+            const queryParams: any[] = [];
+
+            if (characterIds?.length) {
+                query += ' WHERE "id" = ANY($1)';
+                queryParams.push(characterIds);
+            }
+
+            query += " ORDER BY name";
+            const result = await client.query<CharacterTable>(
+                query,
+                queryParams
+            );
+
+            const characters: Character[] = [];
+            const secretsIVs: Secrets[] = [];
+
+            for (const row of result.rows) {
+                characters.push(row.characterState);
+                secretsIVs.push(row.secretsIV || {});
+            }
+
+            return [characters, secretsIVs];
+        } catch (error) {
+            elizaLogger.error("Error loading characters:", error);
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 }
 

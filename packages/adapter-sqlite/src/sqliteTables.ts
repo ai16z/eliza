@@ -13,6 +13,16 @@ CREATE TABLE IF NOT EXISTS "accounts" (
     "details" TEXT DEFAULT '{}' CHECK(json_valid("details")) -- Ensuring details is a valid JSON field
 );
 
+-- Table: characters
+CREATE TABLE IF NOT EXISTS characters (
+    "id" TEXT PRIMARY KEY, -- SQLite does not have a UUID type; use TEXT for UUID
+    "name" TEXT,
+    "characterState" TEXT NOT NULL, -- SQLite does not have JSONB; use TEXT to store JSON
+    "secretsIV" TEXT DEFAULT '{}', -- Store JSON as TEXT and provide default value
+    "createdAt" DATETIME DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Table: memories
 CREATE TABLE IF NOT EXISTS "memories" (
     "id" TEXT PRIMARY KEY,

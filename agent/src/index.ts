@@ -58,6 +58,14 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import yargs from "yargs";
+import type { DirectClient } from "@ai16z/client-direct";
+import { Pool } from "pg";
+import { EncryptionUtil } from "@ai16z/eliza";
+import express, { Request as ExpressRequest } from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+
+let globalDirectClient: DirectClient | null = null;
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -634,9 +642,18 @@ async function startAgent(
     }
 }
 
+export function setGlobalDirectClient(client: DirectClient) {
+    globalDirectClient = client;
+}
+
+export function getGlobalDirectClient(): DirectClient | null {
+    return globalDirectClient;
+}
+
 const startAgents = async () => {
     const directClient = new DirectClient();
     const serverPort = parseInt(settings.SERVER_PORT || "3000");
+    setGlobalDirectClient(directClient as DirectClient);
     const args = parseArguments();
 
     let charactersArg = args.characters || args.character;
@@ -645,6 +662,15 @@ const startAgents = async () => {
 
     if (charactersArg) {
         characters = await loadCharacters(charactersArg);
+    }
+
+    const shouldFetchFromDb = process.env.FETCH_FROM_DB === "true";
+
+    if (shouldFetchFromDb) {
+        characters = await loadCharactersFromDb(charactersArg);
+        if (characters.length === 0) {
+            characters = [character];
+        }
     }
 
     try {
@@ -669,5 +695,178 @@ const startAgents = async () => {
 
 startAgents().catch((error) => {
     elizaLogger.error("Unhandled error in startAgents:", error);
+    console.log(error); // elizaLogger isn't showing the error
     process.exit(1); // Exit the process after logging
 });
+
+
+/**
+ * Loads characters from PostgreSQL database
+ * @param characterNames - Optional comma-separated list of character names to load
+ * @returns Promise of loaded and decrypted characters
+ */
+export async function loadCharactersFromDb(
+    characterNames?: string
+): Promise<Character[]> {
+    try {
+        const encryptionUtil = new EncryptionUtil(
+            process.env.ENCRYPTION_KEY || "default-key"
+        );
+
+        const dataDir = path.join(__dirname, "../data");
+
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+
+        const db = initializeDatabase(dataDir);
+        await db.init();
+
+        // Convert names to UUIDs if provided
+        const characterIds = characterNames
+            ?.split(",")
+            .map((name) => name.trim())
+            .map((name) => stringToUuid(name));
+
+        // Get characters and their secretsIVs from database
+        const [characters, secretsIVs] = await db.loadCharacters(characterIds);
+
+        if (characters.length === 0) {
+            elizaLogger.log(
+                "No characters found in database, using default character"
+            );
+            return [];
+        }
+
+        // Process each character with its corresponding secretsIV
+        const processedCharacters = await Promise.all(
+            characters.map(async (character, index) => {
+                try {
+                    // Decrypt secrets if they exist
+                    if (character.settings?.secrets) {
+                        const decryptedSecrets: { [key: string]: string } = {};
+                        const secretsIV = secretsIVs[index];
+
+                        for (const [key, encryptedValue] of Object.entries(
+                            character.settings.secrets
+                        )) {
+                            const iv = secretsIV[key];
+                            if (!iv) {
+                                elizaLogger.error(
+                                    `Missing IV for secret ${key} in character ${character.name}`
+                                );
+                                continue;
+                            }
+
+                            try {
+                                decryptedSecrets[key] = encryptionUtil.decrypt({
+                                    encryptedText: encryptedValue,
+                                    iv,
+                                });
+                            } catch (error) {
+                                elizaLogger.error(
+                                    `Failed to decrypt secret ${key} for character ${character.name}:`,
+                                    error
+                                );
+                            }
+                        }
+                        character.settings.secrets = decryptedSecrets;
+                    }
+
+                    // Handle plugins
+                    if (character.plugins) {
+                        elizaLogger.log("Plugins are: ", character.plugins);
+                        const importedPlugins = await Promise.all(
+                            character.plugins.map(async (plugin) => {
+                                // if the plugin name doesnt start with @eliza,
+
+                                const importedPlugin = await import(
+                                    plugin.name
+                                );
+                                return importedPlugin;
+                            })
+                        );
+
+                        character.plugins = importedPlugins;
+                    }
+
+                    validateCharacterConfig(character);
+                    elizaLogger.log(
+                        `Character loaded from db: ${character.name}`
+                    );
+                    console.log("-------------------------------");
+                    return character;
+                } catch (error) {
+                    elizaLogger.error(
+                        `Error processing character ${character.name}:`,
+                        error
+                    );
+                    throw error;
+                }
+            })
+        );
+
+        return processedCharacters;
+    } catch (error) {
+        elizaLogger.error("Database error:", error);
+        elizaLogger.log("Falling back to default character");
+        return [defaultCharacter];
+    }
+}
+
+// If dynamic loading is enabled, start the express server
+// we can directly call this endpoint to load an agent
+// otherwise we can use the direct client as a proxy if we
+// want to expose only single post to public
+if (process.env.AGENT_RUNTIME_MANAGEMENT === "true") {
+    const app = express();
+    app.use(cors());
+    app.use(bodyParser.json());
+
+    // This endpoint can be directly called or
+    app.post(
+        "/load/:agentName",
+        async (req: ExpressRequest, res: express.Response) => {
+            try {
+                const agentName = req.params.agentName;
+                const characters = await loadCharactersFromDb(agentName);
+
+                if (characters.length === 0) {
+                    res.status(404).json({
+                        success: false,
+                        error: `Character ${agentName} does not exist in DB`,
+                    });
+                    return;
+                }
+
+                const directClient = getGlobalDirectClient();
+                await startAgent(characters[0], directClient);
+
+                res.json({
+                    success: true,
+                    port: settings.SERVER_PORT,
+                    character: {
+                        id: characters[0].id,
+                        name: characters[0].name,
+                    },
+                });
+            } catch (error) {
+                elizaLogger.error(`Error loading agent:`, error);
+                res.status(500).json({
+                    success: false,
+                    error: error.message,
+                });
+            }
+        }
+    );
+
+    const agentPort = settings.AGENT_PORT
+        ? parseInt(settings.AGENT_PORT)
+        : 3001;
+    //if agent port is 0, it means we want to use a random port
+    const server = app.listen(agentPort, () => {
+        elizaLogger.success(
+            `Agent server running at http://localhost:${agentPort}/`
+        );
+    });
+}
