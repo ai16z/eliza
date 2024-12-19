@@ -50,5 +50,7 @@ tsup.config.bundled_*.mjs
 
 .turbo
 
+.idea
+
 coverage
 .eslintcache

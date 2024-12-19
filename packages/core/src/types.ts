@@ -617,6 +617,7 @@ export enum Clients {
     LENS = "lens",
     AUTO = "auto",
     SLACK = "slack",
+    DEVA = "deva",
 }
 
 export interface IAgentConfig {
@@ -672,6 +673,7 @@ export type Character = {
         discordVoiceHandlerTemplate?: string;
         discordShouldRespondTemplate?: string;
         discordMessageHandlerTemplate?: string;
+        devaPostTemplate?: string;
         slackMessageHandlerTemplate?: string;
         slackShouldRespondTemplate?: string;
     };
