@@ -25,6 +25,7 @@ import {
     stringToUuid,
     validateCharacterConfig,
 } from "@ai16z/eliza";
+import { newsPlugin } from "@ai16z/plugin-news";
 import { zgPlugin } from "@ai16z/plugin-0g";
 import { bootstrapPlugin } from "@ai16z/plugin-bootstrap";
 import createGoatPlugin from "@ai16z/plugin-goat";
@@ -482,6 +483,7 @@ export async function createAgent(
         // character.plugins are handled when clients are added
         plugins: [
             bootstrapPlugin,
+            newsPlugin,
             getSecret(character, "CONFLUX_CORE_PRIVATE_KEY")
                 ? confluxPlugin
                 : null,
