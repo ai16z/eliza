@@ -49,12 +49,12 @@ export function createApiRouter(agents: Map<string, AgentRuntime>, directClient)
         });
     });
 
+    // can use 0 for agentId to start an agent
     router.post("/agents/:agentId/set", async (req, res) => {
         const agentId = req.params.agentId;
-        console.log('agentId', agentId)
         let agent:AgentRuntime = agents.get(agentId);
 
-        // update character
+        // is it an agent update?
         if (agent) {
             // stop agent
             agent.stop()
@@ -111,6 +111,31 @@ export function createApiRouter(agents: Map<string, AgentRuntime>, directClient)
             res.status(500).json({ error: "Failed to fetch guilds" });
         }
     });
+
+    router.post("/agents/:agentId/memory/add", async (req, resp) => {
+        // Validate input
+        const errors = []
+        const { memoryString } = req.body;
+        if (!memoryString) {
+            errors.push('memory is required')
+        }
+        const agentId = req.params.agentId;
+        const runtime = agents.get(agentId);
+        if (!runtime) {
+            errors.push('Runtime not found')
+        }
+        if (errors.length) {
+            res.status(404).json({ errors });
+            return;
+        }
+
+        const res = runtime.addStringToMemory(memoryString)
+        // lock return format incase internals change
+        resp.json({
+            id: res.id,
+            have: res.have,
+        });
+    })
 
     return router;
 }
