@@ -13,7 +13,7 @@ const customRpcUrls = {
 describe("Wallet provider", () => {
     let walletProvider: WalletProvider;
     let pk: `0x${string}`;
-    let customChains: Record<string, Chain> = {};
+    const customChains: Record<string, Chain> = {};
 
     beforeAll(() => {
         pk = generatePrivateKey();
@@ -32,24 +32,24 @@ describe("Wallet provider", () => {
 
             walletProvider = new WalletProvider(pk);
 
-            expect(walletProvider.getAddress()).to.be.eq(expectedAddress);
+            expect(walletProvider.getAddress()).toEqual(expectedAddress);
         });
         it("sets default chain to ethereum mainnet", () => {
             walletProvider = new WalletProvider(pk);
 
-            expect(walletProvider.chains.mainnet.id).to.be.eq(mainnet.id);
-            expect(walletProvider.getCurrentChain().id).to.be.eq(mainnet.id);
+            expect(walletProvider.chains.mainnet.id).toEqual(mainnet.id);
+            expect(walletProvider.getCurrentChain().id).toEqual(mainnet.id);
         });
         it("sets custom chains", () => {
             walletProvider = new WalletProvider(pk, customChains);
 
-            expect(walletProvider.chains.iotex.id).to.be.eq(iotex.id);
-            expect(walletProvider.chains.arbitrum.id).to.be.eq(arbitrum.id);
+            expect(walletProvider.chains.iotex.id).toEqual(iotex.id);
+            expect(walletProvider.chains.arbitrum.id).toEqual(arbitrum.id);
         });
         it("sets the first provided custom chain as current chain", () => {
             walletProvider = new WalletProvider(pk, customChains);
 
-            expect(walletProvider.getCurrentChain().id).to.be.eq(iotex.id);
+            expect(walletProvider.getCurrentChain().id).toEqual(iotex.id);
         });
     });
     describe("Clients", () => {
@@ -58,7 +58,7 @@ describe("Wallet provider", () => {
         });
         it("generates public client", () => {
             const client = walletProvider.getPublicClient("mainnet");
-            expect(client.chain.id).to.be.equal(mainnet.id);
+            expect(client.chain.id).toEqual(mainnet.id);
             expect(client.transport.url).toEqual(
                 mainnet.rpcUrls.default.http[0]
             );
@@ -71,11 +71,11 @@ describe("Wallet provider", () => {
             const wp = new WalletProvider(pk, { ["mainnet"]: chain });
 
             const client = wp.getPublicClient("mainnet");
-            expect(client.chain.id).to.be.equal(mainnet.id);
-            expect(client.chain.rpcUrls.default.http[0]).to.eq(
+            expect(client.chain.id).toEqual(mainnet.id);
+            expect(client.chain.rpcUrls.default.http[0]).toEqual(
                 mainnet.rpcUrls.default.http[0]
             );
-            expect(client.chain.rpcUrls.custom.http[0]).to.eq(
+            expect(client.chain.rpcUrls.custom.http[0]).toEqual(
                 customRpcUrls.mainnet
             );
             expect(client.transport.url).toEqual(customRpcUrls.mainnet);
@@ -86,7 +86,7 @@ describe("Wallet provider", () => {
 
             const client = walletProvider.getWalletClient("mainnet");
 
-            expect(client.account.address).to.be.equal(expectedAddress);
+            expect(client.account.address).toEqual(expectedAddress);
             expect(client.transport.url).toEqual(
                 mainnet.rpcUrls.default.http[0]
             );
@@ -102,12 +102,12 @@ describe("Wallet provider", () => {
 
             const client = wp.getWalletClient("mainnet");
 
-            expect(client.account.address).to.be.equal(expectedAddress);
-            expect(client.chain.id).to.be.equal(mainnet.id);
-            expect(client.chain.rpcUrls.default.http[0]).to.eq(
+            expect(client.account.address).toEqual(expectedAddress);
+            expect(client.chain.id).toEqual(mainnet.id);
+            expect(client.chain.rpcUrls.default.http[0]).toEqual(
                 mainnet.rpcUrls.default.http[0]
             );
-            expect(client.chain.rpcUrls.custom.http[0]).to.eq(
+            expect(client.chain.rpcUrls.custom.http[0]).toEqual(
                 customRpcUrls.mainnet
             );
             expect(client.transport.url).toEqual(customRpcUrls.mainnet);
@@ -120,16 +120,16 @@ describe("Wallet provider", () => {
         it("should fetch balance", async () => {
             const bal = await walletProvider.getWalletBalance();
 
-            expect(bal).to.be.eq("0");
+            expect(bal).toEqual("0");
         });
         it("should fetch balance for a specific added chain", async () => {
             const bal = await walletProvider.getWalletBalanceForChain("iotex");
 
-            expect(bal).to.be.eq("0");
+            expect(bal).toEqual("0");
         });
         it("should return null if chain is not added", async () => {
             const bal = await walletProvider.getWalletBalanceForChain("base");
-            expect(bal).to.be.null;
+            expect(bal).toBeNull();
         });
     });
     describe("Chain", () => {
@@ -140,7 +140,7 @@ describe("Wallet provider", () => {
             const chainName = "iotex";
             const chain: Chain = WalletProvider.genChainFromName(chainName);
 
-            expect(chain.rpcUrls.default.http[0]).to.eq(
+            expect(chain.rpcUrls.default.http[0]).toEqual(
                 iotex.rpcUrls.default.http[0]
             );
         });
@@ -152,59 +152,63 @@ describe("Wallet provider", () => {
                 customRpcUrl
             );
 
-            expect(chain.rpcUrls.default.http[0]).to.eq(
+            expect(chain.rpcUrls.default.http[0]).toEqual(
                 iotex.rpcUrls.default.http[0]
             );
-            expect(chain.rpcUrls.custom.http[0]).to.eq(customRpcUrl);
+            expect(chain.rpcUrls.custom.http[0]).toEqual(customRpcUrl);
         });
         it("switches chain", () => {
             const initialChain = walletProvider.getCurrentChain().id;
-            expect(initialChain).to.be.eq(iotex.id);
+            expect(initialChain).toEqual(iotex.id);
 
             walletProvider.switchChain("mainnet");
 
             const newChain = walletProvider.getCurrentChain().id;
-            expect(newChain).to.be.eq(mainnet.id);
+            expect(newChain).toEqual(mainnet.id);
         });
         it("switches chain (by adding new chain)", () => {
             const initialChain = walletProvider.getCurrentChain().id;
-            expect(initialChain).to.be.eq(iotex.id);
+            expect(initialChain).toEqual(iotex.id);
 
             walletProvider.switchChain("arbitrum");
 
             const newChain = walletProvider.getCurrentChain().id;
-            expect(newChain).to.be.eq(arbitrum.id);
+            expect(newChain).toEqual(arbitrum.id);
         });
         it("adds chain", () => {
             const initialChains = walletProvider.chains;
-            expect(initialChains.base).to.be.undefined;
+            expect(initialChains.base).toBeUndefined();
 
             const base = WalletProvider.genChainFromName("base");
             walletProvider.addChain({ base });
             const newChains = walletProvider.chains;
-            expect(newChains.arbitrum.id).to.be.eq(arbitrum.id);
+            expect(newChains.arbitrum.id).toEqual(arbitrum.id);
         });
         it("gets chain configs", () => {
             const chain = walletProvider.getChainConfigs("iotex");
 
-            expect(chain.id).to.eq(iotex.id);
+            expect(chain.id).toEqual(iotex.id);
         });
         it("throws if tries to switch to an invalid chain", () => {
             const initialChain = walletProvider.getCurrentChain().id;
-            expect(initialChain).to.be.eq(iotex.id);
+            expect(initialChain).toEqual(iotex.id);
 
+            // intentionally set incorrect chain, ts will complain
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            expect(() => walletProvider.switchChain("eth")).to.throw();
+            expect(() => walletProvider.switchChain("eth")).toThrow();
         });
         it("throws if unsupported chain name", () => {
+            // intentionally set incorrect chain, ts will complain
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            expect(() =>
-                WalletProvider.genChainFromName("ethereum")
-            ).to.throw();
+            expect(() => WalletProvider.genChainFromName("ethereum")).toThrow();
         });
         it("throws if invalid chain name", () => {
+            // intentionally set incorrect chain, ts will complain
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            expect(() => WalletProvider.genChainFromName("eth")).to.throw();
+            expect(() => WalletProvider.genChainFromName("eth")).toThrow();
         });
     });
 });

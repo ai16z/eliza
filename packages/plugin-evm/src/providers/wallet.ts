@@ -211,8 +211,8 @@ export const initWalletProvider = (runtime: IAgentRuntime) => {
 export const evmWalletProvider: Provider = {
     async get(
         runtime: IAgentRuntime,
-        message: Memory,
-        state?: State
+        _message: Memory,
+        _state?: State
     ): Promise<string | null> {
         try {
             const walletProvider = initWalletProvider(runtime);
