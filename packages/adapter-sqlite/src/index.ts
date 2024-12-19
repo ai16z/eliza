@@ -11,6 +11,9 @@ import {
     type Memory,
     type Relationship,
     type UUID,
+    type CharacterTable,
+    type Secrets,
+    type Character,
 } from "@ai16z/eliza";
 import { Database } from "better-sqlite3";
 import { v4 } from "uuid";
@@ -705,6 +708,59 @@ export class SqliteDatabaseAdapter
         } catch (error) {
             console.log("Error removing cache", error);
             return false;
+        }
+    }
+
+    /**
+     * Loads characters from database
+     * @param characterIds Optional array of character UUIDs to load
+     * @returns Promise of tuple containing Characters array and their corresponding SecretsIV
+     */
+    async loadCharacters(
+        characterIds?: UUID[]
+    ): Promise<[Character[], Secrets[]]> {
+        try {
+            let sql =
+                "SELECT id, name, characterState, secretsIV FROM characters";
+            let queryParams: any[] = [];
+
+            if (characterIds?.length) {
+                // Create placeholders for the IN clause
+                const placeholders = characterIds.map(() => "?").join(",");
+                sql += ` WHERE id IN (${placeholders})`;
+                queryParams = characterIds;
+            }
+
+            sql += " ORDER BY name";
+
+            // SQLite returns JSON as string, so we need to parse it
+            const stmt = this.db.prepare(sql);
+            const rows = stmt.all(...queryParams) as CharacterTable[];
+
+            const characters: Character[] = [];
+            const secretsIVs: Secrets[] = [];
+
+            for (const row of rows) {
+                // Parse characterState if it's a string (SQLite stores JSON as text)
+                const characterState =
+                    typeof row.characterState === "string"
+                        ? JSON.parse(row.characterState)
+                        : row.characterState;
+
+                // Parse secretsIV if it's a string
+                const secretsIV =
+                    typeof row.secretsIV === "string"
+                        ? JSON.parse(row.secretsIV)
+                        : row.secretsIV || {};
+
+                characters.push(characterState);
+                secretsIVs.push(secretsIV);
+            }
+
+            return [characters, secretsIVs];
+        } catch (error) {
+            console.error("Error loading characters:", error);
+            throw error;
         }
     }
 }
