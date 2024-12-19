@@ -359,23 +359,36 @@ export async function initializeClients(
     }
 
     if (clientTypes.includes(Clients.DISCORD)) {
+        const isValidKey = await DiscordClientInterface.validate(runtime.getSetting("DISCORD_API_TOKEN"))
+        if (isValidKey) {
         const discordClient = await DiscordClientInterface.start(runtime);
         if (discordClient) clients.discord = discordClient;
     }
+    }
 
     if (clientTypes.includes(Clients.TELEGRAM)) {
-        const telegramClient = await TelegramClientInterface.start(runtime);
-        if (telegramClient) clients.telegram = telegramClient;
+        const isValidKey = await TelegramClientInterface.validate(runtime.getSetting("DISCORD_API_TOKEN"))
+        if (isValidKey) {
+            const telegramClient = await TelegramClientInterface.start(runtime);
+            if (telegramClient) clients.telegram = telegramClient;
+        }
     }
 
     if (clientTypes.includes(Clients.TWITTER)) {
-        const twitterClient = await TwitterClientInterface.start(runtime);
-
-        if (twitterClient) {
-            clients.twitter = twitterClient;
-            (twitterClient as any).enableSearch = !isFalsish(
-                getSecret(character, "TWITTER_SEARCH_ENABLE")
-            );
+        const isValidKey = await TwitterClientInterface.validate({
+            username: getSecret(character, "TWITTER_USERNAME"),
+            password: getSecret(character, "TWITTER_PASSWORD"),
+            email: getSecret(character, "TWITTER_EMAIL"),
+            twitter2faSecret: getSecret(character, "TWITTER_2FA_SECRET"),
+        })
+        if (isValidKey) {
+            const twitterClient = await TwitterClientInterface.start(runtime);
+            if (twitterClient) {
+                clients.twitter = twitterClient;
+                (twitterClient as any).enableSearch = !isFalsish(
+                    getSecret(character, "TWITTER_SEARCH_ENABLE")
+                );
+            }
         }
     }
 

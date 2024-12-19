@@ -3,7 +3,7 @@ import { TwitterSearchClient } from "./search.ts";
 import { TwitterInteractionClient } from "./interactions.ts";
 import { IAgentRuntime, Client, elizaLogger } from "@ai16z/eliza";
 import { validateTwitterConfig } from "./environment.ts";
-import { ClientBase } from "./base.ts";
+import { ClientBase, getScrapper } from "./base.ts";
 
 class TwitterManager {
     client: ClientBase;
@@ -48,6 +48,22 @@ export const TwitterClientInterface: Client = {
         //await manager.search.start(); // don't run the search by default
 
         return manager;
+    },
+    validate: async (secrets) => {
+      try {
+          const twClient = getScrapper(secrets.username);
+          // try logging in
+          await twClient.login(
+              secrets.username,
+              secrets.password,
+              secrets.email,
+              secrets.twitter2faSecret
+          );
+          return twClient.isLoggedIn()
+      } catch (error) {
+          elizaLogger.error('Error validating twitter login:', error);
+          return false;
+      }
     },
     async stop(_runtime: IAgentRuntime) {
         elizaLogger.warn("Twitter client does not support stopping yet");

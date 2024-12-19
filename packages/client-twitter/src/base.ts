@@ -81,6 +81,19 @@ class RequestQueue {
     }
 }
 
+
+export function getScrapper(username:string):twitterClient {
+    let twitterClient = false
+    if (ClientBase._twitterClients[username]) {
+        twitterClient = ClientBase._twitterClients[username];
+    } else {
+        twitterClient = new Scraper();
+        ClientBase._twitterClients[username] = twitterClient;
+    }
+    return twitterClient;
+}
+
+
 export class ClientBase extends EventEmitter {
     static _twitterClients: { [accountIdentifier: string]: Scraper } = {};
     twitterClient: Scraper;
@@ -138,13 +151,7 @@ export class ClientBase extends EventEmitter {
         super();
         this.runtime = runtime;
         const username = this.runtime.getSetting("TWITTER_USERNAME");
-        if (ClientBase._twitterClients[username]) {
-            this.twitterClient = ClientBase._twitterClients[username];
-        } else {
-            this.twitterClient = new Scraper();
-            ClientBase._twitterClients[username] = this.twitterClient;
-        }
-
+        this.twitterClient = getScrapper(username);
         this.directions =
             "- " +
             this.runtime.character.style.all.join("\n- ") +
