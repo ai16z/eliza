@@ -41,4 +41,4 @@ export async function validateSlackConfig(runtime: IAgentRuntime): Promise<Slack
         }
         throw error;
     }
-} 
+}

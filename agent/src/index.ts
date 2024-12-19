@@ -396,17 +396,20 @@ export async function initializeClients(
     elizaLogger.log("client keys", Object.keys(clients));
 
     // TODO: Add Slack client to the list
+    // Initialize clients as an object
+
+
     if (clientTypes.includes("slack")) {
         const slackClient = await SlackClientInterface.start(runtime);
-        if (slackClient) clients.push(slackClient);
+        if (slackClient) clients.slack = slackClient; // Use object property instead of push
     }
 
     if (character.plugins?.length > 0) {
         for (const plugin of character.plugins) {
-            // if plugin has clients, add those..
             if (plugin.clients) {
                 for (const client of plugin.clients) {
-                    clients.push(await client.start(runtime));
+                    const startedClient = await client.start(runtime);
+                    clients[client.name] = startedClient; // Assuming client has a name property
                 }
             }
         }

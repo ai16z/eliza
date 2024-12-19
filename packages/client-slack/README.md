@@ -78,6 +78,15 @@ settings:
 7. On the "Basic Information" page, scroll down to "App Credentials"
 8. Copy all the credentials - you'll need them in Step 3
 
+### Step 2.5: Verify Event Subscription
+Before proceeding to install the app, make sure to verify the event subscription:
+
+1. In your Slack App settings, go to "Event Subscriptions."
+2. Enter the request URL (your ngrok HTTPS URL followed by /slack/events).
+3. Slack will send a verification request to this URL.
+4. Ensure your server is running and configured to respond to the url_verification event by echoing back the challenge token provided in the request.
+5. Once verified, you will see a confirmation in your Slack app settings.
+
 ### Step 3: Configure Environment Variables
 1. Create or edit `.env` file in your project root:
    ```bash

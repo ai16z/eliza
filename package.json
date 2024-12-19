@@ -52,6 +52,7 @@
     },
     "dependencies": {
         "@0glabs/0g-ts-sdk": "0.2.1",
+        "@ai16z/adapter-postgres": "0.1.6-alpha.4",
         "@coinbase/coinbase-sdk": "0.10.0",
         "@deepgram/sdk": "^3.9.0",
         "@vitest/eslint-plugin": "1.0.1",
