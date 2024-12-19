@@ -12,6 +12,8 @@ import {
     ModelClass,
     State,
 } from "@ai16z/eliza";
+import * as fs from 'fs';
+
 export const summarizationTemplate = `# Summarized so far (we are adding to this)
 {{currentSummary}}
 
@@ -225,16 +227,35 @@ ${currentSummary.trim()}
 `;
             await callback(callbackData);
         } else if (currentSummary.trim()) {
-            const summaryFilename = `content/summary_${Date.now()}`;
-            await runtime.cacheManager.set(summaryFilename, currentSummary);
-            // save the summary to a file
-            await callback(
-                {
-                    ...callbackData,
-                    text: `I've attached the summary of the requested attachments as a text file.`,
-                },
-                [summaryFilename]
-            );
+            const summaryFilename = `content/summary_${Date.now()}.md`;
+
+            try {
+                // Debug: Log before file operations
+                console.log("Creating summary file:", {
+                    filename: summaryFilename,
+                    summaryLength: currentSummary.length
+                });
+
+                // Write file directly first
+                await fs.promises.writeFile(summaryFilename, currentSummary, 'utf8');
+                console.log("File written successfully");
+
+                // Then cache it
+                await runtime.cacheManager.set(summaryFilename, currentSummary);
+                console.log("Cache set operation completed");
+
+                await callback(
+                    {
+                        ...callbackData,
+                        text: `I've attached the summary of the requested attachments as a text file.`,
+                    },
+                    [summaryFilename]
+                );
+                console.log("Callback completed with summary file");
+            } catch (error) {
+                console.error("Error in file/cache process:", error);
+                throw error;
+            }
         } else {
             console.warn(
                 "Empty response from chat with attachments action, skipping"
