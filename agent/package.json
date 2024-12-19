@@ -36,6 +36,7 @@
     "@ai16z/plugin-conflux": "workspace:*",
     "@ai16z/plugin-evm": "workspace:*",
     "@ai16z/plugin-flow": "workspace:*",
+    "@ai16z/plugin-gitbook": "workspace:*",
     "@ai16z/plugin-story": "workspace:*",
     "@ai16z/plugin-goat": "workspace:*",
     "@ai16z/plugin-icp": "workspace:*",

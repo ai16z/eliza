@@ -153,6 +153,9 @@ importers:
       '@ai16z/plugin-flow':
         specifier: workspace:*
         version: link:../packages/plugin-flow
+      '@ai16z/plugin-gitbook':
+        specifier: workspace:*
+        version: link:../packages/plugin-gitbook
       '@ai16z/plugin-goat':
         specifier: workspace:*
         version: link:../packages/plugin-goat
