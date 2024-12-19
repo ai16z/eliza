@@ -9,17 +9,17 @@
 -   🛠️ Connettori completi per Discord, Twitter e Telegram
 -   🔗 Supporto per tutti i modelli (Llama, Grok, OpenAI, Anthropic, ecc.)
 -   👥 Supporto multi-agente e per stanze
--   📚 Acquisisci ed interagisci facilmente con i tuoi documenti
+-   📚 Acquisisci e interagisci facilmente con i tuoi documenti
 -   💾 Memoria recuperabile e archivio documenti
 -   🚀 Altamente estensibile - crea le tue azioni e clients personalizzati
 -   ☁️ Supporto di numerosi modelli (Llama locale, OpenAI, Anthropic, Groq, ecc.)
 -   📦 Funziona e basta!
 
-## 🎯 Casi d'Uso
+## 🎯 Casi d'uso
 
 -   🤖 Chatbot
 -   🕵️ Agenti Autonomi
--   📈 Gestione Processi Aziendali
+-   📈 Gestione dei processi aziendali
 -   🎮 NPC per Videogiochi
 -   🧠 Trading
 
@@ -51,7 +51,7 @@ sh scripts/start.sh
 
 ### Modifica il file del personaggio
 
-1. Apri `packages/agent/src/character.ts` per modificare il personaggio predefinito. Decommentare e modificare.
+1. Apri `packages/agent/src/character.ts` per modificare il personaggio predefinito. Decommenta e modifica.
 
 2. Per caricare personaggi personalizzati:
     - Usa `pnpm start --characters="percorso/del/tuo/personaggio.json"`
@@ -76,10 +76,10 @@ Potrebbe essere necessario installare Sharp. Se vedi un errore all'avvio, prova 
 pnpm install --include=optional sharp
 ```
 
-### Community e contatti
+### Comunità e contatti
 
--   [GitHub Issues](https://github.com/ai16z/eliza/issues). Ideale per: bug riscontrati utilizzando Eliza e proposte di funzionalità.
--   [Discord](https://discord.gg/ai16z). Ideale per: condividere le tue applicazioni e interagire con la community.
+-   [GitHub Issues](https://github.com/ai16z/eliza/issues). Ideale per segnalare bug riscontrati durante l’utilizzo di Eliza e proporre nuove funzionalità.
+-   [Discord](https://discord.gg/ai16z). Ideale per condividere le tue applicazioni e interagire con la comunità.
 
 ## Contributori
 
