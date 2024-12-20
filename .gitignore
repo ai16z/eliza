@@ -52,3 +52,4 @@ tsup.config.bundled_*.mjs
 
 coverage
 .eslintcache
+.vscode
