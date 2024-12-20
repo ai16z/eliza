@@ -333,7 +333,6 @@ export class MessageManager {
         return isReplyToBot || isMentioned || (!this.runtime.character.clientConfig?.telegram?.shouldRespondOnlyToMentions && hasUsername);
     }
 
-
     private _checkInterest(chatId: string): boolean {
         const chatState = this.interestChats[chatId];
         if (!chatState) return false;
@@ -633,13 +632,13 @@ export class MessageManager {
                     }
                 );
             } else {
-                // Handle local file paths 
+                // Handle local file paths
                 if (!fs.existsSync(imagePath)) {
                     throw new Error(`File not found: ${imagePath}`);
                 }
-    
+
                 const fileStream = fs.createReadStream(imagePath);
-    
+
                 await ctx.telegram.sendPhoto(
                     ctx.chat.id,
                     {
@@ -650,7 +649,7 @@ export class MessageManager {
                     }
                 );
             }
-            
+
             elizaLogger.info(`Image sent successfully: ${imagePath}`);
         } catch (error) {
             elizaLogger.error("Error sending image:", error);
@@ -968,7 +967,7 @@ export class MessageManager {
                         for (let i = 0; i < sentMessages.length; i++) {
                             const sentMessage = sentMessages[i];
                             const isLastMessage = i === sentMessages.length - 1;
-    
+
                             const memory: Memory = {
                                 id: stringToUuid(
                                     sentMessage.message_id.toString() +
@@ -986,17 +985,17 @@ export class MessageManager {
                                 createdAt: sentMessage.date * 1000,
                                 embedding: getEmbeddingZeroVector(),
                             };
-    
+
                             // Set action to CONTINUE for all messages except the last one
                             // For the last message, use the original action from the response content
                             memory.content.action = !isLastMessage
                                 ? "CONTINUE"
                                 : content.action;
-    
+
                             await this.runtime.messageManager.createMemory(memory);
                             memories.push(memory);
                         }
-    
+
                         return memories;
                     }
                 };

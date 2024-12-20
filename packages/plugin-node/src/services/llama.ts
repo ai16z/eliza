@@ -22,6 +22,8 @@ import path from "path";
 import si from "systeminformation";
 import { fileURLToPath } from "url";
 
+process.env.ONNXRUNTIME_LOG_LEVEL = '4'; // Error level
+
 const wordsToPunish = [
     " please",
     " feel",

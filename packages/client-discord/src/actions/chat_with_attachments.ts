@@ -1,6 +1,6 @@
 import { composeContext } from "@ai16z/eliza";
 import { generateText, trimTokens } from "@ai16z/eliza";
-import { models } from "@ai16z/eliza";
+import { getModelProviderData } from "@ai16z/eliza";
 import { parseJSONObjectFromText } from "@ai16z/eliza";
 import {
     Action,
@@ -22,7 +22,7 @@ Summarization objective: {{objective}}
 
 # Instructions: Summarize the attachments. Return the summary. Do not acknowledge this request, just summarize and continue the existing summary if there is one. Capture any important details based on the objective. Only respond with the new summary text.`;
 
-export const attachmentIdsTemplate = `# Messages we are summarizing 
+export const attachmentIdsTemplate = `# Messages we are summarizing
 {{recentMessages}}
 
 # Instructions: {{senderName}} is requesting a summary of specific attachments. Your goal is to determine their objective, along with the list of attachment IDs to summarize.
@@ -183,7 +183,7 @@ const summarizeAction = {
 
         let currentSummary = "";
 
-        const model = models[runtime.character.modelProvider];
+        const model = await getModelProviderData(runtime.character.modelProvider);
         const chunkSize = model.settings.maxOutputTokens;
 
         state.attachmentsWithText = attachmentsWithText;

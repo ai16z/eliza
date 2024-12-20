@@ -1,7 +1,7 @@
 import { composeContext } from "@ai16z/eliza";
 import { generateText, splitChunks, trimTokens } from "@ai16z/eliza";
 import { getActorDetails } from "@ai16z/eliza";
-import { models } from "@ai16z/eliza";
+import { getModelProviderData } from "@ai16z/eliza";
 import { parseJSONObjectFromText } from "@ai16z/eliza";
 import {
     Action,
@@ -247,7 +247,8 @@ const summarizeAction = {
 
         let currentSummary = "";
 
-        const model = models[runtime.character.settings.model];
+
+        const model = await getModelProviderData(runtime.character.settings.model);
         const chunkSize = model.settings.maxContextLength - 1000;
 
         const chunks = await splitChunks(formattedMemories, chunkSize, 0);

@@ -1,10 +1,11 @@
-import { elizaLogger, models } from "@ai16z/eliza";
-import { Service } from "@ai16z/eliza";
 import {
+    elizaLogger,
+    Service,
     IAgentRuntime,
     ModelProviderName,
     ServiceType,
     IImageDescriptionService,
+    getModelProviderData,
 } from "@ai16z/eliza";
 import {
     AutoProcessor,
@@ -93,9 +94,9 @@ export class ImageDescriptionService
         imageUrl: string
     ): Promise<{ title: string; description: string }> {
         if (!this.initialized) {
-            const model = models[this.runtime?.character?.modelProvider];
+            const provider = this.runtime?.character?.modelProvider;
 
-            if (model === models[ModelProviderName.LLAMALOCAL]) {
+            if (provider === ModelProviderName.LLAMALOCAL) {
                 await this.initializeLocalModel();
             } else {
                 this.modelId = "gpt-4o-mini";
@@ -195,8 +196,9 @@ export class ImageDescriptionService
                     },
                 ];
 
+                const imageModelData = await getModelProviderData(this.runtime.imageModelProvider);
                 const endpoint =
-                    models[this.runtime.imageModelProvider].endpoint ??
+                    imageModelData.endpoint ??
                     "https://api.openai.com/v1";
 
                 const response = await fetch(endpoint + "/chat/completions", {

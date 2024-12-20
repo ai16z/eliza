@@ -15,7 +15,7 @@ import { encodingForModel, TiktokenModel } from "js-tiktoken";
 import Together from "together-ai";
 import { ZodSchema } from "zod";
 import { elizaLogger } from "./index.ts";
-import { getModel, models } from "./models.ts";
+import { getModelProviderData } from "./models.ts";
 import {
     parseBooleanFromText,
     parseJsonArrayFromText,
@@ -74,9 +74,10 @@ export async function generateText({
     });
 
     const provider = runtime.modelProvider;
+    const modelData = await getModelProviderData(provider);
     const endpoint =
-        runtime.character.modelEndpointOverride || models[provider].endpoint;
-    let model = models[provider].model[modelClass];
+        runtime.character.modelEndpointOverride || modelData.endpoint;
+    let model = modelData.endpoint.model[modelClass];
 
     // allow character.json settings => secrets to override models
     // FIXME: add MODEL_MEDIUM support
@@ -146,11 +147,12 @@ export async function generateText({
 
     elizaLogger.info("Selected model:", model);
 
-    const temperature = models[provider].settings.temperature;
-    const frequency_penalty = models[provider].settings.frequency_penalty;
-    const presence_penalty = models[provider].settings.presence_penalty;
-    const max_context_length = models[provider].settings.maxInputTokens;
-    const max_response_length = models[provider].settings.maxOutputTokens;
+    const modelSettings = modelData.settings
+    const temperature = modelSettings.temperature;
+    const frequency_penalty = modelSettings.frequency_penalty;
+    const presence_penalty = modelSettings.presence_penalty;
+    const max_context_length = modelSettings.maxInputTokens;
+    const max_response_length = modelSettings.maxOutputTokens;
 
     const apiKey = runtime.token;
 
@@ -162,7 +164,7 @@ export async function generateText({
 
         let response: string;
 
-        const _stop = stop || models[provider].settings.stop;
+        const _stop = stop || modelSettings.stop;
         elizaLogger.debug(
             `Using provider: ${provider}, model: ${model}, temperature: ${temperature}, max response length: ${max_response_length}`
         );
@@ -355,7 +357,7 @@ export async function generateText({
 
             case ModelProviderName.REDPILL: {
                 elizaLogger.debug("Initializing RedPill model.");
-                const serverUrl = models[provider].endpoint;
+                const serverUrl = modelData.endpoint;
                 const openai = createOpenAI({
                     apiKey,
                     baseURL: serverUrl,
@@ -382,7 +384,7 @@ export async function generateText({
 
             case ModelProviderName.OPENROUTER: {
                 elizaLogger.debug("Initializing OpenRouter model.");
-                const serverUrl = models[provider].endpoint;
+                const serverUrl = modelData.endpoint;
                 const openrouter = createOpenAI({
                     apiKey,
                     baseURL: serverUrl,
@@ -412,7 +414,7 @@ export async function generateText({
                     elizaLogger.debug("Initializing Ollama model.");
 
                     const ollamaProvider = createOllama({
-                        baseURL: models[provider].endpoint + "/api",
+                        baseURL: modelData.endpoint + "/api",
                         fetch: runtime.fetch,
                     });
                     const ollama = ollamaProvider(model);
@@ -461,7 +463,7 @@ export async function generateText({
             case ModelProviderName.GAIANET: {
                 elizaLogger.debug("Initializing GAIANET model.");
 
-                var baseURL = models[provider].endpoint;
+                var baseURL = modelData.endpoint;
                 if (!baseURL) {
                     switch (modelClass) {
                         case ModelClass.SMALL:
@@ -717,10 +719,11 @@ export async function generateTrueOrFalse({
     modelClass: string;
 }): Promise<boolean> {
     let retryDelay = 1000;
+    const modelData = await getModelProviderData(runtime.modelProvider);
 
     const stop = Array.from(
         new Set([
-            ...(models[runtime.modelProvider].settings.stop || []),
+            ...(modelData.settings.stop || []),
             ["\n"],
         ])
     ) as string[];
@@ -891,8 +894,8 @@ export async function generateMessageResponse({
     context: string;
     modelClass: string;
 }): Promise<Content> {
-    const max_context_length =
-        models[runtime.modelProvider].settings.maxInputTokens;
+    const modelData = await getModelProviderData(runtime.modelProvider);
+    const max_context_length = modelData.settings.maxInputTokens;
     context = trimTokens(context, max_context_length, "gpt-4o");
     let retryLength = 1000; // exponential backoff
     while (true) {
@@ -942,8 +945,9 @@ export const generateImage = async (
     data?: string[];
     error?: any;
 }> => {
-    const model = getModel(runtime.imageModelProvider, ModelClass.IMAGE);
-    const modelSettings = models[runtime.imageModelProvider].imageSettings;
+    const imageModelData = await getModelProviderData(runtime.imageModelProvider)
+    const model = imageModelData.model[ModelClass.IMAGE];
+    const modelSettings = imageModelData.imageSettings;
 
     elizaLogger.info("Generating image with options:", {
         imageModelProvider: model,
@@ -1281,15 +1285,17 @@ export const generateObject = async ({
     }
 
     const provider = runtime.modelProvider;
-    const model = models[provider].model[modelClass] as TiktokenModel;
+    const modelData = await getModelProviderData(runtime.modelProvider);
+    const model = modelData.model[modelClass] as TiktokenModel;
     if (!model) {
         throw new Error(`Unsupported model class: ${modelClass}`);
     }
-    const temperature = models[provider].settings.temperature;
-    const frequency_penalty = models[provider].settings.frequency_penalty;
-    const presence_penalty = models[provider].settings.presence_penalty;
-    const max_context_length = models[provider].settings.maxInputTokens;
-    const max_response_length = models[provider].settings.maxOutputTokens;
+    const modelSettings = modelData.settings;
+    const temperature = modelSettings.temperature;
+    const frequency_penalty = modelSettings.frequency_penalty;
+    const presence_penalty = modelSettings.presence_penalty;
+    const max_context_length = modelSettings.maxInputTokens;
+    const max_response_length = modelSettings.maxOutputTokens;
     const apiKey = runtime.token;
 
     try {
@@ -1301,7 +1307,7 @@ export const generateObject = async ({
             maxTokens: max_response_length,
             frequencyPenalty: frequency_penalty,
             presencePenalty: presence_penalty,
-            stop: stop || models[provider].settings.stop,
+            stop: stop || modelSettings.stop,
         };
 
         const response = await handleProvider({
@@ -1405,7 +1411,8 @@ async function handleOpenAI({
     mode,
     modelOptions,
 }: ProviderOptions): Promise<GenerateObjectResult<unknown>> {
-    const baseURL = models.openai.endpoint || undefined;
+    const openaiSettings = await getModelProviderData(ModelProviderName.OPENAI)
+    const baseURL = openaiSettings.endpoint || undefined;
     const openai = createOpenAI({ apiKey, baseURL });
     return await aiGenerateObject({
         model: openai.languageModel(model),
@@ -1458,7 +1465,8 @@ async function handleGrok({
     mode,
     modelOptions,
 }: ProviderOptions): Promise<GenerateObjectResult<unknown>> {
-    const grok = createOpenAI({ apiKey, baseURL: models.grok.endpoint });
+    const grokSettings = await getModelProviderData(ModelProviderName.GROK)
+    const grok = createOpenAI({ apiKey, baseURL: grokSettings.endpoint });
     return await aiGenerateObject({
         model: grok.languageModel(model, { parallelToolCalls: false }),
         schema,
@@ -1536,7 +1544,8 @@ async function handleRedPill({
     mode,
     modelOptions,
 }: ProviderOptions): Promise<GenerateObjectResult<unknown>> {
-    const redPill = createOpenAI({ apiKey, baseURL: models.redpill.endpoint });
+    const redpillSettings = await getModelProviderData(ModelProviderName.REDPILL);
+    const redPill = createOpenAI({ apiKey, baseURL: redpillSettings.endpoint });
     return await aiGenerateObject({
         model: redPill.languageModel(model),
         schema,
@@ -1562,9 +1571,10 @@ async function handleOpenRouter({
     mode,
     modelOptions,
 }: ProviderOptions): Promise<GenerateObjectResult<unknown>> {
+    const openrouterSettings = await getModelProviderData(ModelProviderName.OPENROUTER);
     const openRouter = createOpenAI({
         apiKey,
-        baseURL: models.openrouter.endpoint,
+        baseURL: openrouterSettings.endpoint,
     });
     return await aiGenerateObject({
         model: openRouter.languageModel(model),
@@ -1589,10 +1599,13 @@ async function handleOllama({
     schemaDescription,
     mode,
     modelOptions,
-    provider,
+    // not used?
+    //provider,
 }: ProviderOptions): Promise<GenerateObjectResult<unknown>> {
+    const ollamaSettings = await getModelProviderData(ModelProviderName.OLLAMA);
     const ollamaProvider = createOllama({
-        baseURL: models[provider].endpoint + "/api",
+        // is it weird to append /api? not doing it anywhere else?
+        baseURL: ollamaSettings.endpoint + "/api",
     });
     const ollama = ollamaProvider(model);
     return await aiGenerateObject({

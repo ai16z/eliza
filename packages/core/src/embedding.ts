@@ -1,5 +1,5 @@
 import path from "node:path";
-import { models } from "./models.ts";
+import { getModelProviderData } from "./models.ts";
 import { IAgentRuntime, ModelProviderName } from "./types.ts";
 import settings from "./settings.ts";
 import elizaLogger from "./logger.ts";
@@ -181,22 +181,24 @@ export async function embed(runtime: IAgentRuntime, input: string) {
     }
 
     if (config.provider === "Ollama") {
+        const ollamaSettings = await getModelProviderData(ModelProviderName.OLLAMA)
         return await getRemoteEmbedding(input, {
             model: config.model,
             endpoint:
                 runtime.character.modelEndpointOverride ||
-                models[ModelProviderName.OLLAMA].endpoint,
+                ollamaSettings.endpoint,
             isOllama: true,
             dimensions: config.dimensions,
         });
     }
 
     if (config.provider=="GaiaNet") {
+        const gaianetSettings = await getModelProviderData(ModelProviderName.GAIANET)
         return await getRemoteEmbedding(input, {
             model: config.model,
             endpoint:
                 runtime.character.modelEndpointOverride ||
-                models[ModelProviderName.GAIANET].endpoint ||
+                gaianetSettings.endpoint ||
                 settings.SMALL_GAIANET_SERVER_URL ||
                 settings.MEDIUM_GAIANET_SERVER_URL ||
                 settings.LARGE_GAIANET_SERVER_URL,
@@ -218,11 +220,12 @@ export async function embed(runtime: IAgentRuntime, input: string) {
     }
 
     // Fallback to remote override
+    const modelSettings = await getModelProviderData(runtime.character.modelProvider)
     return await getRemoteEmbedding(input, {
         model: config.model,
         endpoint:
             runtime.character.modelEndpointOverride ||
-            models[runtime.character.modelProvider].endpoint,
+            modelSettings.endpoint,
         apiKey: runtime.token,
         dimensions: config.dimensions,
     });
@@ -304,7 +307,9 @@ export async function embed(runtime: IAgentRuntime, input: string) {
                     : "not an array",
                 sample: Array.isArray(embedding)
                     ? embedding.slice(0, 5)
-                    : embedding,
+                    : typeof embedding === 'object' && embedding !== null ?
+                      Object.values(embedding).slice(0, 5)
+                      : embedding, // not an array or object
             });
 
             // Process the embedding into the correct format

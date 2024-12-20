@@ -4,7 +4,7 @@ import {
     trimTokens,
     parseJSONObjectFromText,
 } from "@ai16z/eliza";
-import { models } from "@ai16z/eliza";
+import { getModelProviderData } from "@ai16z/eliza";
 import {
     Action,
     ActionExample,
@@ -194,7 +194,7 @@ const summarizeAction: Action = {
 
         let currentSummary = "";
 
-        const model = models[runtime.character.modelProvider];
+        const model = await getModelProviderData(runtime.character.modelProvider);
         const chunkSize = model.settings.maxOutputTokens;
 
         currentState.attachmentsWithText = attachmentsWithText;
