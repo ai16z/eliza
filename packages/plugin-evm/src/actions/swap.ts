@@ -1,6 +1,5 @@
 import type { IAgentRuntime, Memory, State } from "@ai16z/eliza";
 import {
-    ChainId,
     createConfig,
     executeRoute,
     ExtendedChain,
