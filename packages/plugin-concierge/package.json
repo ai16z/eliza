@@ -1,0 +1,19 @@
+{
+    "name": "@elizaos/plugin-concierge",
+    "version": "0.1.7-alpha.1",
+    "main": "dist/index.js",
+    "type": "module",
+    "types": "dist/index.d.ts",
+    "dependencies": {
+        "@elizaos/core": "workspace:*",
+        "@coinbase/cbpay-js": "^2.4.0",
+        "@coinbase/coinbase-sdk": "0.11.2",
+        "build": "^0.1.4",
+        "tsup": "8.3.5"
+    },
+    "scripts": {
+        "build": "tsup --format esm --dts",
+        "dev": "tsup --format esm --dts --watch",
+        "lint": "eslint --fix  --cache ."
+    }
+}

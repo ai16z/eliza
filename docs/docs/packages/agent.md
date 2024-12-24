@@ -145,6 +145,11 @@ export async function initializeClients(
     if (clientTypes.includes(Clients.TELEGRAM)) {
         clients.push(await TelegramClientInterface.start(runtime));
     }
+
+    if (clientTypes.includes(Clients.XMTP)) {
+        clients.push(await Xmtp.start(runtime));
+    }
+
     if (clientTypes.includes(Clients.TWITTER)) {
         clients.push(await TwitterClientInterface.start(runtime));
     }

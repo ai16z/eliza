@@ -29,26 +29,26 @@ await startAgents();
 
 ```typescript
 export async function createAgent(
-  character: Character,
-  db: IDatabaseAdapter,
-  token: string,
+    character: Character,
+    db: IDatabaseAdapter,
+    token: string,
 ): Promise<AgentRuntime> {
-  return new AgentRuntime({
-    databaseAdapter: db,
-    token,
-    modelProvider: character.modelProvider,
-    character,
-    plugins: [
-      bootstrapPlugin,
-      nodePlugin,
-      // Conditional plugins
-      character.settings.secrets.WALLET_PUBLIC_KEY ? solanaPlugin : null,
-    ].filter(Boolean),
-    providers: [],
-    actions: [],
-    services: [],
-    managers: [],
-  });
+    return new AgentRuntime({
+        databaseAdapter: db,
+        token,
+        modelProvider: character.modelProvider,
+        character,
+        plugins: [
+            bootstrapPlugin,
+            nodePlugin,
+            // Conditional plugins
+            character.settings.secrets.WALLET_PUBLIC_KEY ? solanaPlugin : null,
+        ].filter(Boolean),
+        providers: [],
+        actions: [],
+        services: [],
+        managers: [],
+    });
 }
 ```
 
@@ -56,38 +56,38 @@ export async function createAgent(
 
 ```typescript
 export async function loadCharacters(
-  charactersArg: string,
+    charactersArg: string,
 ): Promise<Character[]> {
-  // Parse character paths
-  let characterPaths = charactersArg
-    ?.split(",")
-    .map((path) => path.trim())
-    .map((path) => normalizePath(path));
+    // Parse character paths
+    let characterPaths = charactersArg
+        ?.split(",")
+        .map((path) => path.trim())
+        .map((path) => normalizePath(path));
 
-  const loadedCharacters = [];
+    const loadedCharacters = [];
 
-  // Load each character file
-  for (const path of characterPaths) {
-    try {
-      const character = JSON.parse(fs.readFileSync(path, "utf8"));
+    // Load each character file
+    for (const path of characterPaths) {
+        try {
+            const character = JSON.parse(fs.readFileSync(path, "utf8"));
 
-      // Load plugins if specified
-      if (character.plugins) {
-        character.plugins = await loadPlugins(character.plugins);
-      }
+            // Load plugins if specified
+            if (character.plugins) {
+                character.plugins = await loadPlugins(character.plugins);
+            }
 
-      loadedCharacters.push(character);
-    } catch (error) {
-      console.error(`Error loading character from ${path}: ${error}`);
+            loadedCharacters.push(character);
+        } catch (error) {
+            console.error(`Error loading character from ${path}: ${error}`);
+        }
     }
-  }
 
-  // Fall back to default character if none loaded
-  if (loadedCharacters.length === 0) {
-    loadedCharacters.push(defaultCharacter);
-  }
+    // Fall back to default character if none loaded
+    if (loadedCharacters.length === 0) {
+        loadedCharacters.push(defaultCharacter);
+    }
 
-  return loadedCharacters;
+    return loadedCharacters;
 }
 ```
 
@@ -95,26 +95,30 @@ export async function loadCharacters(
 
 ```typescript
 export async function initializeClients(
-  character: Character,
-  runtime: IAgentRuntime,
+    character: Character,
+    runtime: IAgentRuntime,
 ) {
-  const clients = [];
-  const clientTypes = character.clients?.map((str) => str.toLowerCase()) || [];
+    const clients = [];
+    const clientTypes =
+        character.clients?.map((str) => str.toLowerCase()) || [];
 
-  if (clientTypes.includes(Clients.DISCORD)) {
-    clients.push(await DiscordClientInterface.start(runtime));
-  }
-  if (clientTypes.includes(Clients.TELEGRAM)) {
-    clients.push(await TelegramClientInterface.start(runtime));
-  }
-  if (clientTypes.includes(Clients.TWITTER)) {
-    clients.push(await TwitterClientInterface.start(runtime));
-  }
-  if (clientTypes.includes(Clients.DIRECT)) {
-    clients.push(await AutoClientInterface.start(runtime));
-  }
+    if (clientTypes.includes(Clients.DISCORD)) {
+        clients.push(await DiscordClientInterface.start(runtime));
+    }
+    if (clientTypes.includes(Clients.TELEGRAM)) {
+        clients.push(await TelegramClientInterface.start(runtime));
+    }
+    if (clientTypes.includes(Clients.XTMTP)) {
+        clients.push(await XmtpClientInterface.start(runtime));
+    }
+    if (clientTypes.includes(Clients.TWITTER)) {
+        clients.push(await TwitterClientInterface.start(runtime));
+    }
+    if (clientTypes.includes(Clients.DIRECT)) {
+        clients.push(await AutoClientInterface.start(runtime));
+    }
 
-  return clients;
+    return clients;
 }
 ```
 
@@ -122,15 +126,15 @@ export async function initializeClients(
 
 ```typescript
 function initializeDatabase(): IDatabaseAdapter {
-  // Use PostgreSQL if URL provided
-  if (process.env.POSTGRES_URL) {
-    return new PostgresDatabaseAdapter({
-      connectionString: process.env.POSTGRES_URL,
-    });
-  }
+    // Use PostgreSQL if URL provided
+    if (process.env.POSTGRES_URL) {
+        return new PostgresDatabaseAdapter({
+            connectionString: process.env.POSTGRES_URL,
+        });
+    }
 
-  // Fall back to SQLite
-  return new SqliteDatabaseAdapter(new Database("./db.sqlite"));
+    // Fall back to SQLite
+    return new SqliteDatabaseAdapter(new Database("./db.sqlite"));
 }
 ```
 
@@ -138,24 +142,25 @@ function initializeDatabase(): IDatabaseAdapter {
 
 ```typescript
 export function getTokenForProvider(
-  provider: ModelProviderName,
-  character: Character,
+    provider: ModelProviderName,
+    character: Character,
 ) {
-  switch (provider) {
-    case ModelProviderName.OPENAI:
-      return (
-        character.settings?.secrets?.OPENAI_API_KEY || settings.OPENAI_API_KEY
-      );
+    switch (provider) {
+        case ModelProviderName.OPENAI:
+            return (
+                character.settings?.secrets?.OPENAI_API_KEY ||
+                settings.OPENAI_API_KEY
+            );
 
-    case ModelProviderName.ANTHROPIC:
-      return (
-        character.settings?.secrets?.ANTHROPIC_API_KEY ||
-        character.settings?.secrets?.CLAUDE_API_KEY ||
-        settings.ANTHROPIC_API_KEY
-      );
+        case ModelProviderName.ANTHROPIC:
+            return (
+                character.settings?.secrets?.ANTHROPIC_API_KEY ||
+                character.settings?.secrets?.CLAUDE_API_KEY ||
+                settings.ANTHROPIC_API_KEY
+            );
 
-    // Handle other providers...
-  }
+        // Handle other providers...
+    }
 }
 ```
 
@@ -165,30 +170,30 @@ export function getTokenForProvider(
 
 ```typescript
 async function startAgent(character: Character, directClient: any) {
-  try {
-    // Get provider token
-    const token = getTokenForProvider(character.modelProvider, character);
+    try {
+        // Get provider token
+        const token = getTokenForProvider(character.modelProvider, character);
 
-    // Initialize database
-    const db = initializeDatabase();
+        // Initialize database
+        const db = initializeDatabase();
 
-    // Create runtime
-    const runtime = await createAgent(character, db, token);
+        // Create runtime
+        const runtime = await createAgent(character, db, token);
 
-    // Initialize clients
-    const clients = await initializeClients(character, runtime);
+        // Initialize clients
+        const clients = await initializeClients(character, runtime);
 
-    // Register with direct client
-    directClient.registerAgent(runtime);
+        // Register with direct client
+        directClient.registerAgent(runtime);
 
-    return clients;
-  } catch (error) {
-    console.error(
-      `Error starting agent for character ${character.name}:`,
-      error,
-    );
-    throw error;
-  }
+        return clients;
+    } catch (error) {
+        console.error(
+            `Error starting agent for character ${character.name}:`,
+            error,
+        );
+        throw error;
+    }
 }
 ```
 
@@ -196,37 +201,37 @@ async function startAgent(character: Character, directClient: any) {
 
 ```typescript
 const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
+    input: process.stdin,
+    output: process.stdout,
 });
 
 async function handleUserInput(input, agentId) {
-  if (input.toLowerCase() === "exit") {
-    rl.close();
-    return;
-  }
+    if (input.toLowerCase() === "exit") {
+        rl.close();
+        return;
+    }
 
-  try {
-    const response = await fetch(
-      `http://localhost:${serverPort}/${agentId}/message`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: input,
-          userId: "user",
-          userName: "User",
-        }),
-      },
-    );
+    try {
+        const response = await fetch(
+            `http://localhost:${serverPort}/${agentId}/message`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    text: input,
+                    userId: "user",
+                    userName: "User",
+                }),
+            },
+        );
 
-    const data = await response.json();
-    data.forEach((message) => console.log(`Agent: ${message.text}`));
-  } catch (error) {
-    console.error("Error:", error);
-  }
+        const data = await response.json();
+        data.forEach((message) => console.log(`Agent: ${message.text}`));
+    } catch (error) {
+        console.error("Error:", error);
+    }
 }
 ```
 
@@ -236,12 +241,12 @@ async function handleUserInput(input, agentId) {
 
 ```typescript
 async function loadPlugins(pluginPaths: string[]) {
-  return await Promise.all(
-    pluginPaths.map(async (plugin) => {
-      const importedPlugin = await import(plugin);
-      return importedPlugin;
-    }),
-  );
+    return await Promise.all(
+        pluginPaths.map(async (plugin) => {
+            const importedPlugin = await import(plugin);
+            return importedPlugin;
+        }),
+    );
 }
 ```
 
@@ -249,17 +254,17 @@ async function loadPlugins(pluginPaths: string[]) {
 
 ```typescript
 async function reloadCharacter(runtime: IAgentRuntime, characterPath: string) {
-  // Load new character
-  const character = JSON.parse(fs.readFileSync(characterPath, "utf8"));
+    // Load new character
+    const character = JSON.parse(fs.readFileSync(characterPath, "utf8"));
 
-  // Update runtime
-  runtime.character = character;
+    // Update runtime
+    runtime.character = character;
 
-  // Reload plugins
-  if (character.plugins) {
-    const plugins = await loadPlugins(character.plugins);
-    runtime.registerPlugins(plugins);
-  }
+    // Reload plugins
+    if (character.plugins) {
+        const plugins = await loadPlugins(character.plugins);
+        runtime.registerPlugins(plugins);
+    }
 }
 ```
 
@@ -267,23 +272,23 @@ async function reloadCharacter(runtime: IAgentRuntime, characterPath: string) {
 
 ```typescript
 class AgentCoordinator {
-  private agents: Map<string, IAgentRuntime>;
+    private agents: Map<string, IAgentRuntime>;
 
-  async broadcast(message: Memory) {
-    const responses = await Promise.all(
-      Array.from(this.agents.values()).map((agent) =>
-        agent.processMessage(message),
-      ),
-    );
-    return responses;
-  }
+    async broadcast(message: Memory) {
+        const responses = await Promise.all(
+            Array.from(this.agents.values()).map((agent) =>
+                agent.processMessage(message),
+            ),
+        );
+        return responses;
+    }
 
-  async coordinate(agents: string[], task: Task) {
-    // Coordinate multiple agents on a task
-    const selectedAgents = agents.map((id) => this.agents.get(id));
+    async coordinate(agents: string[], task: Task) {
+        // Coordinate multiple agents on a task
+        const selectedAgents = agents.map((id) => this.agents.get(id));
 
-    return await this.executeCoordinatedTask(selectedAgents, task);
-  }
+        return await this.executeCoordinatedTask(selectedAgents, task);
+    }
 }
 ```
 
@@ -294,20 +299,20 @@ class AgentCoordinator {
 ```typescript
 // Validate character before loading
 function validateCharacter(character: Character) {
-  if (!character.name) {
-    throw new Error("Character must have a name");
-  }
+    if (!character.name) {
+        throw new Error("Character must have a name");
+    }
 
-  if (!character.modelProvider) {
-    throw new Error("Model provider must be specified");
-  }
+    if (!character.modelProvider) {
+        throw new Error("Model provider must be specified");
+    }
 }
 
 // Use character versioning
 const character = {
-  name: "Agent",
-  version: "1.0.0",
-  // ...
+    name: "Agent",
+    version: "1.0.0",
+    // ...
 };
 ```
 
@@ -315,20 +320,20 @@ const character = {
 
 ```typescript
 async function handleAgentError(error: Error, character: Character) {
-  // Log error with context
-  console.error(`Agent ${character.name} error:`, error);
+    // Log error with context
+    console.error(`Agent ${character.name} error:`, error);
 
-  // Attempt recovery
-  if (error.code === "TOKEN_EXPIRED") {
-    await refreshToken(character);
-  }
+    // Attempt recovery
+    if (error.code === "TOKEN_EXPIRED") {
+        await refreshToken(character);
+    }
 
-  // Notify monitoring
-  await notify({
-    level: "error",
-    character: character.name,
-    error,
-  });
+    // Notify monitoring
+    await notify({
+        level: "error",
+        character: character.name,
+        error,
+    });
 }
 ```
 
@@ -336,24 +341,24 @@ async function handleAgentError(error: Error, character: Character) {
 
 ```typescript
 class ResourceManager {
-  async cleanup() {
-    // Close database connections
-    await this.db.close();
+    async cleanup() {
+        // Close database connections
+        await this.db.close();
 
-    // Shutdown clients
-    await Promise.all(this.clients.map((client) => client.stop()));
+        // Shutdown clients
+        await Promise.all(this.clients.map((client) => client.stop()));
 
-    // Clear caches
-    this.cache.clear();
-  }
-
-  async monitor() {
-    // Monitor resource usage
-    const usage = process.memoryUsage();
-    if (usage.heapUsed > threshold) {
-      await this.cleanup();
+        // Clear caches
+        this.cache.clear();
     }
-  }
+
+    async monitor() {
+        // Monitor resource usage
+        const usage = process.memoryUsage();
+        if (usage.heapUsed > threshold) {
+            await this.cleanup();
+        }
+    }
 }
 ```
 
@@ -365,13 +370,13 @@ class ResourceManager {
 
 ```typescript
 try {
-  await loadCharacters(charactersArg);
+    await loadCharacters(charactersArg);
 } catch (error) {
-  if (error.code === "ENOENT") {
-    console.error("Character file not found");
-  } else if (error instanceof SyntaxError) {
-    console.error("Invalid character JSON");
-  }
+    if (error.code === "ENOENT") {
+        console.error("Character file not found");
+    } else if (error instanceof SyntaxError) {
+        console.error("Invalid character JSON");
+    }
 }
 ```
 
@@ -379,11 +384,11 @@ try {
 
 ```typescript
 async function handleClientError(error: Error) {
-  if (error.message.includes("rate limit")) {
-    await wait(exponentialBackoff());
-  } else if (error.message.includes("auth")) {
-    await refreshAuth();
-  }
+    if (error.message.includes("rate limit")) {
+        await wait(exponentialBackoff());
+    } else if (error.message.includes("auth")) {
+        await refreshAuth();
+    }
 }
 ```
 
@@ -391,11 +396,11 @@ async function handleClientError(error: Error) {
 
 ```typescript
 async function handleDbError(error: Error) {
-  if (error.message.includes("connection")) {
-    await reconnectDb();
-  } else if (error.message.includes("locked")) {
-    await waitForLock();
-  }
+    if (error.message.includes("connection")) {
+        await reconnectDb();
+    } else if (error.message.includes("locked")) {
+        await waitForLock();
+    }
 }
 ```
 
