@@ -1,11 +1,11 @@
 {
-    "name": "@ai16z/plugin-concierge",
-    "version": "0.1.6-alpha.4",
+    "name": "@elizaos/plugin-concierge",
+    "version": "0.1.7-alpha.1",
     "main": "dist/index.js",
     "type": "module",
     "types": "dist/index.d.ts",
     "dependencies": {
-        "@ai16z/eliza": "workspace:*",
+        "@elizaos/core": "workspace:*",
         "@coinbase/cbpay-js": "^2.4.0",
         "@coinbase/coinbase-sdk": "0.11.2",
         "build": "^0.1.4",
