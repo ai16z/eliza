@@ -8,7 +8,7 @@ import {
     ModelClass,
     generateObject,
     composeContext,
-} from "@ai16z/eliza";
+} from "@elizaos/core";
 import { baselinks } from "./baselinks";
 import { WalletService } from "./cdp";
 import {
@@ -41,7 +41,7 @@ const send = async (callback: HandlerCallback, text: string) => {
     try {
         await callback({ text: text }, []);
     } catch (error) {
-        console.error(error);
+        elizaLogger.error(error);
         await callback(
             { text: "Failed to create resource. Please check the logs." },
             []
@@ -196,7 +196,7 @@ export const showPrivateKey: Action = {
             send(callback, "You don't have an agent wallet.");
             return;
         }
-        console.log("walletData", walletData);
+        elizaLogger.info("walletData", walletData);
         await send(callback, `Your wallet seed: ${walletData.wallet.seed}`);
     },
 };

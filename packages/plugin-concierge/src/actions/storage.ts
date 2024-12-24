@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs";
-import { elizaLogger } from "@ai16z/eliza";
+import { elizaLogger } from "@elizaos/core";
 
 export class LocalStorage {
     private baseDir: string;

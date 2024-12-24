@@ -8,8 +8,9 @@ import {
     stringToUuid,
     messageCompletionFooter,
     generateMessageResponse,
-} from "@ai16z/eliza";
-import { Client, IAgentRuntime } from "@ai16z/eliza";
+    Client,
+    IAgentRuntime,
+} from "@elizaos/core";
 
 let xmtp: XMTP = null;
 let elizaRuntime: IAgentRuntime = null;
@@ -88,8 +89,6 @@ const onMessage = async (message: Message) => {
         const messageId = stringToUuid(message.id as string);
         const userId = stringToUuid(message.sender.address as string);
         const roomId = stringToUuid(message.conversation.id as string);
-
-        console.log("userId", userId, roomId, message.sender.address);
         await elizaRuntime.ensureConnection(
             userId,
             roomId,
@@ -174,8 +173,8 @@ const onMessage = async (message: Message) => {
                 return [memory];
             }
         );
+        console.log("newMessage", _newMessage);
         for (const newMsg of _newMessage) {
-            console.log("newMessage", newMsg.text);
             await xmtp.send({
                 message: newMsg.text,
                 originalMessage: message,

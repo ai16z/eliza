@@ -48,4 +48,5 @@ pnpm add @elizaos/adapter-sqlite
 # Install clients
 pnpm add @elizaos/client-discord
 pnpm add @elizaos/client-Telegram
+pnpm add @elizaos/client-xmtp
 ```

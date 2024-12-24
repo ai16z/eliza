@@ -132,6 +132,9 @@ importers:
       '@elizaos/client-twitter':
         specifier: workspace:*
         version: link:../packages/client-twitter
+      '@elizaos/client-xmtp':
+        specifier: workspace:*
+        version: link:../packages/client-xmtp
       '@elizaos/core':
         specifier: workspace:*
         version: link:../packages/core
@@ -147,6 +150,9 @@ importers:
       '@elizaos/plugin-coinbase':
         specifier: workspace:*
         version: link:../packages/plugin-coinbase
+      '@elizaos/plugin-concierge':
+        specifier: workspace:*
+        version: link:../packages/plugin-concierge
       '@elizaos/plugin-conflux':
         specifier: workspace:*
         version: link:../packages/plugin-conflux

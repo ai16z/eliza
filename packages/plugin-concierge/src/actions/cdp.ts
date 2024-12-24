@@ -10,7 +10,7 @@ import { getUserInfo } from "./resolver";
 import { isAddress } from "viem";
 import { generateOnRampURL } from "@coinbase/cbpay-js";
 import { LocalStorage } from "./storage";
-import { elizaLogger } from "@ai16z/eliza";
+import { elizaLogger } from "@elizaos/core";
 
 const appId = process.env.COINBASE_APP_ID;
 const apiKeyName = process.env.COINBASE_API_KEY_NAME;
