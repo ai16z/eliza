@@ -116,7 +116,12 @@ const sidebars = {
             type: "doc",
             id: "advanced/eliza-in-tee",
             label: "Eliza in TEE",
-          },
+        },
+        {
+          type: "doc",
+          id: "advanced/e2ee",
+          label: "Secure messages",
+        },
       ],
     },
     {
