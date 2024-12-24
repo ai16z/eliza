@@ -5,4 +5,5 @@
 *.env
 .env*
 /data
+/.data
 /generatedImages
