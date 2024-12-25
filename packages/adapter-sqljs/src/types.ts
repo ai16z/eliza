@@ -100,7 +100,7 @@ declare class Statement {
     getSQL(): string;
 
     /**
-     * Reset a statement, so that it's parameters can be bound to new
+     * Reset a statement, so that its parameters can be bound to new
      * values. It also clears all previous bindings, freeing the memory used
      * by bound parameters.
      * @see [https://sql.js.org/documentation/Statement.html#["reset"]](https://sql.js.org/documentation/Statement.html#%5B%22reset%22%5D)
@@ -115,7 +115,7 @@ declare class Statement {
     run(values?: BindParams): void;
 
     /**
-     * Execute the statement, fetching the the next line of result, that can
+     * Execute the statement, fetching the next line of result, that can
      * be retrieved with `Statement.get`.
      * @see [https://sql.js.org/documentation/Statement.html#["step"]](https://sql.js.org/documentation/Statement.html#%5B%22step%22%5D)
      */
@@ -169,7 +169,7 @@ export declare class Database {
     getRowsModified(): number;
 
     /**
-     * Analyze a result code, return null if no error occured, and throw an
+     * Analyze a result code, return null if no error occurred, and throw an
      * error with a descriptive message otherwise
      * @see [https://sql.js.org/documentation/Database.html#["handleError"]](https://sql.js.org/documentation/Database.html#%5B%22handleError%22%5D)
      */

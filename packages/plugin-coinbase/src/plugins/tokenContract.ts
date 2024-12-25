@@ -58,7 +58,7 @@ export const deployTokenContractAction: Action = {
     description:
         "Deploy an ERC20, ERC721, or ERC1155 token contract using the Coinbase SDK",
     validate: async (runtime: IAgentRuntime, _message: Memory) => {
-        elizaLogger.log("Validating runtime for DEPLOY_TOKEN_CONTRACT...");
+        elizaLogger.info("Validating runtime for DEPLOY_TOKEN_CONTRACT...");
         return (
             !!(
                 runtime.character.settings.secrets?.COINBASE_API_KEY ||
@@ -77,7 +77,7 @@ export const deployTokenContractAction: Action = {
         _options: any,
         callback: HandlerCallback
     ) => {
-        elizaLogger.log("Starting DEPLOY_TOKEN_CONTRACT handler...");
+        elizaLogger.debug("Starting DEPLOY_TOKEN_CONTRACT handler...");
 
         try {
             Coinbase.configure({
@@ -118,7 +118,7 @@ export const deployTokenContractAction: Action = {
                 modelClass: ModelClass.SMALL,
                 schema: TokenContractSchema,
             });
-            elizaLogger.log("Contract details:", contractDetails.object);
+            elizaLogger.info("Contract details:", contractDetails.object);
 
             if (!isTokenContractContent(contractDetails.object)) {
                 callback(
@@ -138,7 +138,7 @@ export const deployTokenContractAction: Action = {
                 baseURI,
                 totalSupply,
             } = contractDetails.object;
-            elizaLogger.log("Contract details:", contractDetails.object);
+            elizaLogger.info("Contract details:", contractDetails.object);
             const wallet = await initializeWallet(runtime, network);
             let contract: SmartContract;
             let deploymentDetails;
@@ -177,8 +177,8 @@ export const deployTokenContractAction: Action = {
 
             // Wait for deployment to complete
             await contract.wait();
-            elizaLogger.log("Deployment details:", deploymentDetails);
-            elizaLogger.log("Contract deployed successfully:", contract);
+            elizaLogger.info("Deployment details:", deploymentDetails);
+            elizaLogger.info("Contract deployed successfully:", contract);
             // Log deployment to CSV
             const csvWriter = createArrayCsvWriter({
                 path: contractsCsvFilePath,
@@ -287,7 +287,7 @@ export const invokeContractAction: Action = {
     description:
         "Invoke a method on a deployed smart contract using the Coinbase SDK",
     validate: async (runtime: IAgentRuntime, _message: Memory) => {
-        elizaLogger.log("Validating runtime for INVOKE_CONTRACT...");
+        elizaLogger.info("Validating runtime for INVOKE_CONTRACT...");
         return (
             !!(
                 runtime.character.settings.secrets?.COINBASE_API_KEY ||
@@ -306,7 +306,7 @@ export const invokeContractAction: Action = {
         _options: any,
         callback: HandlerCallback
     ) => {
-        elizaLogger.log("Starting INVOKE_CONTRACT handler...");
+        elizaLogger.debug("Starting INVOKE_CONTRACT handler...");
 
         try {
             Coinbase.configure({
@@ -329,7 +329,7 @@ export const invokeContractAction: Action = {
                 modelClass: ModelClass.LARGE,
                 schema: ContractInvocationSchema,
             });
-            elizaLogger.log("Invocation details:", invocationDetails.object);
+            elizaLogger.info("Invocation details:", invocationDetails.object);
             if (!isContractInvocationContent(invocationDetails.object)) {
                 callback(
                     {
@@ -362,7 +362,7 @@ export const invokeContractAction: Action = {
                 networkId,
                 assetId,
             };
-            elizaLogger.log("Invocation options:", invocationOptions);
+            elizaLogger.info("Invocation options:", invocationOptions);
             // Invoke the contract
             const invocation = await wallet.invokeContract(invocationOptions);
 
@@ -454,7 +454,7 @@ export const readContractAction: Action = {
     description:
         "Read data from a deployed smart contract using the Coinbase SDK",
     validate: async (runtime: IAgentRuntime, _message: Memory) => {
-        elizaLogger.log("Validating runtime for READ_CONTRACT...");
+        elizaLogger.info("Validating runtime for READ_CONTRACT...");
         return (
             !!(
                 runtime.character.settings.secrets?.COINBASE_API_KEY ||
@@ -473,7 +473,7 @@ export const readContractAction: Action = {
         _options: any,
         callback: HandlerCallback
     ) => {
-        elizaLogger.log("Starting READ_CONTRACT handler...");
+        elizaLogger.debug("Starting READ_CONTRACT handler...");
 
         try {
             Coinbase.configure({
@@ -509,7 +509,7 @@ export const readContractAction: Action = {
 
             const { contractAddress, method, args, networkId, abi } =
                 readDetails.object;
-            elizaLogger.log("Reading contract:", {
+            elizaLogger.info("Reading contract:", {
                 contractAddress,
                 method,
                 args,

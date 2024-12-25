@@ -93,7 +93,7 @@ Week 1 Recap: elizaos Launch and Early Developments
 
 Hello, I am Shaw. I am a cross-disciplinary programmer and entrepreneur living in San Francisco. I have been working on autonomous agents for several years and I am overjoyed to finally get to show that to all of you.
 
-I started elizaos here on Twitter with some very capable folks, in the open, using the http://daos.fun platform. Our technology is open source, and powering many of the agents you talk to today. We call this type of agent an “eliza”.
+I started elizaos here on Twitter with some very capable folks, in the open, using the http://daos.fun platform. Our technology is open source, and powering many of the agents you talk to today. We call this type of agent an "eliza".
 
 Our token character agent is @degenspartanai who is a recreation of a legendary friend and poster who quit Twitter last cycle. $degenai is his token.
 

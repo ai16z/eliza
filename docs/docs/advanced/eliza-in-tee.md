@@ -23,7 +23,7 @@ The TEE Plugin in the Eliza Framework is built on top of the [Dstack SDK](https:
 
 ## Core Components
 
-Eliza's TEE implementation consists of two primary providers that handle secure key managementoperations and remote attestations.
+Eliza's TEE implementation consists of two primary providers that handle secure key management operations and remote attestations.
 
 These components work together to provide:
 
@@ -101,7 +101,7 @@ const quote = await provider.generateAttestation(reportData);
 Before getting started with Eliza, ensure you have:
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Orbstack](https://orbstack.dev/) (Orbstack is recommended)
-- For Mac/Windows: Check the prerequisites from [Quickstart Guide](./quickstart.md)
+- For Mac/Windows: Check the prerequisites from [Quickstart Guide](../quickstart.md)
 - For Linux: You just need Docker
 
 ---
@@ -144,7 +144,7 @@ To set up your environment for TEE development:
 
 1. **Configure Eliza Agent**
 
-    Go through the [configuration guide](./configuration.md) to set up your Eliza agent.
+    Go through the [configuration guide](../guides/configuration.md) to set up your Eliza agent.
 
 2. **Start the TEE Simulator**
    Follow the simulator setup instructions above based on your TEE mode.

@@ -32,7 +32,7 @@ export const parseShouldRespondFromText = (
               : null;
 };
 
-export const booleanFooter = `Respond with a YES or a NO.`;
+export const booleanFooter = `Respond with only a YES or a NO.`;
 
 export const parseBooleanFromText = (text: string) => {
     const match = text.match(/^(YES|NO)$/i);

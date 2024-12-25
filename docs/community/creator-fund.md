@@ -18,7 +18,7 @@ Here's when the community learned about who the top holder is:
 
 > "So a ton of people have been asking (justifiably) who the heck I am, why do I have 16% of elizaos supply, and what I’m going to do with it.
 >
-> It started by @shawmakesmagic tweeting about some agent he built called @degenspartanai, a recreation of a legend on twitter. I put a bunch of my SOL in there because I had been following Shaw and really thought he was building something great. Almost immediately all of that became close to worthless. Degen’s tweets seemed too “human-like” to be real anyway - so I figured I got scammed.
+> It started by @shawmakesmagic tweeting about some agent he built called @degenspartanai, a recreation of a legend on twitter. I put a bunch of my SOL in there because I had been following Shaw and really thought he was building something great. Almost immediately all of that became close to worthless. Degen’s tweets seemed too "human-like" to be real anyway - so I figured I got scammed.
 >
 > So I DM’ed shaw, not because I was angry, but I was genuinely curious why he might have scammed me. I ended up sending him a google meet, which turned into an hour long conversation about what he was actually building, and me realizing twitter is usually a misrepresentation of the people you think you know. Shaw is just inspiring. Someone who is completely dedicated to accelerating the world for the better, and not optimizing for optics or money - just building.
 >

@@ -34,6 +34,7 @@ const tradeCsvFilePath = path.join(baseDir, "advanced_trades.csv");
 
 const tradeProvider: Provider = {
     get: async (runtime: IAgentRuntime, _message: Memory) => {
+        elizaLogger.debug("Starting tradeProvider function");
         try {
             const client = new RESTClient(
                 runtime.getSetting("COINBASE_API_KEY") ??
@@ -103,6 +104,7 @@ const tradeProvider: Provider = {
 };
 
 export async function appendTradeToCsv(tradeResult: any) {
+    elizaLogger.debug("Starting appendTradeToCsv function");
     try {
         const csvWriter = createArrayCsvWriter({
             path: tradeCsvFilePath,
@@ -139,6 +141,7 @@ async function hasEnoughBalance(
     amount: number,
     side: string
 ): Promise<boolean> {
+    elizaLogger.debug("Starting hasEnoughBalance function");
     try {
         const response = await client.listAccounts({});
         const accounts = JSON.parse(response);
@@ -216,6 +219,7 @@ export const executeAdvancedTradeAction: Action = {
         let client: RESTClient;
 
         // Initialize client
+        elizaLogger.debug("Starting advanced trade client initialization");
         try {
             client = new RESTClient(
                 runtime.getSetting("COINBASE_API_KEY") ??
@@ -237,6 +241,7 @@ export const executeAdvancedTradeAction: Action = {
 
         // Generate trade details
         let tradeDetails;
+        elizaLogger.debug("Starting trade details generation");
         try {
             tradeDetails = await generateObject({
                 runtime,
@@ -276,6 +281,7 @@ export const executeAdvancedTradeAction: Action = {
 
         // Configure order
         let orderConfiguration: OrderConfiguration;
+        elizaLogger.debug("Starting order configuration");
         try {
             if (orderType === "MARKET") {
                 orderConfiguration =
@@ -323,6 +329,7 @@ export const executeAdvancedTradeAction: Action = {
         // Execute trade
         let order: CreateOrderResponse;
         try {
+            elizaLogger.debug("Executing the trade");
             if (
                 !(await hasEnoughBalance(
                     client,

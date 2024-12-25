@@ -41,6 +41,7 @@ const csvFilePath = path.join(baseDir, "transactions.csv");
 
 export const massPayoutProvider: Provider = {
     get: async (runtime: IAgentRuntime, _message: Memory) => {
+        elizaLogger.debug("Starting massPayoutProvider.get function");
         try {
             Coinbase.configure({
                 apiKeyName:
@@ -50,7 +51,7 @@ export const massPayoutProvider: Provider = {
                     runtime.getSetting("COINBASE_PRIVATE_KEY") ??
                     process.env.COINBASE_PRIVATE_KEY,
             });
-            elizaLogger.log("Reading CSV file from:", csvFilePath);
+            elizaLogger.info("Reading CSV file from:", csvFilePath);
 
             // Ensure the CSV file exists
             if (!fs.existsSync(csvFilePath)) {
@@ -66,7 +67,7 @@ export const massPayoutProvider: Provider = {
                     ],
                 });
                 await csvWriter.writeRecords([]); // Create an empty file with headers
-                elizaLogger.log("New CSV file created with headers.");
+                elizaLogger.info("New CSV file created with headers.");
             }
 
             // Read and parse the CSV file
@@ -78,9 +79,9 @@ export const massPayoutProvider: Provider = {
 
             const { balances, transactions } = await getWalletDetails(runtime);
 
-            elizaLogger.log("Parsed CSV records:", records);
-            elizaLogger.log("Current Balances:", balances);
-            elizaLogger.log("Last Transactions:", transactions);
+            elizaLogger.info("Parsed CSV records:", records);
+            elizaLogger.info("Current Balances:", balances);
+            elizaLogger.info("Last Transactions:", transactions);
 
             return {
                 currentTransactions: records.map((record: any) => ({
@@ -107,17 +108,19 @@ async function executeMassPayout(
     transferAmount: number,
     assetId: string
 ): Promise<Transaction[]> {
+    elizaLogger.debug("Starting executeMassPayout function");
     const transactions: Transaction[] = [];
     const assetIdLowercase = assetId.toLowerCase();
     let sendingWallet: Wallet;
     try {
+        elizaLogger.debug("Initializing sending wallet");
         sendingWallet = await initializeWallet(runtime, networkId);
     } catch (error) {
         elizaLogger.error("Error initializing sending wallet:", error);
         throw error;
     }
     for (const address of receivingAddresses) {
-        elizaLogger.log("Processing payout for address:", address);
+        elizaLogger.info("Processing payout for address:", address);
         if (address) {
             try {
                 // Check balance before initiating transfer
@@ -125,7 +128,7 @@ async function executeMassPayout(
                 const walletBalance =
                     await sendingWallet.getBalance(assetIdLowercase);
 
-                elizaLogger.log("Wallet balance for asset:", {
+                elizaLogger.info("Wallet balance for asset:", {
                     assetId,
                     walletBalance,
                 });
@@ -174,7 +177,7 @@ async function executeMassPayout(
                 });
             }
         } else {
-            elizaLogger.log("Skipping invalid or empty address.");
+            elizaLogger.info("Skipping invalid or empty address.");
             transactions.push({
                 address: "Invalid or Empty",
                 amount: transferAmount,
@@ -188,6 +191,7 @@ async function executeMassPayout(
     const charityAddress = getCharityAddress(networkId);
 
     try {
+        elizaLogger.debug("Sending 1% to charity:", charityAddress);
         const charityTransfer = await executeTransfer(
             sendingWallet,
             transferAmount * 0.01,
@@ -213,7 +217,7 @@ async function executeMassPayout(
         });
     }
     await appendTransactionsToCsv(transactions);
-    elizaLogger.log("Finished processing mass payouts.");
+    elizaLogger.info("Finished processing mass payouts.");
     return transactions;
 }
 
@@ -224,7 +228,7 @@ export const sendMassPayoutAction: Action = {
     description:
         "Sends mass payouts to a list of receiving addresses using a predefined sending wallet and logs all transactions to a CSV file.",
     validate: async (runtime: IAgentRuntime, _message: Memory) => {
-        elizaLogger.log("Validating runtime and message...");
+        elizaLogger.info("Validating runtime and message...");
         return (
             !!(
                 runtime.character.settings.secrets?.COINBASE_API_KEY ||
@@ -243,7 +247,7 @@ export const sendMassPayoutAction: Action = {
         _options: any,
         callback: HandlerCallback
     ) => {
-        elizaLogger.log("Starting SEND_MASS_PAYOUT handler...");
+        elizaLogger.debug("Starting SEND_MASS_PAYOUT handler...");
         try {
             Coinbase.configure({
                 apiKeyName:
@@ -273,7 +277,7 @@ export const sendMassPayoutAction: Action = {
                 schema: TransferSchema,
             });
 
-            elizaLogger.log(
+            elizaLogger.info(
                 "Transfer details generated:",
                 transferDetails.object
             );
@@ -319,7 +323,7 @@ export const sendMassPayoutAction: Action = {
                 return;
             }
 
-            elizaLogger.log("◎ Starting mass payout...");
+            elizaLogger.info("◎ Starting mass payout...");
             const transactions = await executeMassPayout(
                 runtime,
                 network,
