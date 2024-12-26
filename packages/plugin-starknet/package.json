@@ -9,6 +9,7 @@
         "@elizaos/plugin-trustdb": "workspace:*",
         "@avnu/avnu-sdk": "2.1.1",
         "@uniswap/sdk-core": "6.0.0",
+        "unruggable-sdk": "1.4.0",
         "@unruggable_starknet/core": "0.1.0",
         "starknet": "6.18.0",
         "tsup": "8.3.5",

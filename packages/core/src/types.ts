@@ -417,6 +417,9 @@ export interface Action {
 
     /** Validation function */
     validate: Validator;
+
+    /** Whether to suppress the initial message when this action is used */
+    suppressInitialMessage?: boolean;
 }
 
 /**
@@ -623,6 +626,14 @@ export interface IAgentConfig {
     [key: string]: string;
 }
 
+export interface ModelConfiguration {
+    temperature?: number;
+    max_response_length?: number;
+    frequency_penalty?: number;
+    presence_penalty?: number;
+    maxInputTokens?: number;
+}
+
 /**
  * Configuration for an agent character
  */
@@ -735,6 +746,7 @@ export type Character = {
             };
         };
         model?: string;
+        modelConfig?: ModelConfiguration;
         embeddingModel?: string;
         chains?: {
             evm?: any[];

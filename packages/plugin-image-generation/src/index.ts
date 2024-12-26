@@ -76,6 +76,7 @@ const imageGeneration: Action = {
         "MAKE_A",
     ],
     description: "Generate an image to go along with the message.",
+    suppressInitialMessage: true,
     validate: async (runtime: IAgentRuntime, _message: Memory) => {
         await validateImageGenConfig(runtime);
 

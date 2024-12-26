@@ -46,6 +46,7 @@ import { evmPlugin } from "@elizaos/plugin-evm";
 import { storyPlugin } from "@elizaos/plugin-story";
 import { flowPlugin } from "@elizaos/plugin-flow";
 import { imageGenerationPlugin } from "@elizaos/plugin-image-generation";
+import { ThreeDGenerationPlugin } from "@elizaos/plugin-3d-generation";
 import { multiversxPlugin } from "@elizaos/plugin-multiversx";
 import { nearPlugin } from "@elizaos/plugin-near";
 import { nftGenerationPlugin } from "@elizaos/plugin-nft-generation";
@@ -177,6 +178,25 @@ export async function loadCharacters(
             try {
                 const character = JSON.parse(content);
                 validateCharacterConfig(character);
+
+                // .id isn't really valid
+                const characterId = character.id || character.name;
+                const characterPrefix = `CHARACTER.${characterId.toUpperCase().replace(/ /g, '_')}.`;
+
+                const characterSettings = Object.entries(process.env)
+                    .filter(([key]) => key.startsWith(characterPrefix))
+                    .reduce((settings, [key, value]) => {
+                        const settingKey = key.slice(characterPrefix.length);
+                        return { ...settings, [settingKey]: value };
+                    }, {});
+
+                if (Object.keys(characterSettings).length > 0) {
+                    character.settings = character.settings || {};
+                    character.settings.secrets = {
+                        ...characterSettings,
+                        ...character.settings.secrets
+                    };
+                }
 
                 // Handle plugins
                 if (isAllStrings(character.plugins)) {
@@ -515,6 +535,9 @@ export async function createAgent(
             getSecret(character, "VENICE_API_KEY") ||
             getSecret(character, "HEURIST_API_KEY")
                 ? imageGenerationPlugin
+                : null,
+            getSecret(character, "FAL_API_KEY") 
+                ? ThreeDGenerationPlugin
                 : null,
             ...(getSecret(character, "COINBASE_API_KEY") &&
             getSecret(character, "COINBASE_PRIVATE_KEY")

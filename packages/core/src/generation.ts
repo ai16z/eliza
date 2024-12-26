@@ -146,11 +146,22 @@ export async function generateText({
 
     elizaLogger.info("Selected model:", model);
 
-    const temperature = models[provider].settings.temperature;
-    const frequency_penalty = models[provider].settings.frequency_penalty;
-    const presence_penalty = models[provider].settings.presence_penalty;
-    const max_context_length = models[provider].settings.maxInputTokens;
-    const max_response_length = models[provider].settings.maxOutputTokens;
+    const modelConfiguration = runtime.character?.settings?.modelConfig;
+    const temperature =
+        modelConfiguration?.temperature ||
+        models[provider].settings.temperature;
+    const frequency_penalty =
+        modelConfiguration?.frequency_penalty ||
+        models[provider].settings.frequency_penalty;
+    const presence_penalty =
+        modelConfiguration?.presence_penalty ||
+        models[provider].settings.presence_penalty;
+    const max_context_length =
+        modelConfiguration?.maxInputTokens ||
+        models[provider].settings.maxInputTokens;
+    const max_response_length =
+        modelConfiguration.max_response_length ||
+        models[provider].settings.maxOutputTokens;
 
     const apiKey = runtime.token;
 
