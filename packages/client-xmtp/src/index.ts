@@ -57,15 +57,15 @@ export const XmtpClientInterface: Client = {
 
             elizaLogger.success("✅ XMTP client started");
             elizaLogger.info(`XMTP address: ${xmtp.address}`);
-            elizaLogger.info(`Share it on `);
+            elizaLogger.info(`Talk to me on:`);
             elizaLogger.log(
-                `💬 Converse: https://converse.xyz/dm/${xmtp.address}`
+                `Converse: https://converse.xyz/dm/${xmtp.address}`
             );
             elizaLogger.log(
-                `💬 Coinbase Wallet: https://go.cb-w.com/messaging?address=${xmtp.address}`
+                `Coinbase Wallet: https://go.cb-w.com/messaging?address=${xmtp.address}`
             );
             elizaLogger.log(
-                `🖼️ Share in Farcaster (Framev2): https://frames.message-kit.org/dm/${xmtp.address}`
+                `Web or Farcaster Frame: https://client.message-kit.org/?address=${xmtp.address}`
             );
 
             return xmtp;
@@ -173,7 +173,6 @@ const onMessage = async (message: Message) => {
                 return [memory];
             }
         );
-        console.log("newMessage", _newMessage);
         for (const newMsg of _newMessage) {
             await xmtp.send({
                 message: newMsg.text,

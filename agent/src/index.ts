@@ -6,15 +6,14 @@ import { FarcasterAgentClient } from "@elizaos/client-farcaster";
 import { LensAgentClient } from "@elizaos/client-lens";
 import { SlackClientInterface } from "@elizaos/client-slack";
 import { TelegramClientInterface } from "@elizaos/client-telegram";
-import { XmtpClientInterface } from "@elizaos/client-xmtp";
 import { TwitterClientInterface } from "@elizaos/client-twitter";
-import { paymentagent as defaultCharacter } from "./paymentagent";
 import {
     AgentRuntime,
     CacheManager,
     Character,
     Clients,
     DbCacheAdapter,
+    defaultCharacter,
     elizaLogger,
     FsCacheAdapter,
     IAgentRuntime,
@@ -382,11 +381,6 @@ export async function initializeClients(
     if (clientTypes.includes(Clients.TELEGRAM)) {
         const telegramClient = await TelegramClientInterface.start(runtime);
         if (telegramClient) clients.telegram = telegramClient;
-    }
-
-    if (clientTypes.includes(Clients.XMTP)) {
-        const xmtpClient = await XmtpClientInterface.start(runtime);
-        if (xmtpClient) clients.xmtp = xmtpClient;
     }
 
     if (clientTypes.includes(Clients.TWITTER)) {

@@ -183,6 +183,16 @@ TWITTER_EMAIL=    # Account email
 TELEGRAM_BOT_TOKEN=your_token_here
 ```
 
+### XMTP Agent
+
+1. Create a wallet
+2. Export private key
+
+```bash
+EVM_PRIVATE_KEY=your_private_key
+TEST_ENCRYPTION_KEY=another_private_key
+```
+
 ## Optional: GPU Acceleration
 
 If you have an NVIDIA GPU:
