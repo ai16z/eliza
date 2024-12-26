@@ -56,6 +56,7 @@ import { suiPlugin } from "@elizaos/plugin-sui";
 import { TEEMode, teePlugin } from "@elizaos/plugin-tee";
 import { tonPlugin } from "@elizaos/plugin-ton";
 import { zksyncEraPlugin } from "@elizaos/plugin-zksync-era";
+import { cronosZkEVMPlugin } from "@elizaos/plugin-cronoszkevm";
 import { abstractPlugin } from "@elizaos/plugin-abstract";
 import Database from "better-sqlite3";
 import fs from "fs";
@@ -181,7 +182,7 @@ export async function loadCharacters(
 
                 // .id isn't really valid
                 const characterId = character.id || character.name;
-                const characterPrefix = `CHARACTER.${characterId.toUpperCase().replace(/ /g, '_')}.`;
+                const characterPrefix = `CHARACTER.${characterId.toUpperCase().replace(/ /g, "_")}.`;
 
                 const characterSettings = Object.entries(process.env)
                     .filter(([key]) => key.startsWith(characterPrefix))
@@ -194,7 +195,7 @@ export async function loadCharacters(
                     character.settings = character.settings || {};
                     character.settings.secrets = {
                         ...characterSettings,
-                        ...character.settings.secrets
+                        ...character.settings.secrets,
                     };
                 }
 
@@ -536,9 +537,7 @@ export async function createAgent(
             getSecret(character, "HEURIST_API_KEY")
                 ? imageGenerationPlugin
                 : null,
-            getSecret(character, "FAL_API_KEY") 
-                ? ThreeDGenerationPlugin
-                : null,
+            getSecret(character, "FAL_API_KEY") ? ThreeDGenerationPlugin : null,
             ...(getSecret(character, "COINBASE_API_KEY") &&
             getSecret(character, "COINBASE_PRIVATE_KEY")
                 ? [
@@ -567,6 +566,9 @@ export async function createAgent(
             getSecret(character, "APTOS_PRIVATE_KEY") ? aptosPlugin : null,
             getSecret(character, "MVX_PRIVATE_KEY") ? multiversxPlugin : null,
             getSecret(character, "ZKSYNC_PRIVATE_KEY") ? zksyncEraPlugin : null,
+            getSecret(character, "CRONOSZKEVM_PRIVATE_KEY")
+                ? cronosZkEVMPlugin
+                : null,
             getSecret(character, "TON_PRIVATE_KEY") ? tonPlugin : null,
             getSecret(character, "SUI_PRIVATE_KEY") ? suiPlugin : null,
             getSecret(character, "STORY_PRIVATE_KEY") ? storyPlugin : null,

@@ -175,7 +175,7 @@ export class TwitterPostClient {
 
         // Add check for ENABLE_ACTION_PROCESSING before starting the loop
         const enableActionProcessing =
-            this.runtime.getSetting("ENABLE_ACTION_PROCESSING") ?? false;
+            this.runtime.getSetting("ENABLE_ACTION_PROCESSING") === "true" || false;
 
         if (enableActionProcessing) {
             processActionsLoop().catch((error) => {

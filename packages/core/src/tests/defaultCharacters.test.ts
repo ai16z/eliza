@@ -43,7 +43,7 @@ describe("defaultCharacter", () => {
     });
 
     it("should have a topics array with at least one broad topic", () => {
-        expect(defaultCharacter.topics).toContain("Learning");
+        expect(defaultCharacter.topics).toContain("Classical art");
     });
 
     it('should have style settings with "all" array', () => {
