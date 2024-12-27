@@ -1,0 +1,26 @@
+{
+  "name": "@elizaos/plugin-hyperliquid",
+  "version": "0.1.7-alpha.1",
+  "description": "Hyperliquid plugin for Eliza",
+  "main": "dist/index.js",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup --format esm --dts",
+    "dev": "tsup --format esm --dts --watch",
+    "test": "vitest",
+    "lint": "eslint --fix --cache ."
+  },
+  "dependencies": {
+    "@elizaos/core": "workspace:*",
+    "@msgpack/msgpack": "^3.0.0-beta2",
+    "ethers": "^6.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.4",
+    "dotenv": "^16.3.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.0.4",
+    "tsup": "^8.3.5"
+  }
+}

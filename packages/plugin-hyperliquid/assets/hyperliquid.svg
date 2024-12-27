@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="200" viewBox="0 0 800 200" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        .logo { fill: #ffffff; }
+        .background { fill: #000000; }
+    </style>
+    <rect class="background" width="800" height="200"/>
+    <g transform="translate(50, 50)">
+        <!-- Hyperliquid Logo -->
+        <path class="logo" d="M60,20 C40,20 25,35 25,55 C25,75 40,90 60,90 C80,90 95,75 95,55 C95,35 80,20 60,20 Z M60,30 C74,30 85,41 85,55 C85,69 74,80 60,80 C46,80 35,69 35,55 C35,41 46,30 60,30 Z"/>
+        <text x="120" y="65" class="logo" style="font-family: Arial; font-size: 48px; font-weight: bold;">Hyperliquid</text>
+    </g>
+</svg> 
