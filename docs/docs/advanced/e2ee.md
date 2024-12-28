@@ -26,10 +26,10 @@ Eliza agents come with a ready to use client that uses XMTP providing end-to-end
 
 ### Features:
 
-- **E2EE**: End to end encrypted MLS encryption
+- **E2EE**: End to end MLS encryption
 - **Multi-agent**: Support multi-agent through group chats
 - **Interoperable**: Works across all platforms and frontends
-- **Scalable**: Decentralized, open-source
+- **Trusted**: Decentralized, open source
 - **Anonymous**: By default every identity is ephemeral and anonymous.
 
 ### Installation
