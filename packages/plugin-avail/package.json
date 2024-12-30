@@ -1,0 +1,21 @@
+{
+    "name": "plugin-avail",
+    "main": "dist/index.js",
+    "type": "module",
+    "types": "dist/index.d.ts",
+    "dependencies": {
+        "@elizaos/eliza": "workspace:*",
+        "@elizaos/plugin-trustdb": "workspace:*",
+        "avail-js-sdk": "^0.3.0"
+    
+    },
+    "devDependencies": {
+        "tsup": "8.3.5",
+        "@types/node": "^20.0.0"
+    },
+    "scripts": {
+        "build": "tsup --format esm --dts",
+        "dev": "tsup --format esm --dts --watch",
+        "lint": "eslint --fix  --cache ."
+    }
+}

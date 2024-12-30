@@ -59,6 +59,7 @@
     "@elizaos/plugin-3d-generation": "workspace:*",
     "@elizaos/plugin-fuel": "workspace:*",
     "@elizaos/plugin-avalanche": "workspace:*",
+    "@elizaos/plugin-avail": "workspace:*",
     "readline": "1.3.0",
     "ws": "8.18.0",
     "yargs": "17.7.2"

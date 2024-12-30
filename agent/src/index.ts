@@ -61,6 +61,7 @@ import { zksyncEraPlugin } from "@elizaos/plugin-zksync-era";
 import { cronosZkEVMPlugin } from "@elizaos/plugin-cronoszkevm";
 import { abstractPlugin } from "@elizaos/plugin-abstract";
 import { avalanchePlugin } from "@elizaos/plugin-avalanche";
+import { availPlugin } from "@elizaos/plugin-avail"
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
@@ -600,6 +601,8 @@ export async function createAgent(
             getSecret(character, "AVALANCHE_PRIVATE_KEY")
                 ? avalanchePlugin
                 : null,
+            getSecret(character, "AVAIL_SEED") ? availPlugin : null,
+            getSecret(character, "AVAIL_APP_ID") ? availPlugin : null,
         ].filter(Boolean),
         providers: [],
         actions: [],
