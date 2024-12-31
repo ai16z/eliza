@@ -82,6 +82,7 @@ pnpm build
     OPENAI_API_KEY=        # OpenAI API key
     GROK_API_KEY=          # Grok API key
     ELEVENLABS_XI_API_KEY= # API key from elevenlabs (for voice)
+    LIVEPEER_GATEWAY_URL=  # Livepeer gateway URL
     ```
 
 ## Choose Your Model
@@ -94,6 +95,7 @@ Eliza supports multiple AI models:
 - **Llama**: Set `XAI_MODEL=meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo`
 - **Grok**: Set `XAI_MODEL=grok-beta`
 - **OpenAI**: Set `XAI_MODEL=gpt-4o-mini` or `gpt-4o`
+- **Livepeer**: Set `LIVEPEER_IMAGE_MODEL` to your chosen Livepeer image model, available models [here](https://livepeer-eliza.com/)
 
 You set which model to use inside the character JSON file
 
@@ -216,8 +218,8 @@ pnpm start --characters="characters/trump.character.json,characters/tate.charact
    - Ensure Node.js 23.3.0 is installed
    - Use `node -v` to check version
    - Consider using [nvm](https://github.com/nvm-sh/nvm) to manage Node versions
-   
-   NOTE: pnpm may be bundled with a different node version, ignoring nvm. If this is the case, you can use 
+
+   NOTE: pnpm may be bundled with a different node version, ignoring nvm. If this is the case, you can use
    ```bash
    pnpm env use --global 23.3.0
    ```

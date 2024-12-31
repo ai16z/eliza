@@ -6,7 +6,7 @@ import {
     IAgentRuntime,
     ModelClass,
     stringToUuid,
-    parseBooleanFromText,
+    UUID,
 } from "@elizaos/core";
 import { elizaLogger } from "@elizaos/core";
 import { ClientBase } from "./base.ts";
@@ -44,20 +44,25 @@ export const twitterActionTemplate =
 {{postDirections}}
 
 Guidelines:
-- Highly selective engagement
-- Direct mentions are priority
-- Skip: low-effort content, off-topic, repetitive
+- ONLY engage with content that DIRECTLY relates to character's core interests
+- Direct mentions are priority IF they are on-topic
+- Skip ALL content that is:
+  - Off-topic or tangentially related
+  - From high-profile accounts unless explicitly relevant
+  - Generic/viral content without specific relevance
+  - Political/controversial unless central to character
+  - Promotional/marketing unless directly relevant
 
 Actions (respond only with tags):
-[LIKE] - Resonates with interests (9.5/10)
-[RETWEET] - Perfect character alignment (9/10)
-[QUOTE] - Can add unique value (8/10)
-[REPLY] - Memetic opportunity (9/10)
+[LIKE] - Perfect topic match AND aligns with character (9.8/10)
+[RETWEET] - Exceptional content that embodies character's expertise (9.5/10)
+[QUOTE] - Can add substantial domain expertise (9.5/10)
+[REPLY] - Can contribute meaningful, expert-level insight (9.5/10)
 
 Tweet:
 {{currentTweet}}
 
-# Respond with qualifying action tags only.` + postActionResponseFooter;
+# Respond with qualifying action tags only. Default to NO action unless extremely confident of relevance.` + postActionResponseFooter;
 
 /**
  * Truncate text to fit within the Twitter character limit, ensuring it ends at a complete sentence.
@@ -71,25 +76,26 @@ function truncateToCompleteSentence(
     }
 
     // Attempt to truncate at the last period within the limit
-    const truncatedAtPeriod = text.slice(
-        0,
-        text.lastIndexOf(".", maxTweetLength) + 1
-    );
-    if (truncatedAtPeriod.trim().length > 0) {
-        return truncatedAtPeriod.trim();
+    const lastPeriodIndex = text.lastIndexOf(".", maxTweetLength - 1);
+    if (lastPeriodIndex !== -1) {
+        const truncatedAtPeriod = text.slice(0, lastPeriodIndex + 1).trim();
+        if (truncatedAtPeriod.length > 0) {
+            return truncatedAtPeriod;
+        }
     }
 
-    // If no period is found, truncate to the nearest whitespace
-    const truncatedAtSpace = text.slice(
-        0,
-        text.lastIndexOf(" ", maxTweetLength)
-    );
-    if (truncatedAtSpace.trim().length > 0) {
-        return truncatedAtSpace.trim() + "...";
+    // If no period, truncate to the nearest whitespace within the limit
+    const lastSpaceIndex = text.lastIndexOf(" ", maxTweetLength - 1);
+    if (lastSpaceIndex !== -1) {
+        const truncatedAtSpace = text.slice(0, lastSpaceIndex).trim();
+        if (truncatedAtSpace.length > 0) {
+            return truncatedAtSpace + "...";
+        }
     }
 
     // Fallback: Hard truncate and add ellipsis
-    return text.slice(0, maxTweetLength - 3).trim() + "...";
+    const hardTruncated = text.slice(0, maxTweetLength - 3).trim();
+    return hardTruncated + "...";
 }
 
 export class TwitterPostClient {
@@ -99,8 +105,49 @@ export class TwitterPostClient {
     private isProcessing: boolean = false;
     private lastProcessTime: number = 0;
     private stopProcessingActions: boolean = false;
+    private isDryRun: boolean;
 
-    async start(postImmediately: boolean = false) {
+    constructor(client: ClientBase, runtime: IAgentRuntime) {
+        this.client = client;
+        this.runtime = runtime;
+        this.twitterUsername = this.client.twitterConfig.TWITTER_USERNAME;
+        this.isDryRun = this.client.twitterConfig.TWITTER_DRY_RUN
+
+        // Log configuration on initialization
+        elizaLogger.log("Twitter Client Configuration:");
+        elizaLogger.log(`- Username: ${this.twitterUsername}`);
+        elizaLogger.log(
+            `- Dry Run Mode: ${this.isDryRun ? "enabled" : "disabled"}`
+        );
+        elizaLogger.log(
+            `- Post Interval: ${this.client.twitterConfig.POST_INTERVAL_MIN}-${this.client.twitterConfig.POST_INTERVAL_MAX} minutes`
+        );
+        elizaLogger.log(
+            `- Action Processing: ${this.client.twitterConfig.ENABLE_ACTION_PROCESSING ? "enabled" : "disabled"}`
+        );
+        elizaLogger.log(
+            `- Action Interval: ${this.client.twitterConfig.ACTION_INTERVAL} seconds`
+        );
+        elizaLogger.log(
+            `- Post Immediately: ${this.client.twitterConfig.POST_IMMEDIATELY ? "enabled" : "disabled"}`
+        );
+        elizaLogger.log(
+            `- Search Enabled: ${this.client.twitterConfig.TWITTER_SEARCH_ENABLE ? "enabled" : "disabled"}`
+        );
+
+        const targetUsers = this.client.twitterConfig.TWITTER_TARGET_USERS;
+        if (targetUsers) {
+            elizaLogger.log(`- Target Users: ${targetUsers}`);
+        }
+
+        if (this.isDryRun) {
+            elizaLogger.log(
+                "Twitter client initialized in dry run mode - no actual tweets should be posted"
+            );
+        }
+    }
+
+    async start() {
         if (!this.client.profile) {
             await this.client.init();
         }
@@ -111,10 +158,8 @@ export class TwitterPostClient {
             }>("twitter/" + this.twitterUsername + "/lastPost");
 
             const lastPostTimestamp = lastPost?.timestamp ?? 0;
-            const minMinutes =
-                parseInt(this.runtime.getSetting("POST_INTERVAL_MIN")) || 90;
-            const maxMinutes =
-                parseInt(this.runtime.getSetting("POST_INTERVAL_MAX")) || 180;
+            const minMinutes = this.client.twitterConfig.POST_INTERVAL_MIN;
+            const maxMinutes = this.client.twitterConfig.POST_INTERVAL_MAX;
             const randomMinutes =
                 Math.floor(Math.random() * (maxMinutes - minMinutes + 1)) +
                 minMinutes;
@@ -132,8 +177,7 @@ export class TwitterPostClient {
         };
 
         const processActionsLoop = async () => {
-            const actionInterval =
-                parseInt(this.runtime.getSetting("ACTION_INTERVAL")) || 300000; // Default to 5 minutes
+            const actionInterval = this.client.twitterConfig.ACTION_INTERVAL; // Defaults to 5 minutes
 
             while (!this.stopProcessingActions) {
                 try {
@@ -145,7 +189,7 @@ export class TwitterPostClient {
                         );
                         // Wait for the full interval before next processing
                         await new Promise((resolve) =>
-                            setTimeout(resolve, actionInterval)
+                            setTimeout(resolve, actionInterval * 60 * 1000) // now in minutes
                         );
                     }
                 } catch (error) {
@@ -159,43 +203,203 @@ export class TwitterPostClient {
             }
         };
 
-        if (
-            this.runtime.getSetting("POST_IMMEDIATELY") != null &&
-            this.runtime.getSetting("POST_IMMEDIATELY") !== ""
-        ) {
-            // Retrieve setting, default to false if not set or if the value is not "true"
-            postImmediately = this.runtime.getSetting("POST_IMMEDIATELY") === "true" || false;
-
-        }
-
-        if (postImmediately) {
+        if (this.client.twitterConfig.POST_IMMEDIATELY) {
             await this.generateNewTweet();
         }
-        generateNewTweetLoop();
 
-        // Add check for ENABLE_ACTION_PROCESSING before starting the loop
-        const enableActionProcessing =
-            this.runtime.getSetting("ENABLE_ACTION_PROCESSING") === "true" || false;
+        // Only start tweet generation loop if not in dry run mode
+        if (!this.isDryRun) {
+            generateNewTweetLoop();
+            elizaLogger.log("Tweet generation loop started");
+        } else {
+            elizaLogger.log("Tweet generation loop disabled (dry run mode)");
+        }
 
-        if (enableActionProcessing) {
+        if (this.client.twitterConfig.ENABLE_ACTION_PROCESSING && !this.isDryRun) {
             processActionsLoop().catch((error) => {
                 elizaLogger.error(
                     "Fatal error in process actions loop:",
                     error
                 );
             });
-            generateNewTweetLoop();
         } else {
-            elizaLogger.log("Action processing loop disabled by configuration");
+            if (this.isDryRun) {
+                elizaLogger.log(
+                    "Action processing loop disabled (dry run mode)"
+                );
+            } else {
+                elizaLogger.log(
+                    "Action processing loop disabled by configuration"
+                );
+            }
         }
     }
 
-    constructor(client: ClientBase, runtime: IAgentRuntime) {
-        this.client = client;
-        this.runtime = runtime;
-        this.twitterUsername = runtime.getSetting("TWITTER_USERNAME");
+    createTweetObject(
+        tweetResult: any,
+        client: any,
+        twitterUsername: string
+    ): Tweet {
+        return {
+            id: tweetResult.rest_id,
+            name: client.profile.screenName,
+            username: client.profile.username,
+            text: tweetResult.legacy.full_text,
+            conversationId: tweetResult.legacy.conversation_id_str,
+            createdAt: tweetResult.legacy.created_at,
+            timestamp: new Date(tweetResult.legacy.created_at).getTime(),
+            userId: client.profile.id,
+            inReplyToStatusId: tweetResult.legacy.in_reply_to_status_id_str,
+            permanentUrl: `https://twitter.com/${twitterUsername}/status/${tweetResult.rest_id}`,
+            hashtags: [],
+            mentions: [],
+            photos: [],
+            thread: [],
+            urls: [],
+            videos: [],
+        } as Tweet;
     }
 
+    async processAndCacheTweet(
+        runtime: IAgentRuntime,
+        client: ClientBase,
+        tweet: Tweet,
+        roomId: UUID,
+        newTweetContent: string
+    ) {
+        // Cache the last post details
+        await runtime.cacheManager.set(
+            `twitter/${client.profile.username}/lastPost`,
+            {
+                id: tweet.id,
+                timestamp: Date.now(),
+            }
+        );
+
+        // Cache the tweet
+        await client.cacheTweet(tweet);
+
+        // Log the posted tweet
+        elizaLogger.log(`Tweet posted:\n ${tweet.permanentUrl}`);
+
+        // Ensure the room and participant exist
+        await runtime.ensureRoomExists(roomId);
+        await runtime.ensureParticipantInRoom(runtime.agentId, roomId);
+
+        // Create a memory for the tweet
+        await runtime.messageManager.createMemory({
+            id: stringToUuid(tweet.id + "-" + runtime.agentId),
+            userId: runtime.agentId,
+            agentId: runtime.agentId,
+            content: {
+                text: newTweetContent.trim(),
+                url: tweet.permanentUrl,
+                source: "twitter",
+            },
+            roomId,
+            embedding: getEmbeddingZeroVector(),
+            createdAt: tweet.timestamp,
+        });
+    }
+
+    async handleNoteTweet(
+        client: ClientBase,
+        runtime: IAgentRuntime,
+        content: string,
+        tweetId?: string
+    ) {
+        try {
+            const noteTweetResult = await client.requestQueue.add(
+                async () =>
+                    await client.twitterClient.sendNoteTweet(content, tweetId)
+            );
+
+            if (noteTweetResult.errors && noteTweetResult.errors.length > 0) {
+                // Note Tweet failed due to authorization. Falling back to standard Tweet.
+                const truncateContent = truncateToCompleteSentence(
+                    content,
+                    this.client.twitterConfig.MAX_TWEET_LENGTH
+                );
+                return await this.sendStandardTweet(
+                    client,
+                    truncateContent,
+                    tweetId
+                );
+            } else {
+                return noteTweetResult.data.notetweet_create.tweet_results
+                    .result;
+            }
+        } catch (error) {
+            throw new Error(`Note Tweet failed: ${error}`);
+        }
+    }
+
+    async sendStandardTweet(
+        client: ClientBase,
+        content: string,
+        tweetId?: string
+    ) {
+        try {
+            const standardTweetResult = await client.requestQueue.add(
+                async () =>
+                    await client.twitterClient.sendTweet(content, tweetId)
+            );
+            const body = await standardTweetResult.json();
+            if (!body?.data?.create_tweet?.tweet_results?.result) {
+                console.error("Error sending tweet; Bad response:", body);
+                return;
+            }
+            return body.data.create_tweet.tweet_results.result;
+        } catch (error) {
+            elizaLogger.error("Error sending standard Tweet:", error);
+            throw error;
+        }
+    }
+
+    async postTweet(
+        runtime: IAgentRuntime,
+        client: ClientBase,
+        cleanedContent: string,
+        roomId: UUID,
+        newTweetContent: string,
+        twitterUsername: string
+    ) {
+        try {
+            elizaLogger.log(`Posting new tweet:\n`);
+
+            let result;
+
+            if (cleanedContent.length > DEFAULT_MAX_TWEET_LENGTH) {
+                result = await this.handleNoteTweet(
+                    client,
+                    runtime,
+                    cleanedContent
+                );
+            } else {
+                result = await this.sendStandardTweet(client, cleanedContent);
+            }
+
+            const tweet = this.createTweetObject(
+                result,
+                client,
+                twitterUsername
+            );
+
+            await this.processAndCacheTweet(
+                runtime,
+                client,
+                tweet,
+                roomId,
+                newTweetContent
+            );
+        } catch (error) {
+            elizaLogger.error("Error sending tweet:", error);
+        }
+    }
+
+    /**
+     * Generates and posts a new tweet. If isDryRun is true, only logs what would have been posted.
+     */
     private async generateNewTweet() {
         elizaLogger.log("Generating new tweet");
 
@@ -233,8 +437,6 @@ export class TwitterPostClient {
                     this.runtime.character.templates?.twitterPostTemplate ||
                     twitterPostTemplate,
             });
-
-            console.log("twitter context:\n" + context);
 
             elizaLogger.debug("generate post prompt:\n" + context);
 
@@ -277,12 +479,14 @@ export class TwitterPostClient {
                 return;
             }
 
-            // Use the helper function to truncate to complete sentence
-            const content = truncateToCompleteSentence(
-                cleanedContent,
-                parseInt(this.runtime.getSetting("MAX_TWEET_LENGTH")) ||
-                    DEFAULT_MAX_TWEET_LENGTH
-            );
+            // Truncate the content to the maximum tweet length specified in the environment settings, ensuring the truncation respects sentence boundaries.
+            const maxTweetLength = this.client.twitterConfig.MAX_TWEET_LENGTH
+            if (maxTweetLength) {
+                cleanedContent = truncateToCompleteSentence(
+                    cleanedContent,
+                    maxTweetLength
+                );
+            }
 
             const removeQuotes = (str: string) =>
                 str.replace(/^['"](.*)['"]$/, "$1");
@@ -290,9 +494,9 @@ export class TwitterPostClient {
             const fixNewLines = (str: string) => str.replaceAll(/\\n/g, "\n");
 
             // Final cleaning
-            cleanedContent = removeQuotes(fixNewLines(content));
+            cleanedContent = removeQuotes(fixNewLines(cleanedContent));
 
-            if (this.runtime.getSetting("TWITTER_DRY_RUN") === "true") {
+            if (this.isDryRun) {
                 elizaLogger.info(
                     `Dry run: would have posted tweet: ${cleanedContent}`
                 );
@@ -301,73 +505,14 @@ export class TwitterPostClient {
 
             try {
                 elizaLogger.log(`Posting new tweet:\n ${cleanedContent}`);
-
-                const result = await this.client.requestQueue.add(
-                    async () =>
-                        await this.client.twitterClient.sendTweet(
-                            cleanedContent
-                        )
-                );
-                const body = await result.json();
-                if (!body?.data?.create_tweet?.tweet_results?.result) {
-                    console.error("Error sending tweet; Bad response:", body);
-                    return;
-                }
-                const tweetResult = body.data.create_tweet.tweet_results.result;
-
-                const tweet = {
-                    id: tweetResult.rest_id,
-                    name: this.client.profile.screenName,
-                    username: this.client.profile.username,
-                    text: tweetResult.legacy.full_text,
-                    conversationId: tweetResult.legacy.conversation_id_str,
-                    createdAt: tweetResult.legacy.created_at,
-                    timestamp: new Date(
-                        tweetResult.legacy.created_at
-                    ).getTime(),
-                    userId: this.client.profile.id,
-                    inReplyToStatusId:
-                        tweetResult.legacy.in_reply_to_status_id_str,
-                    permanentUrl: `https://twitter.com/${this.twitterUsername}/status/${tweetResult.rest_id}`,
-                    hashtags: [],
-                    mentions: [],
-                    photos: [],
-                    thread: [],
-                    urls: [],
-                    videos: [],
-                } as Tweet;
-
-                await this.runtime.cacheManager.set(
-                    `twitter/${this.client.profile.username}/lastPost`,
-                    {
-                        id: tweet.id,
-                        timestamp: Date.now(),
-                    }
-                );
-
-                await this.client.cacheTweet(tweet);
-
-                elizaLogger.log(`Tweet posted:\n ${tweet.permanentUrl}`);
-
-                await this.runtime.ensureRoomExists(roomId);
-                await this.runtime.ensureParticipantInRoom(
-                    this.runtime.agentId,
-                    roomId
-                );
-
-                await this.runtime.messageManager.createMemory({
-                    id: stringToUuid(tweet.id + "-" + this.runtime.agentId),
-                    userId: this.runtime.agentId,
-                    agentId: this.runtime.agentId,
-                    content: {
-                        text: newTweetContent.trim(),
-                        url: tweet.permanentUrl,
-                        source: "twitter",
-                    },
+                this.postTweet(
+                    this.runtime,
+                    this.client,
+                    cleanedContent,
                     roomId,
-                    embedding: getEmbeddingZeroVector(),
-                    createdAt: tweet.timestamp,
-                });
+                    newTweetContent,
+                    this.twitterUsername
+                );
             } catch (error) {
                 elizaLogger.error("Error sending tweet:", error);
             }
@@ -396,7 +541,7 @@ export class TwitterPostClient {
             context: options?.context || context,
             modelClass: ModelClass.SMALL,
         });
-        console.log("generate tweet content response:\n" + response);
+        elizaLogger.debug("generate tweet content response:\n" + response);
 
         // First clean up any markdown and newlines
         const cleanedResponse = response
@@ -447,6 +592,10 @@ export class TwitterPostClient {
         );
     }
 
+    /**
+     * Processes tweet actions (likes, retweets, quotes, replies). If isDryRun is true,
+     * only simulates and logs actions without making API calls.
+     */
     private async processTweetActions() {
         if (this.isProcessing) {
             elizaLogger.log("Already processing tweet actions, skipping");
@@ -458,6 +607,11 @@ export class TwitterPostClient {
             this.lastProcessTime = Date.now();
 
             elizaLogger.log("Processing tweet actions");
+
+            if (this.isDryRun) {
+                elizaLogger.log("Dry run mode: simulating tweet actions");
+                return [];
+            }
 
             await this.runtime.ensureUserExists(
                 this.runtime.agentId,
@@ -526,9 +680,18 @@ export class TwitterPostClient {
                     // Execute actions
                     if (actionResponse.like) {
                         try {
-                            await this.client.twitterClient.likeTweet(tweet.id);
-                            executedActions.push("like");
-                            elizaLogger.log(`Liked tweet ${tweet.id}`);
+                            if (this.isDryRun) {
+                                elizaLogger.info(
+                                    `Dry run: would have liked tweet ${tweet.id}`
+                                );
+                                executedActions.push("like (dry run)");
+                            } else {
+                                await this.client.twitterClient.likeTweet(
+                                    tweet.id
+                                );
+                                executedActions.push("like");
+                                elizaLogger.log(`Liked tweet ${tweet.id}`);
+                            }
                         } catch (error) {
                             elizaLogger.error(
                                 `Error liking tweet ${tweet.id}:`,
@@ -539,9 +702,18 @@ export class TwitterPostClient {
 
                     if (actionResponse.retweet) {
                         try {
-                            await this.client.twitterClient.retweet(tweet.id);
-                            executedActions.push("retweet");
-                            elizaLogger.log(`Retweeted tweet ${tweet.id}`);
+                            if (this.isDryRun) {
+                                elizaLogger.info(
+                                    `Dry run: would have retweeted tweet ${tweet.id}`
+                                );
+                                executedActions.push("retweet (dry run)");
+                            } else {
+                                await this.client.twitterClient.retweet(
+                                    tweet.id
+                                );
+                                executedActions.push("retweet");
+                                elizaLogger.log(`Retweeted tweet ${tweet.id}`);
+                            }
                         } catch (error) {
                             elizaLogger.error(
                                 `Error retweeting tweet ${tweet.id}:`,
@@ -552,6 +724,15 @@ export class TwitterPostClient {
 
                     if (actionResponse.quote) {
                         try {
+                            // Check for dry run mode
+                            if (this.isDryRun) {
+                                elizaLogger.info(
+                                    `Dry run: would have posted quote tweet for ${tweet.id}`
+                                );
+                                executedActions.push("quote (dry run)");
+                                continue;
+                            }
+
                             // Build conversation thread for context
                             const thread = await buildConversationThread(
                                 tweet,
@@ -752,6 +933,10 @@ export class TwitterPostClient {
         }
     }
 
+    /**
+     * Handles text-only replies to tweets. If isDryRun is true, only logs what would
+     * have been replied without making API calls.
+     */
     private async handleTextOnlyReply(
         tweet: Tweet,
         tweetState: any,
@@ -832,20 +1017,34 @@ export class TwitterPostClient {
                 return;
             }
 
+            if (this.isDryRun) {
+                elizaLogger.info(
+                    `Dry run: reply to tweet ${tweet.id} would have been: ${replyText}`
+                );
+                executedActions.push("reply (dry run)");
+                return;
+            }
+
             elizaLogger.debug("Final reply text to be sent:", replyText);
 
-            // Send the tweet through request queue
-            const result = await this.client.requestQueue.add(
-                async () =>
-                    await this.client.twitterClient.sendTweet(
-                        replyText,
-                        tweet.id
-                    )
-            );
+            let result;
 
-            const body = await result.json();
+            if (replyText.length > DEFAULT_MAX_TWEET_LENGTH) {
+                result = await this.handleNoteTweet(
+                    this.client,
+                    this.runtime,
+                    replyText,
+                    tweet.id
+                );
+            } else {
+                result = await this.sendStandardTweet(
+                    this.client,
+                    replyText,
+                    tweet.id
+                );
+            }
 
-            if (body?.data?.create_tweet?.tweet_results?.result) {
+            if (result) {
                 elizaLogger.log("Successfully posted reply tweet");
                 executedActions.push("reply");
 
@@ -855,7 +1054,7 @@ export class TwitterPostClient {
                     `Context:\n${enrichedState}\n\nGenerated Reply:\n${replyText}`
                 );
             } else {
-                elizaLogger.error("Tweet reply creation failed:", body);
+                elizaLogger.error("Tweet reply creation failed");
             }
         } catch (error) {
             elizaLogger.error("Error in handleTextOnlyReply:", error);

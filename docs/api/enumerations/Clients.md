@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / Clients
+[@elizaos/core v0.1.7-alpha.1](../index.md) / Clients
 
 # Enumeration: Clients
 
@@ -12,9 +12,9 @@ Available client platforms
 
 #### Defined in
 
-[packages/core/src/types.ts:612](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L612)
+[packages/core/src/types.ts:612](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L612)
 
----
+***
 
 ### DIRECT
 
@@ -22,9 +22,9 @@ Available client platforms
 
 #### Defined in
 
-[packages/core/src/types.ts:613](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L613)
+[packages/core/src/types.ts:613](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L613)
 
----
+***
 
 ### TWITTER
 
@@ -32,9 +32,9 @@ Available client platforms
 
 #### Defined in
 
-[packages/core/src/types.ts:614](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L614)
+[packages/core/src/types.ts:614](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L614)
 
----
+***
 
 ### TELEGRAM
 
@@ -42,9 +42,9 @@ Available client platforms
 
 #### Defined in
 
-[packages/core/src/types.ts:615](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L615)
+[packages/core/src/types.ts:615](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L615)
 
----
+***
 
 ### FARCASTER
 
@@ -52,9 +52,9 @@ Available client platforms
 
 #### Defined in
 
-[packages/core/src/types.ts:616](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L616)
+[packages/core/src/types.ts:616](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L616)
 
----
+***
 
 ### LENS
 
@@ -62,9 +62,9 @@ Available client platforms
 
 #### Defined in
 
-[packages/core/src/types.ts:617](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L617)
+[packages/core/src/types.ts:617](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L617)
 
----
+***
 
 ### AUTO
 
@@ -72,9 +72,9 @@ Available client platforms
 
 #### Defined in
 
-[packages/core/src/types.ts:618](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L618)
+[packages/core/src/types.ts:618](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L618)
 
----
+***
 
 ### SLACK
 
@@ -82,4 +82,4 @@ Available client platforms
 
 #### Defined in
 
-[packages/core/src/types.ts:619](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L619)
+[packages/core/src/types.ts:619](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L619)

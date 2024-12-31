@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / Actor
+[@elizaos/core v0.1.7-alpha.1](../index.md) / Actor
 
 # Interface: Actor
 
@@ -14,9 +14,9 @@ Display name
 
 #### Defined in
 
-[packages/core/src/types.ts:61](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L61)
+[packages/core/src/types.ts:61](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L61)
 
----
+***
 
 ### username
 
@@ -26,9 +26,9 @@ Username/handle
 
 #### Defined in
 
-[packages/core/src/types.ts:64](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L64)
+[packages/core/src/types.ts:64](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L64)
 
----
+***
 
 ### details
 
@@ -56,9 +56,9 @@ Favorite quote
 
 #### Defined in
 
-[packages/core/src/types.ts:67](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L67)
+[packages/core/src/types.ts:67](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L67)
 
----
+***
 
 ### id
 
@@ -68,4 +68,4 @@ Unique identifier
 
 #### Defined in
 
-[packages/core/src/types.ts:79](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L79)
+[packages/core/src/types.ts:79](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L79)

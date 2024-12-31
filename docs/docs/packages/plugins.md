@@ -603,6 +603,37 @@ console.log("Webhook creation response:", response);
 - **Validation**: Always validate input parameters to ensure compliance with expected formats and supported networks.
 - **Error Handling**: Monitor logs for errors during webhook creation and adjust retry logic as needed.
 
+### 10. Fuel Plugin (`@elizaos/plugin-fuel`)
+
+The Fuel plugin provides an interface to the Fuel Ignition blockchain.
+
+**Actions:**
+
+1. `TRANSFER_FUEL_ETH` - Transfer ETH to a given Fuel address. - **Inputs**: - `toAddress` (string): The Fuel address to transfer ETH to. - `amount` (string): The amount of ETH to transfer. - **Outputs**: Confirmation message with transaction details. - **Example**:
+   `json
+{
+    "toAddress": "0x8F8afB12402C9a4bD9678Bec363E51360142f8443FB171655eEd55dB298828D1",
+    "amount": "0.00001"
+}
+`
+   **Setup and Configuration:**
+
+1. **Configure the Plugin**
+   Add the plugin to your character's configuration:
+
+    ```typescript
+    import { fuelPlugin } from "@eliza/plugin-fuel";
+
+    const character = {
+        plugins: [fuelPlugin],
+    };
+    ```
+
+1. **Required Configurations**
+   Set the following environment variables or runtime settings:
+
+    - `FUEL_WALLET_PRIVATE_KEY`: Private key for secure transactions
+
 ### Writing Custom Plugins
 
 Create a new plugin by implementing the Plugin interface:

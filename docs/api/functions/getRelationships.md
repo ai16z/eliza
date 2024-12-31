@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / getRelationships
+[@elizaos/core v0.1.7-alpha.1](../index.md) / getRelationships
 
 # Function: getRelationships()
 
@@ -18,4 +18,4 @@
 
 ## Defined in
 
-[packages/core/src/relationships.ts:33](https://github.com/elizaos/eliza/blob/main/packages/core/src/relationships.ts#L33)
+[packages/core/src/relationships.ts:33](https://github.com/elizaOS/eliza/blob/main/packages/core/src/relationships.ts#L33)

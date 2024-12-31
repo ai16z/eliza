@@ -3,7 +3,7 @@ import { Models, ModelProviderName, ModelClass } from "./types.ts";
 
 export const models: Models = {
     [ModelProviderName.OPENAI]: {
-        endpoint: "https://api.openai.com/v1",
+        endpoint: settings.OPENAI_API_URL || "https://api.openai.com/v1",
         settings: {
             stop: [],
             maxInputTokens: 128000,
@@ -484,6 +484,23 @@ export const models: Models = {
             [ModelClass.LARGE]:
                 settings.LARGE_AKASH_CHAT_API_MODEL ||
                 "Meta-Llama-3-1-405B-Instruct-FP8",
+        },
+    },
+    [ModelProviderName.LIVEPEER]: {
+        settings: {
+            stop: [],
+            maxInputTokens: 128000,
+            maxOutputTokens: 8192,
+            repetition_penalty: 0.4,
+            temperature: 0.7,
+        },
+        // livepeer endpoint is handled from the sdk
+        model: {
+            [ModelClass.SMALL]: "",
+            [ModelClass.MEDIUM]: "",
+            [ModelClass.LARGE]: "",
+            [ModelClass.EMBEDDING]: "",
+            [ModelClass.IMAGE]: settings.LIVEPEER_IMAGE_MODEL || "ByteDance/SDXL-Lightning",
         },
     },
 };

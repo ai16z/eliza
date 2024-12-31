@@ -1,6 +1,6 @@
 {
   "name": "@elizaos/client-lens",
-  "version": "0.1.7-alpha.1",
+  "version": "0.1.7-alpha.2",
   "main": "dist/index.js",
   "type": "module",
   "types": "dist/index.d.ts",

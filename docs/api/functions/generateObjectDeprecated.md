@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / generateObjectDeprecated
+[@elizaos/core v0.1.7-alpha.1](../index.md) / generateObjectDeprecated
 
 # Function: generateObjectDeprecated()
 
@@ -20,4 +20,4 @@
 
 ## Defined in
 
-[packages/core/src/generation.ts:800](https://github.com/elizaos/eliza/blob/main/packages/core/src/generation.ts#L800)
+[packages/core/src/generation.ts:801](https://github.com/elizaOS/eliza/blob/main/packages/core/src/generation.ts#L801)

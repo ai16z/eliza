@@ -6,27 +6,27 @@ sidebar_position: 6
 
 # FAQ and Support
 
-This page provides answers to frequently asked questions about elizaos, the Eliza framework, daos.fun, and how to get support when you need it.
+This page provides answers to frequently asked questions about ai16z, the Eliza framework, daos.fun, and how to get support when you need it.
 
 ## General Questions
 
-### What is elizaos?
+### What is ai16z?
 
-[elizaos](https://www.daos.fun/HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC) is the first AI VC fund, fully managed by AI Marc AIndreesen with recommendations from members of the DAO. It is a Decentralized Autonomous Organization (DAO) on daos.fun that fosters an open-source community focused on building the Eliza framework for creating AI agents. The project is led by AI traders Marc AIndreeson (pmairca) and Degen Spartan AI (degenai). elizaos plans to flip the real a16z.
+[ai16z](https://www.daos.fun/HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC) is the first AI VC fund, fully managed by AI Marc AIndreesen with recommendations from members of the DAO. It is a Decentralized Autonomous Organization (DAO) on daos.fun that fosters an open-source community focused on building the Eliza framework for creating AI agents. The project is led by AI traders Marc AIndreeson (pmairca) and Degen Spartan AI (degenai).
 
 ### Official Contract Addresses
 
-These are the only official contracts for elizaos:
+These are the only official contracts for ai16z:
 
-elizaos: HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC
+ai16z: HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC
 
 degenai: Gu3LDkn7Vx3bmCzLafYNKcDxv2mH7YN44NJZFXnypump
 
-Both addresses are pinned here on X and our discord: https://x.com/elizaosdao/status/1852565056640241793
+Both addresses are pinned here on X and our discord: https://x.com/ai16zdao/status/1852565056640241793
 
-### Is elizaos affiliated with a16z?
+### Is ai16z affiliated with a16z?
 
-No, elizaos is not affiliated with the venture capital firm Andreessen Horowitz (a16z). The name is a playful reference and parody. There is no affiliation with a16z.
+No, ai16z is not affiliated with the venture capital firm Andreessen Horowitz (a16z). The name is a playful reference and parody. There is no affiliation with a16z.
 
 ### What is the Eliza framework?
 
@@ -56,13 +56,13 @@ The "mintable" label on Dexscreener indicates that the DAO has the ability to mi
 
 ### Staking and Rewards
 
-daos.fun v3 introduced Pool Parties which offers qualifying DAOs token staking opportunities with 0.5% fees on transactions. The 0.5% fees are auto-compounded into SOL and elizaos (UniswapV2 model). elizaosPOOL LP value volatility is due to token price changes. Fee calculator is coming soon.
+daos.fun v3 introduced Pool Parties which offers qualifying DAOs token staking opportunities with 0.5% fees on transactions. The 0.5% fees are auto-compounded into SOL and ai16z (UniswapV2 model). ai16zPOOL LP value volatility is due to token price changes. Fee calculator is coming soon.
 
-## elizaos Marc
+## pmairca
 
-### What are elizaos's investment areas?
+### What are ai16z's investment areas?
 
-Currently, elizaos is investing in memes.
+Currently, ai16z is investing in memes.
 
 ### How does AI Marc make decisions?
 
@@ -84,7 +84,7 @@ Yes, Eliza is designed to be platform-agnostic. You can create AI agents that in
 
 ### How do I install and set up Eliza?
 
-Detailed installation and setup instructions can be found in the [Getting Started](https://docs.elizaos.org/docs/getting-started) section of the documentation. It covers prerequisites, installation steps, and basic configuration to help you get up and running with Eliza quickly.
+Detailed installation and setup instructions can be found in the Getting Started section of the documentation. It covers prerequisites, installation steps, and basic configuration to help you get up and running with Eliza quickly.
 
 ## Contribution and Support
 
@@ -103,7 +103,7 @@ If you need help or support, you can:
 
 - Check the rest of the documentation for guides, tutorials, and API references
 - Search the [issue tracker](https://github.com/elizaos/eliza/issues) to see if your question has already been answered
-- Join the [elizaos Discord server](https://discord.gg/ai16z) and ask for help in the relevant channels
+- Join the [ai16z Discord server](https://discord.gg/ai16z) and ask for help in the relevant channels
 
 ### How can I report a bug or suggest a new feature?
 

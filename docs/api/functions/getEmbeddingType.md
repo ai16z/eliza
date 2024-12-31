@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / getEmbeddingType
+[@elizaos/core v0.1.7-alpha.1](../index.md) / getEmbeddingType
 
 # Function: getEmbeddingType()
 
@@ -14,4 +14,4 @@
 
 ## Defined in
 
-[packages/core/src/embedding.ts:99](https://github.com/elizaos/eliza/blob/main/packages/core/src/embedding.ts#L99)
+[packages/core/src/embedding.ts:121](https://github.com/elizaOS/eliza/blob/main/packages/core/src/embedding.ts#L121)

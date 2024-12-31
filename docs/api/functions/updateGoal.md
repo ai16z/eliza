@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / updateGoal
+[@elizaos/core v0.1.7-alpha.1](../index.md) / updateGoal
 
 # Function: updateGoal()
 
@@ -18,4 +18,4 @@
 
 ## Defined in
 
-[packages/core/src/goals.ts:45](https://github.com/elizaos/eliza/blob/main/packages/core/src/goals.ts#L45)
+[packages/core/src/goals.ts:45](https://github.com/elizaOS/eliza/blob/main/packages/core/src/goals.ts#L45)

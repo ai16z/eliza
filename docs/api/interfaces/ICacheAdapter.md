@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / ICacheAdapter
+[@elizaos/core v0.1.7-alpha.1](../index.md) / ICacheAdapter
 
 # Interface: ICacheAdapter
 
@@ -18,9 +18,9 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:11](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L11)
+[packages/core/src/cache.ts:11](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L11)
 
----
+***
 
 ### set()
 
@@ -38,9 +38,9 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:12](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L12)
+[packages/core/src/cache.ts:12](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L12)
 
----
+***
 
 ### delete()
 
@@ -56,4 +56,4 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:13](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L13)
+[packages/core/src/cache.ts:13](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L13)

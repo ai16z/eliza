@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / formatGoalsAsString
+[@elizaos/core v0.1.7-alpha.1](../index.md) / formatGoalsAsString
 
 # Function: formatGoalsAsString()
 
@@ -16,4 +16,4 @@
 
 ## Defined in
 
-[packages/core/src/goals.ts:30](https://github.com/elizaos/eliza/blob/main/packages/core/src/goals.ts#L30)
+[packages/core/src/goals.ts:30](https://github.com/elizaOS/eliza/blob/main/packages/core/src/goals.ts#L30)

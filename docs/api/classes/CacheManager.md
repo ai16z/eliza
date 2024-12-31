@@ -1,10 +1,10 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / CacheManager
+[@elizaos/core v0.1.7-alpha.1](../index.md) / CacheManager
 
 # Class: CacheManager\<CacheAdapter\>
 
 ## Type Parameters
 
-• **CacheAdapter** _extends_ [`ICacheAdapter`](../interfaces/ICacheAdapter.md) = [`ICacheAdapter`](../interfaces/ICacheAdapter.md)
+• **CacheAdapter** *extends* [`ICacheAdapter`](../interfaces/ICacheAdapter.md) = [`ICacheAdapter`](../interfaces/ICacheAdapter.md)
 
 ## Implements
 
@@ -26,7 +26,7 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:93](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L93)
+[packages/core/src/cache.ts:93](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L93)
 
 ## Properties
 
@@ -36,7 +36,7 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:91](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L91)
+[packages/core/src/cache.ts:91](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L91)
 
 ## Methods
 
@@ -62,9 +62,9 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:97](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L97)
+[packages/core/src/cache.ts:97](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L97)
 
----
+***
 
 ### set()
 
@@ -92,9 +92,9 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:116](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L116)
+[packages/core/src/cache.ts:116](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L116)
 
----
+***
 
 ### delete()
 
@@ -114,4 +114,4 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:123](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L123)
+[packages/core/src/cache.ts:123](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L123)

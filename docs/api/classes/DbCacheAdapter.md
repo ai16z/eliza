@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / DbCacheAdapter
+[@elizaos/core v0.1.7-alpha.1](../index.md) / DbCacheAdapter
 
 # Class: DbCacheAdapter
 
@@ -24,7 +24,7 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:70](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L70)
+[packages/core/src/cache.ts:70](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L70)
 
 ## Methods
 
@@ -46,9 +46,9 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:75](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L75)
+[packages/core/src/cache.ts:75](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L75)
 
----
+***
 
 ### set()
 
@@ -70,9 +70,9 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:79](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L79)
+[packages/core/src/cache.ts:79](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L79)
 
----
+***
 
 ### delete()
 
@@ -92,4 +92,4 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:83](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L83)
+[packages/core/src/cache.ts:83](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L83)

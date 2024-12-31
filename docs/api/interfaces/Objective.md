@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / Objective
+[@elizaos/core v0.1.7-alpha.1](../index.md) / Objective
 
 # Interface: Objective
 
@@ -14,9 +14,9 @@ Optional unique identifier
 
 #### Defined in
 
-[packages/core/src/types.ts:87](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L87)
+[packages/core/src/types.ts:87](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L87)
 
----
+***
 
 ### description
 
@@ -26,9 +26,9 @@ Description of what needs to be achieved
 
 #### Defined in
 
-[packages/core/src/types.ts:90](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L90)
+[packages/core/src/types.ts:90](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L90)
 
----
+***
 
 ### completed
 
@@ -38,4 +38,4 @@ Whether objective is completed
 
 #### Defined in
 
-[packages/core/src/types.ts:93](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L93)
+[packages/core/src/types.ts:93](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L93)

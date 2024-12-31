@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / SearchResponse
+[@elizaos/core v0.1.7-alpha.1](../index.md) / SearchResponse
 
 # Type Alias: SearchResponse
 
@@ -10,9 +10,9 @@
 
 > **query**: `string`
 
-### follow_up_questions
+### follow\_up\_questions
 
-> **follow_up_questions**: `string`[] \| `null`
+> **follow\_up\_questions**: `string`[] \| `null`
 
 ### answer
 
@@ -26,10 +26,10 @@
 
 > **results**: [`SearchResult`](SearchResult.md)[]
 
-### response_time
+### response\_time
 
-> **response_time**: `number`
+> **response\_time**: `number`
 
 ## Defined in
 
-[packages/core/src/types.ts:1196](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L1196)
+[packages/core/src/types.ts:1216](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L1216)

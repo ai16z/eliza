@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / IVideoService
+[@elizaos/core v0.1.7-alpha.1](../index.md) / IVideoService
 
 # Interface: IVideoService
 
@@ -24,7 +24,7 @@
 
 #### Defined in
 
-[packages/core/src/types.ts:1016](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L1016)
+[packages/core/src/types.ts:1036](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L1036)
 
 ## Methods
 
@@ -48,9 +48,9 @@ Add abstract initialize method that must be implemented by derived classes
 
 #### Defined in
 
-[packages/core/src/types.ts:1021](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L1021)
+[packages/core/src/types.ts:1041](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L1041)
 
----
+***
 
 ### isVideoUrl()
 
@@ -66,9 +66,9 @@ Add abstract initialize method that must be implemented by derived classes
 
 #### Defined in
 
-[packages/core/src/types.ts:1129](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L1129)
+[packages/core/src/types.ts:1149](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L1149)
 
----
+***
 
 ### fetchVideoInfo()
 
@@ -84,9 +84,9 @@ Add abstract initialize method that must be implemented by derived classes
 
 #### Defined in
 
-[packages/core/src/types.ts:1130](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L1130)
+[packages/core/src/types.ts:1150](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L1150)
 
----
+***
 
 ### downloadVideo()
 
@@ -102,9 +102,9 @@ Add abstract initialize method that must be implemented by derived classes
 
 #### Defined in
 
-[packages/core/src/types.ts:1131](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L1131)
+[packages/core/src/types.ts:1151](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L1151)
 
----
+***
 
 ### processVideo()
 
@@ -122,4 +122,4 @@ Add abstract initialize method that must be implemented by derived classes
 
 #### Defined in
 
-[packages/core/src/types.ts:1132](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L1132)
+[packages/core/src/types.ts:1152](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L1152)

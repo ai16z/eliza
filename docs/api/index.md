@@ -1,4 +1,8 @@
-# @elizaos/core v0.1.6-alpha.4
+# @elizaos/core v0.1.7-alpha.1
+
+## Namespaces
+
+- [EmbeddingProvider](namespaces/EmbeddingProvider/index.md)
 
 ## Enumerations
 
@@ -6,6 +10,7 @@
 - [ModelClass](enumerations/ModelClass.md)
 - [ModelProviderName](enumerations/ModelProviderName.md)
 - [Clients](enumerations/Clients.md)
+- [CacheStore](enumerations/CacheStore.md)
 - [ServiceType](enumerations/ServiceType.md)
 - [LoggingLevel](enumerations/LoggingLevel.md)
 
@@ -60,6 +65,8 @@
 
 ## Type Aliases
 
+- [EmbeddingProvider](type-aliases/EmbeddingProvider.md)
+- [EmbeddingConfig](type-aliases/EmbeddingConfig.md)
 - [EnvConfig](type-aliases/EnvConfig.md)
 - [CharacterConfig](type-aliases/CharacterConfig.md)
 - [UUID](type-aliases/UUID.md)
@@ -80,6 +87,7 @@
 ## Variables
 
 - [defaultCharacter](variables/defaultCharacter.md)
+- [EmbeddingProvider](variables/EmbeddingProvider.md)
 - [envSchema](variables/envSchema.md)
 - [CharacterSchema](variables/CharacterSchema.md)
 - [evaluationTemplate](variables/evaluationTemplate.md)
@@ -100,6 +108,7 @@
 - [formatActions](functions/formatActions.md)
 - [composeContext](functions/composeContext.md)
 - [addHeader](functions/addHeader.md)
+- [composeRandomUser](functions/composeRandomUser.md)
 - [getEmbeddingConfig](functions/getEmbeddingConfig.md)
 - [getEmbeddingType](functions/getEmbeddingType.md)
 - [getEmbeddingZeroVector](functions/getEmbeddingZeroVector.md)

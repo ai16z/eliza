@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / Model
+[@elizaos/core v0.1.7-alpha.1](../index.md) / Model
 
 # Type Alias: Model
 
@@ -32,21 +32,21 @@ Maximum input tokens
 
 Maximum output tokens
 
-### settings.frequency_penalty?
+### settings.frequency\_penalty?
 
-> `optional` **frequency_penalty**: `number`
+> `optional` **frequency\_penalty**: `number`
 
 Optional frequency penalty
 
-### settings.presence_penalty?
+### settings.presence\_penalty?
 
-> `optional` **presence_penalty**: `number`
+> `optional` **presence\_penalty**: `number`
 
 Optional presence penalty
 
-### settings.repetition_penalty?
+### settings.repetition\_penalty?
 
-> `optional` **repetition_penalty**: `number`
+> `optional` **repetition\_penalty**: `number`
 
 Optional repetition penalty
 
@@ -100,4 +100,4 @@ Model names by size class
 
 ## Defined in
 
-[packages/core/src/types.ts:142](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L142)
+[packages/core/src/types.ts:142](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L142)

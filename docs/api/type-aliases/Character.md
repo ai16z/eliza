@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / Character
+[@elizaos/core v0.1.7-alpha.1](../index.md) / Character
 
 # Type Alias: Character
 
@@ -83,6 +83,10 @@ Optional prompt templates
 ### templates.twitterSearchTemplate?
 
 > `optional` **twitterSearchTemplate**: `string`
+
+### templates.twitterActionTemplate?
+
+> `optional` **twitterActionTemplate**: `string`
 
 ### templates.twitterPostTemplate?
 
@@ -214,11 +218,63 @@ Optional configuration
 
 #### Index Signature
 
-\[`key`: `string`\]: `string`
+ \[`key`: `string`\]: `string`
 
 ### settings.intiface?
 
 > `optional` **intiface**: `boolean`
+
+### settings.imageSettings?
+
+> `optional` **imageSettings**: `object`
+
+### settings.imageSettings.steps?
+
+> `optional` **steps**: `number`
+
+### settings.imageSettings.width?
+
+> `optional` **width**: `number`
+
+### settings.imageSettings.height?
+
+> `optional` **height**: `number`
+
+### settings.imageSettings.negativePrompt?
+
+> `optional` **negativePrompt**: `string`
+
+### settings.imageSettings.numIterations?
+
+> `optional` **numIterations**: `number`
+
+### settings.imageSettings.guidanceScale?
+
+> `optional` **guidanceScale**: `number`
+
+### settings.imageSettings.seed?
+
+> `optional` **seed**: `number`
+
+### settings.imageSettings.modelId?
+
+> `optional` **modelId**: `string`
+
+### settings.imageSettings.jobId?
+
+> `optional` **jobId**: `string`
+
+### settings.imageSettings.count?
+
+> `optional` **count**: `number`
+
+### settings.imageSettings.stylePreset?
+
+> `optional` **stylePreset**: `string`
+
+### settings.imageSettings.hideWatermark?
+
+> `optional` **hideWatermark**: `boolean`
 
 ### settings.voice?
 
@@ -276,7 +332,7 @@ New structured ElevenLabs config
 
 #### Index Signature
 
-\[`key`: `string`\]: `any`[]
+ \[`key`: `string`\]: `any`[]
 
 ### settings.chains.evm?
 
@@ -440,4 +496,4 @@ Optional NFT prompt
 
 ## Defined in
 
-[packages/core/src/types.ts:629](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L629)
+[packages/core/src/types.ts:629](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L629)

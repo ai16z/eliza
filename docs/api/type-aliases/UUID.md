@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / UUID
+[@elizaos/core v0.1.7-alpha.1](../index.md) / UUID
 
 # Type Alias: UUID
 
@@ -8,4 +8,4 @@ Represents a UUID string in the format "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 ## Defined in
 
-[packages/core/src/types.ts:6](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L6)
+[packages/core/src/types.ts:6](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L6)

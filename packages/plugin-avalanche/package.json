@@ -1,0 +1,21 @@
+{
+  "name": "@elizaos/plugin-avalanche",
+  "version": "0.1.7-alpha.2",
+  "main": "dist/index.js",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@elizaos/core": "workspace:*",
+    "viem": "2.21.49"
+  },
+  "devDependencies": {
+    "tsup": "8.3.5"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --no-dts",
+    "lint": "eslint --fix  --cache ."
+  },
+  "peerDependencies": {
+    "whatwg-url": "7.1.0"
+  }
+}

@@ -78,13 +78,17 @@ export class GitHubClient {
         while (retries < maxRetries) {
             try {
                 await this.git.clone(repositoryUrl, this.repoPath);
-                elizaLogger.log(`Successfully cloned repository from ${repositoryUrl}`);
+                elizaLogger.log(
+                    `Successfully cloned repository from ${repositoryUrl}`
+                );
                 return;
-            } catch (error) {
+            } catch {
                 elizaLogger.error(`Failed to clone repository from ${repositoryUrl}. Retrying...`);
                 retries++;
                 if (retries === maxRetries) {
-                    throw new Error(`Unable to clone repository from ${repositoryUrl} after ${maxRetries} retries.`);
+                    throw new Error(
+                        `Unable to clone repository from ${repositoryUrl} after ${maxRetries} retries.`
+                    );
                 }
             }
         }

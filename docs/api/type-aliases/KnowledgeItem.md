@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / KnowledgeItem
+[@elizaos/core v0.1.7-alpha.1](../index.md) / KnowledgeItem
 
 # Type Alias: KnowledgeItem
 
@@ -16,4 +16,4 @@
 
 ## Defined in
 
-[packages/core/src/types.ts:1225](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L1225)
+[packages/core/src/types.ts:1245](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L1245)

@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / MemoryCacheAdapter
+[@elizaos/core v0.1.7-alpha.1](../index.md) / MemoryCacheAdapter
 
 # Class: MemoryCacheAdapter
 
@@ -22,7 +22,7 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:19](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L19)
+[packages/core/src/cache.ts:19](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L19)
 
 ## Properties
 
@@ -32,7 +32,7 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:17](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L17)
+[packages/core/src/cache.ts:17](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L17)
 
 ## Methods
 
@@ -54,9 +54,9 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:23](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L23)
+[packages/core/src/cache.ts:23](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L23)
 
----
+***
 
 ### set()
 
@@ -78,9 +78,9 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:27](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L27)
+[packages/core/src/cache.ts:27](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L27)
 
----
+***
 
 ### delete()
 
@@ -100,4 +100,4 @@
 
 #### Defined in
 
-[packages/core/src/cache.ts:31](https://github.com/elizaos/eliza/blob/main/packages/core/src/cache.ts#L31)
+[packages/core/src/cache.ts:31](https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts#L31)

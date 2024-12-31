@@ -71,4 +71,4 @@ There's two trade strategies that are based off multiple metrics, with a leading
 - If under $500k, there is a random order DCA sell of that asset(not full holdings sell) the constraints are a maximum of $500 and at least 5 hours apart.
 - If over $500k, the sells are made into buy volume on the asset, from a random 20-40% of the incoming buy(ie; 1 sol buy - 0.2-0.4 sol sell)
 
-70% of profits actively go into elizaos, purchased over 200k elizaos tokens so far
+70% of profits actively go into ai16z, purchased over 200k ai16z tokens so far

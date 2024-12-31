@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / generateTweetActions
+[@elizaos/core v0.1.7-alpha.1](../index.md) / generateTweetActions
 
 # Function: generateTweetActions()
 
@@ -20,4 +20,4 @@
 
 ## Defined in
 
-[packages/core/src/generation.ts:1615](https://github.com/elizaos/eliza/blob/main/packages/core/src/generation.ts#L1615)
+[packages/core/src/generation.ts:1647](https://github.com/elizaOS/eliza/blob/main/packages/core/src/generation.ts#L1647)

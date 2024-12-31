@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / formatEvaluatorExampleDescriptions
+[@elizaos/core v0.1.7-alpha.1](../index.md) / formatEvaluatorExampleDescriptions
 
 # Function: formatEvaluatorExampleDescriptions()
 
@@ -20,4 +20,4 @@ A string that summarizes the descriptions for each evaluator example, formatted 
 
 ## Defined in
 
-[packages/core/src/evaluators.ts:110](https://github.com/elizaos/eliza/blob/main/packages/core/src/evaluators.ts#L110)
+[packages/core/src/evaluators.ts:110](https://github.com/elizaOS/eliza/blob/main/packages/core/src/evaluators.ts#L110)

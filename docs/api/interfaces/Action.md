@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / Action
+[@elizaos/core v0.1.7-alpha.1](../index.md) / Action
 
 # Interface: Action
 
@@ -14,9 +14,9 @@ Similar action descriptions
 
 #### Defined in
 
-[packages/core/src/types.ts:404](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L404)
+[packages/core/src/types.ts:404](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L404)
 
----
+***
 
 ### description
 
@@ -26,9 +26,9 @@ Detailed description
 
 #### Defined in
 
-[packages/core/src/types.ts:407](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L407)
+[packages/core/src/types.ts:407](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L407)
 
----
+***
 
 ### examples
 
@@ -38,9 +38,9 @@ Example usages
 
 #### Defined in
 
-[packages/core/src/types.ts:410](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L410)
+[packages/core/src/types.ts:410](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L410)
 
----
+***
 
 ### handler
 
@@ -50,9 +50,9 @@ Handler function
 
 #### Defined in
 
-[packages/core/src/types.ts:413](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L413)
+[packages/core/src/types.ts:413](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L413)
 
----
+***
 
 ### name
 
@@ -62,9 +62,9 @@ Action name
 
 #### Defined in
 
-[packages/core/src/types.ts:416](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L416)
+[packages/core/src/types.ts:416](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L416)
 
----
+***
 
 ### validate
 
@@ -74,4 +74,4 @@ Validation function
 
 #### Defined in
 
-[packages/core/src/types.ts:419](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L419)
+[packages/core/src/types.ts:419](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L419)

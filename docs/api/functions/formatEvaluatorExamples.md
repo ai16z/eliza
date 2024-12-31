@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / formatEvaluatorExamples
+[@elizaos/core v0.1.7-alpha.1](../index.md) / formatEvaluatorExamples
 
 # Function: formatEvaluatorExamples()
 
@@ -20,4 +20,4 @@ A string that presents each evaluator example in a structured format, including 
 
 ## Defined in
 
-[packages/core/src/evaluators.ts:55](https://github.com/elizaos/eliza/blob/main/packages/core/src/evaluators.ts#L55)
+[packages/core/src/evaluators.ts:55](https://github.com/elizaOS/eliza/blob/main/packages/core/src/evaluators.ts#L55)

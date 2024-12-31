@@ -60,11 +60,11 @@ Models are categorized into different classes based on their capabilities:
 
 ```typescript
 enum ModelClass {
-    SMALL,    // Fast, efficient for simple tasks
-    MEDIUM,   // Balanced performance and capability
-    LARGE,    // Most capable but slower/more expensive
-    EMBEDDING // Specialized for vector embeddings
-    IMAGE     // Image generation capabilities
+    SMALL,     // Fast, efficient for simple tasks
+    MEDIUM,    // Balanced performance and capability
+    LARGE,     // Most capable but slower/more expensive
+    EMBEDDING, // Specialized for vector embeddings
+    IMAGE      // Image generation capabilities
 }
 ```
 

@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / SearchResult
+[@elizaos/core v0.1.7-alpha.1](../index.md) / SearchResult
 
 # Type Alias: SearchResult
 
@@ -22,10 +22,10 @@
 
 > **score**: `number`
 
-### raw_content
+### raw\_content
 
-> **raw_content**: `string` \| `null`
+> **raw\_content**: `string` \| `null`
 
 ## Defined in
 
-[packages/core/src/types.ts:1188](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L1188)
+[packages/core/src/types.ts:1208](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L1208)

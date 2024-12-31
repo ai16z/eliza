@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / getEnvVariable
+[@elizaos/core v0.1.7-alpha.1](../index.md) / getEnvVariable
 
 # Function: getEnvVariable()
 
@@ -24,4 +24,4 @@ The environment variable value or default value
 
 ## Defined in
 
-[packages/core/src/settings.ts:103](https://github.com/elizaos/eliza/blob/main/packages/core/src/settings.ts#L103)
+[packages/core/src/settings.ts:103](https://github.com/elizaOS/eliza/blob/main/packages/core/src/settings.ts#L103)

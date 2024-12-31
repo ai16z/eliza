@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / Goal
+[@elizaos/core v0.1.7-alpha.1](../index.md) / Goal
 
 # Interface: Goal
 
@@ -14,9 +14,9 @@ Optional unique identifier
 
 #### Defined in
 
-[packages/core/src/types.ts:110](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L110)
+[packages/core/src/types.ts:110](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L110)
 
----
+***
 
 ### roomId
 
@@ -26,9 +26,9 @@ Room ID where goal exists
 
 #### Defined in
 
-[packages/core/src/types.ts:113](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L113)
+[packages/core/src/types.ts:113](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L113)
 
----
+***
 
 ### userId
 
@@ -38,9 +38,9 @@ User ID of goal owner
 
 #### Defined in
 
-[packages/core/src/types.ts:116](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L116)
+[packages/core/src/types.ts:116](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L116)
 
----
+***
 
 ### name
 
@@ -50,9 +50,9 @@ Name/title of the goal
 
 #### Defined in
 
-[packages/core/src/types.ts:119](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L119)
+[packages/core/src/types.ts:119](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L119)
 
----
+***
 
 ### status
 
@@ -62,9 +62,9 @@ Current status
 
 #### Defined in
 
-[packages/core/src/types.ts:122](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L122)
+[packages/core/src/types.ts:122](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L122)
 
----
+***
 
 ### objectives
 
@@ -74,4 +74,4 @@ Component objectives
 
 #### Defined in
 
-[packages/core/src/types.ts:125](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L125)
+[packages/core/src/types.ts:125](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L125)

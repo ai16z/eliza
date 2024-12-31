@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / composeActionExamples
+[@elizaos/core v0.1.7-alpha.1](../index.md) / composeActionExamples
 
 # Function: composeActionExamples()
 
@@ -25,4 +25,4 @@ A string containing formatted examples of conversations.
 
 ## Defined in
 
-[packages/core/src/actions.ts:11](https://github.com/elizaos/eliza/blob/main/packages/core/src/actions.ts#L11)
+[packages/core/src/actions.ts:11](https://github.com/elizaOS/eliza/blob/main/packages/core/src/actions.ts#L11)

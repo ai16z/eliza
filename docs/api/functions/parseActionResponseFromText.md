@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / parseActionResponseFromText
+[@elizaos/core v0.1.7-alpha.1](../index.md) / parseActionResponseFromText
 
 # Function: parseActionResponseFromText()
 
@@ -18,4 +18,4 @@
 
 ## Defined in
 
-[packages/core/src/parsing.ts:153](https://github.com/elizaos/eliza/blob/main/packages/core/src/parsing.ts#L153)
+[packages/core/src/parsing.ts:153](https://github.com/elizaOS/eliza/blob/main/packages/core/src/parsing.ts#L153)

@@ -51,7 +51,7 @@ export class TwitterSearchClient {
     constructor(client: ClientBase, runtime: IAgentRuntime) {
         this.client = client;
         this.runtime = runtime;
-        this.twitterUsername = runtime.getSetting("TWITTER_USERNAME");
+        this.twitterUsername = this.client.twitterConfig.TWITTER_USERNAME;
     }
 
     async start() {

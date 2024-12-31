@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / messageCompletionFooter
+[@elizaos/core v0.1.7-alpha.1](../index.md) / messageCompletionFooter
 
 # Variable: messageCompletionFooter
 
@@ -6,4 +6,4 @@
 
 ## Defined in
 
-[packages/core/src/parsing.ts:4](https://github.com/elizaos/eliza/blob/main/packages/core/src/parsing.ts#L4)
+[packages/core/src/parsing.ts:4](https://github.com/elizaOS/eliza/blob/main/packages/core/src/parsing.ts#L4)

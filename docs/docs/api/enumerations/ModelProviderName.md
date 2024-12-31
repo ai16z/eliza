@@ -119,3 +119,13 @@
 #### Defined in
 
 [packages/core/src/types.ts:132](https://github.com/elizaos/eliza/blob/4d1e66cbf7deea87a8a67525670a963cd00108bc/packages/core/src/types.ts#L132)
+
+---
+
+### LIVEPEER
+
+> **LIVEPEER**: `"livepeer"`
+
+#### Defined in
+
+[packages/core/src/types.ts:133](https://github.com/elizaos/eliza/blob/4d1e66cbf7deea87a8a67525670a963cd00108bc/packages/core/src/types.ts#L133)

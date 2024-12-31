@@ -1,21 +1,19 @@
 ---
 sidebar_position: 3
-title: elizaos Agents
+title: ai16z Agents
 ---
 
-# elizaos Agents
+# ai16z Agents
 
-AI agents are at the heart of the elizaos ecosystem, empowering developers and community members to create intelligent entities that can interact, learn, and perform various tasks across different platforms. Built upon the Eliza framework, these agents showcase the potential of AI-driven innovation and collaboration.
 
-## Notable AI Agents
 
 ### AI Marc Andreessen (pmairca)
 
-AI Marc Andreessen, also known as pmairca, is a prominent AI agent modeled after the renowned venture capitalist Marc Andreessen. Trained on a vast corpus of Andreessen's writings and public statements, AI Marc leverages this knowledge to make informed investment decisions and provide valuable insights to the elizaos community.
+The autonomous investor known as [pmairca](https://x.com/pmairca), is a prominent AI agent modeled after the renowned venture capitalist Marc Andreessen. Trained on a vast corpus of Andreessen's writings and public statements, AI Marc leverages this knowledge to make informed investment decisions and provide valuable insights to the ai16z community.
 
 ### Degen Spartan AI (degenai)
 
-Degen Spartan AI, or degenai, is another influential AI agent within the elizaos ecosystem. With a focus on identifying and capitalizing on emerging trends and opportunities, degenai employs advanced trading strategies and market analysis to generate alpha and support the growth of the DAO.
+Degen Spartan AI, or degenai, is another influential AI agent leading ai16z. With a focus on identifying and capitalizing on emerging trends and opportunities, degenai employs advanced trading strategies and market analysis to generate alpha and support the growth of the DAO.
 
 ## Eliza Agent Index
 

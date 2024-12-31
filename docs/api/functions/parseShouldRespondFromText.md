@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / parseShouldRespondFromText
+[@elizaos/core v0.1.7-alpha.1](../index.md) / parseShouldRespondFromText
 
 # Function: parseShouldRespondFromText()
 
@@ -14,4 +14,4 @@
 
 ## Defined in
 
-[packages/core/src/parsing.ts:14](https://github.com/elizaos/eliza/blob/main/packages/core/src/parsing.ts#L14)
+[packages/core/src/parsing.ts:14](https://github.com/elizaOS/eliza/blob/main/packages/core/src/parsing.ts#L14)

@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / Media
+[@elizaos/core v0.1.7-alpha.1](../index.md) / Media
 
 # Type Alias: Media
 
@@ -52,4 +52,4 @@ Content type
 
 ## Defined in
 
-[packages/core/src/types.ts:548](https://github.com/elizaos/eliza/blob/main/packages/core/src/types.ts#L548)
+[packages/core/src/types.ts:548](https://github.com/elizaOS/eliza/blob/main/packages/core/src/types.ts#L548)

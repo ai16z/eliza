@@ -4,7 +4,7 @@ title: Discord Summarization
 
 ## About
 
-Overall, the elizaos DAO v2 daily summary initiataive aims to create a more efficient, transparent, and engaging ecosystem by leveraging AI to address information overload and incentivize contributions. By automating key processes and providing meaningful insights, the project seeks to foster a dynamic and truly decentralized organization.
+Overall, the ai16z DAO v2 daily summary initiataive aims to create a more efficient, transparent, and engaging ecosystem by leveraging AI to address information overload and incentivize contributions. By automating key processes and providing meaningful insights, the project seeks to foster a dynamic and truly decentralized organization.
 
 ## Why?
 

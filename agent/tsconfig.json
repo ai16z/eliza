@@ -6,7 +6,8 @@
         "module": "ESNext",
         "moduleResolution": "Bundler",
         "types": [
-            "node"
+            "node",
+            "jest"
         ]
     },
     "ts-node": {

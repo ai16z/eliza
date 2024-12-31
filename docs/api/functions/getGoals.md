@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / getGoals
+[@elizaos/core v0.1.7-alpha.1](../index.md) / getGoals
 
 # Function: getGoals()
 
@@ -24,4 +24,4 @@
 
 ## Defined in
 
-[packages/core/src/goals.ts:8](https://github.com/elizaos/eliza/blob/main/packages/core/src/goals.ts#L8)
+[packages/core/src/goals.ts:8](https://github.com/elizaOS/eliza/blob/main/packages/core/src/goals.ts#L8)

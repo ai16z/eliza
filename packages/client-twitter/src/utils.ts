@@ -4,7 +4,6 @@ import { Content, Memory, UUID } from "@elizaos/core";
 import { stringToUuid } from "@elizaos/core";
 import { ClientBase } from "./base";
 import { elizaLogger } from "@elizaos/core";
-import { DEFAULT_MAX_TWEET_LENGTH } from "./environment";
 import { Media } from "@elizaos/core";
 import fs from "fs";
 import path from "path";
@@ -172,11 +171,10 @@ export async function sendTweet(
     twitterUsername: string,
     inReplyTo: string
 ): Promise<Memory[]> {
-    const tweetChunks = splitTweetContent(
-        content.text,
-        Number(client.runtime.getSetting("MAX_TWEET_LENGTH")) ||
-            DEFAULT_MAX_TWEET_LENGTH
-    );
+    const maxTweetLength = client.twitterConfig.MAX_TWEET_LENGTH;
+    const isLongTweet = maxTweetLength > 280;
+
+    const tweetChunks = splitTweetContent(content.text, maxTweetLength);
     const sentTweets: Tweet[] = [];
     let previousTweetId = inReplyTo;
 
@@ -214,20 +212,20 @@ export async function sendTweet(
                 })
             );
         }
-        const result = await client.requestQueue.add(
-            async () =>
-                await client.twitterClient.sendTweet(
-                    chunk.trim(),
-                    previousTweetId,
-                    mediaData
-                )
+        const result = await client.requestQueue.add(async () =>
+            isLongTweet
+                ? client.twitterClient.sendLongTweet(chunk.trim(), previousTweetId, mediaData)
+                : client.twitterClient.sendTweet(chunk.trim(), previousTweetId, mediaData)
         );
+
         const body = await result.json();
+        const tweetResult = isLongTweet
+            ? body.data.notetweet_create.tweet_results.result
+            : body.data.create_tweet.tweet_results.result;
 
         // if we have a response
-        if (body?.data?.create_tweet?.tweet_results?.result) {
+        if (tweetResult) {
             // Parse the response
-            const tweetResult = body.data.create_tweet.tweet_results.result;
             const finalTweet: Tweet = {
                 id: tweetResult.rest_id,
                 text: tweetResult.legacy.full_text,
@@ -247,7 +245,7 @@ export async function sendTweet(
             sentTweets.push(finalTweet);
             previousTweetId = finalTweet.id;
         } else {
-            console.error("Error sending chunk", chunk, "repsonse:", body);
+            elizaLogger.error("Error sending tweet chunk:", { chunk, response: body });
         }
 
         // Wait a bit between tweets to avoid rate limiting issues

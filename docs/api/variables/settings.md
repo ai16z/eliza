@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / settings
+[@elizaos/core v0.1.7-alpha.1](../index.md) / settings
 
 # Variable: settings
 
@@ -8,4 +8,4 @@ Initialize settings based on environment
 
 ## Defined in
 
-[packages/core/src/settings.ts:126](https://github.com/elizaos/eliza/blob/main/packages/core/src/settings.ts#L126)
+[packages/core/src/settings.ts:126](https://github.com/elizaOS/eliza/blob/main/packages/core/src/settings.ts#L126)

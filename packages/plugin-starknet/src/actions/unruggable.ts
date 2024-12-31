@@ -9,28 +9,21 @@ import {
     Memory,
     ModelClass,
     State,
-    type Action,
 } from "@elizaos/core";
 import { Percent } from "@uniswap/sdk-core";
 import { createMemecoin, launchOnEkubo } from "unruggable-sdk";
-import { constants } from "starknet";
 
-import {
-    getStarknetAccount,
-    getStarknetProvider,
-    parseFormatedAmount,
-    parseFormatedPercentage,
-} from "../utils/index.ts";
-import { DeployData, Factory } from "@unruggable_starknet/core";
-import { AMM, QUOTE_TOKEN_SYMBOL } from "@unruggable_starknet/core/constants";
+import { getStarknetAccount, getStarknetProvider } from "../utils/index.ts";
+// import { DeployData, Factory } from "@unruggable_starknet/core";
+// import { AMM, QUOTE_TOKEN_SYMBOL } from "@unruggable_starknet/core/constants";
 import { ACCOUNTS, TOKENS } from "../utils/constants.ts";
 import { validateStarknetConfig } from "../environment.ts";
 
-interface SwapContent {
-    sellTokenAddress: string;
-    buyTokenAddress: string;
-    sellAmount: string;
-}
+// interface SwapContent {
+//     sellTokenAddress: string;
+//     buyTokenAddress: string;
+//     sellAmount: string;
+// }
 
 interface DeployTokenContent {
     name: string;

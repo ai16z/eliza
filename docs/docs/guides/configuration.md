@@ -72,6 +72,9 @@ TOGETHER_API_KEY=
 # Heurist Settings
 HEURIST_API_KEY=
 
+# Livepeer Settings
+LIVEPEER_GATEWAY_URL=
+
 # Local Model Settings
 XAI_MODEL=meta-llama/Llama-3.1-7b-instruct
 ```
@@ -98,7 +101,7 @@ Example usage:
 ```typescript
 const result = await generateImage(
     {
-        prompt: 'A cute anime girl with big breasts and straight long black hair wearing orange T-shirt. The T-shirt has "elizaos" texts in the front. The girl is looking at the viewer',
+        prompt: 'A cute anime girl with big breasts and straight long black hair wearing orange T-shirt. The T-shirt has "ai16z" texts in the front. The girl is looking at the viewer',
         width: 1024,
         height: 1024,
         numIterations: 20, // optional

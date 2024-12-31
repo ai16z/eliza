@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / generateImage
+[@elizaos/core v0.1.7-alpha.1](../index.md) / generateImage
 
 # Function: generateImage()
 
@@ -28,6 +28,10 @@
 
 • **data.jobId?**: `string`
 
+• **data.stylePreset?**: `string`
+
+• **data.hideWatermark?**: `boolean`
+
 • **runtime**: [`IAgentRuntime`](../interfaces/IAgentRuntime.md)
 
 ## Returns
@@ -48,4 +52,4 @@
 
 ## Defined in
 
-[packages/core/src/generation.ts:925](https://github.com/elizaos/eliza/blob/main/packages/core/src/generation.ts#L925)
+[packages/core/src/generation.ts:926](https://github.com/elizaOS/eliza/blob/main/packages/core/src/generation.ts#L926)

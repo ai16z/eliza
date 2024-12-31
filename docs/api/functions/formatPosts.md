@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / formatPosts
+[@elizaos/core v0.1.7-alpha.1](../index.md) / formatPosts
 
 # Function: formatPosts()
 
@@ -20,4 +20,4 @@
 
 ## Defined in
 
-[packages/core/src/posts.ts:4](https://github.com/elizaos/eliza/blob/main/packages/core/src/posts.ts#L4)
+[packages/core/src/posts.ts:4](https://github.com/elizaOS/eliza/blob/main/packages/core/src/posts.ts#L4)

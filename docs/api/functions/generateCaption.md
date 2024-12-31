@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / generateCaption
+[@elizaos/core v0.1.7-alpha.1](../index.md) / generateCaption
 
 # Function: generateCaption()
 
@@ -26,4 +26,4 @@
 
 ## Defined in
 
-[packages/core/src/generation.ts:1176](https://github.com/elizaos/eliza/blob/main/packages/core/src/generation.ts#L1176)
+[packages/core/src/generation.ts:1202](https://github.com/elizaOS/eliza/blob/main/packages/core/src/generation.ts#L1202)

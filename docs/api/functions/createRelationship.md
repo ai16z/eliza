@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.6-alpha.4](../index.md) / createRelationship
+[@elizaos/core v0.1.7-alpha.1](../index.md) / createRelationship
 
 # Function: createRelationship()
 
@@ -20,4 +20,4 @@
 
 ## Defined in
 
-[packages/core/src/relationships.ts:3](https://github.com/elizaos/eliza/blob/main/packages/core/src/relationships.ts#L3)
+[packages/core/src/relationships.ts:3](https://github.com/elizaOS/eliza/blob/main/packages/core/src/relationships.ts#L3)
