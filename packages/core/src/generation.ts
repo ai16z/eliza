@@ -10,6 +10,7 @@ import {
 } from "ai";
 import { Buffer } from "buffer";
 import { createOllama } from "ollama-ai-provider";
+import { fereai } from "fereai-provider";
 import OpenAI from "openai";
 import { encodingForModel, TiktokenModel } from "js-tiktoken";
 import Together from "together-ai";
@@ -570,6 +571,26 @@ export async function generateText({
                 elizaLogger.debug("Received response from Venice model.");
                 break;
             }
+
+            case ModelProviderName.FEREAI:
+                {
+                    elizaLogger.debug("Initializing FereAI model.");
+
+                    elizaLogger.debug("****** MODEL\n", model);
+
+                    const { text: fereaiResponse } = await aiGenerateText({
+                        model: fereai(model),
+                        prompt: context,
+                        temperature: temperature,
+                        maxTokens: max_response_length,
+                        frequencyPenalty: frequency_penalty,
+                        presencePenalty: presence_penalty,
+                    });
+
+                    response = fereaiResponse;
+                }
+                elizaLogger.debug("Received response from FereAI model:", model);
+                break;
 
             default: {
                 const errorMessage = `Unsupported provider: ${provider}`;

@@ -62,6 +62,7 @@
     "anthropic-vertex-ai": "1.0.2",
     "fastembed": "1.14.1",
     "fastestsmallesttextencoderdecoder": "1.0.22",
+    "fereai-provider": "0.1.2",
     "gaxios": "6.7.1",
     "glob": "11.0.0",
     "handlebars": "^4.7.8",

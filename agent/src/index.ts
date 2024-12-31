@@ -61,6 +61,7 @@ import { zksyncEraPlugin } from "@elizaos/plugin-zksync-era";
 import { cronosZkEVMPlugin } from "@elizaos/plugin-cronoszkevm";
 import { abstractPlugin } from "@elizaos/plugin-abstract";
 import { avalanchePlugin } from "@elizaos/plugin-avalanche";
+import { fereProPlugin } from "@elizaos/plugin-ferepro";
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
@@ -346,6 +347,13 @@ export function getTokenForProvider(
                 character.settings?.secrets?.GOOGLE_GENERATIVE_AI_API_KEY ||
                 settings.GOOGLE_GENERATIVE_AI_API_KEY
             );
+        case ModelProviderName.FEREAI:
+            return (
+                character.settings?.secrets?.FEREAI_API_KEY ||
+                settings.FEREAI_API_KEY &&
+                character.settings?.secrets?.FEREAI_USER_ID ||
+                settings.FEREAI_USER_ID
+            );
         default:
             const errorMessage = `Failed to get token - unsupported model provider: ${provider}`;
             elizaLogger.error(errorMessage);
@@ -600,6 +608,7 @@ export async function createAgent(
             getSecret(character, "AVALANCHE_PRIVATE_KEY")
                 ? avalanchePlugin
                 : null,
+            getSecret(character, "FEREAI_USER_ID") ? fereProPlugin : null,
         ].filter(Boolean),
         providers: [],
         actions: [],

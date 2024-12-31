@@ -503,6 +503,19 @@ export const models: Models = {
             [ModelClass.IMAGE]: settings.LIVEPEER_IMAGE_MODEL || "ByteDance/SDXL-Lightning",
         },
     },
+    [ModelProviderName.FEREAI]: {
+        settings: {
+            stop: [],
+            maxInputTokens: 128000,
+            maxOutputTokens: 8192,
+            temperature: 0.7,
+        },
+        model: {
+            [ModelClass.SMALL]: "MarketAnalyzerAgent",
+            [ModelClass.MEDIUM]: "ProAgent",
+            [ModelClass.LARGE]: "ProAgent"
+        },
+    },
 };
 
 export function getModel(provider: ModelProviderName, type: ModelClass) {

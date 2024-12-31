@@ -5,9 +5,8 @@
   "type": "module",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@elizaos/core": "^0.1.7-alpha.1",
-    "tsup": "^8.3.5",
-    "ws": "^8.18.0"
+    "@elizaos/core": "workspace:*",
+    "tsup": "^8.3.5"
   },
   "scripts": {
     "build": "tsup --format esm --dts",
@@ -15,7 +14,6 @@
     "lint": "eslint --fix  --cache ."
   },
   "devDependencies": {
-    "@types/ws": "^8.5.13",
     "tsx": "^4.19.2"
   }
 }

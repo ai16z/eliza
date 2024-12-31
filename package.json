@@ -59,6 +59,7 @@
         "@vitest/eslint-plugin": "1.0.1",
         "amqplib": "0.10.5",
         "csv-parse": "5.6.0",
+        "fereai-provider": "0.1.2",
         "ollama-ai-provider": "0.16.1",
         "optional": "0.1.4",
         "pnpm": "9.14.4",
