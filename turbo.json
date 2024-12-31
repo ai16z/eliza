@@ -16,7 +16,10 @@
         },
         "@elizaos/plugin-solana#build": {
             "outputs": ["dist/**"],
-            "dependsOn": ["@elizaos/plugin-trustdb#build"]
+            "dependsOn": [
+                "@elizaos/plugin-trustdb#build",
+                "@elizaos/plugin-tee#build"
+            ]
         },
         "@elizaos/plugin-nft-generation#build": {
             "outputs": ["dist/**"],

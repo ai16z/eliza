@@ -224,6 +224,7 @@ export async function generateText({
 
             case ModelProviderName.GOOGLE: {
                 const google = createGoogleGenerativeAI({
+                    apiKey,
                     fetch: runtime.fetch,
                 });
 
