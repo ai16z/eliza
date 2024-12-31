@@ -25,6 +25,8 @@ import { settings } from "@elizaos/core";
 import { createApiRouter } from "./api.ts";
 import * as fs from "fs";
 import * as path from "path";
+import { createVerifiableLogApiRouter } from "./verifiable-log-api.ts";
+
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -100,6 +102,10 @@ export class DirectClient {
 
         const apiRouter = createApiRouter(this.agents, this);
         this.app.use(apiRouter);
+
+
+        const apiLogRouter = createVerifiableLogApiRouter(this.agents);
+        this.app.use(apiLogRouter);
 
         // Define an interface that extends the Express Request interface
         interface CustomRequest extends ExpressRequest {

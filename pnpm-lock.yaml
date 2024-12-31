@@ -213,6 +213,9 @@ importers:
       '@elizaos/plugin-tee':
         specifier: workspace:*
         version: link:../packages/plugin-tee
+      '@elizaos/plugin-tee-verifiable-log':
+        specifier: workspace:*
+        version: link:../packages/plugin-tee-verifiable-log
       '@elizaos/plugin-ton':
         specifier: workspace:*
         version: link:../packages/plugin-ton
@@ -537,6 +540,9 @@ importers:
       '@elizaos/plugin-image-generation':
         specifier: workspace:*
         version: link:../plugin-image-generation
+      '@elizaos/plugin-tee-verifiable-log':
+        specifier: workspace:*
+        version: link:../plugin-tee-verifiable-log
       '@types/body-parser':
         specifier: 1.19.5
         version: 1.19.5
@@ -1811,6 +1817,43 @@ importers:
       whatwg-url:
         specifier: 7.1.0
         version: 7.1.0
+
+  packages/plugin-tee-verifiable-log:
+    dependencies:
+      '@elizaos/core':
+        specifier: workspace:*
+        version: link:../core
+      '@elizaos/plugin-tee':
+        specifier: workspace:*
+        version: link:../plugin-tee
+      dompurify:
+        specifier: 3.2.2
+        version: 3.2.2
+      elliptic:
+        specifier: ^6.6.1
+        version: 6.6.1
+      ethereum-cryptography:
+        specifier: ^3.0.0
+        version: 3.0.0
+      tsup:
+        specifier: 8.3.5
+        version: 8.3.5(@swc/core@1.10.1(@swc/helpers@0.5.15))(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.6.3)(yaml@2.6.1)
+      uuid:
+        specifier: 11.0.3
+        version: 11.0.3
+      vitest:
+        specifier: 2.1.5
+        version: 2.1.5(@types/node@22.10.2)(jsdom@25.0.1(bufferutil@4.0.8)(canvas@2.11.2(encoding@0.1.13))(utf-8-validate@5.0.10))(terser@5.37.0)
+      whatwg-url:
+        specifier: 7.1.0
+        version: 7.1.0
+    devDependencies:
+      '@types/dompurify':
+        specifier: 3.2.0
+        version: 3.2.0
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.15))(@types/node@22.10.2)(typescript@5.6.3)
 
   packages/plugin-ton:
     dependencies:
@@ -5475,6 +5518,10 @@ packages:
   '@neynar/nodejs-sdk@2.6.1':
     resolution: {integrity: sha512-5J0tGTO/Oq7wdOW0IW1ZN9qgqmD5RIu4Ang0wokW/HAFexLkJ8tKyU4QrY8II0VIvReIR/8hWcKexo/EHzTcmQ==}
     engines: {node: '>=19.9.0'}
+
+  '@noble/ciphers@1.0.0':
+    resolution: {integrity: sha512-wH5EHOmLi0rEazphPbecAzmjd12I6/Yv/SiHdkA9LSycsQk7RuuTp7am5/o62qYr0RScE7Pc9icXGBbsr6cesA==}
+    engines: {node: ^14.21.3 || >=16}
 
   '@noble/curves@1.2.0':
     resolution: {integrity: sha512-oYclrNgRaM9SsBUBVbb8M6DTV7ZHRTKugureoYEncY5c65HOmRzvSiTE3y5CYaPYJA/GVkrhXEoF0M3Ya9PMnw==}
@@ -11353,6 +11400,10 @@ packages:
 
   ethereum-cryptography@2.2.1:
     resolution: {integrity: sha512-r/W8lkHSiTLxUxW8Rf3u4HGB0xQweG2RyETjywylKZSzLWoWAijRz8WCuOtJ6wah+avllXBqZuk29HCCvhEIRg==}
+
+  ethereum-cryptography@3.0.0:
+    resolution: {integrity: sha512-Ij7U9OgVZc4MAui8BttPCEaWUrAXy+eo2IbVfIxZyfzfFxMQrbIWXRUbrsRBqRrIhJ75T8P+KQRKpKTaG0Du8Q==}
+    engines: {node: ^14.21.3 || >=16, npm: '>=9'}
 
   ethereumjs-abi@0.6.8:
     resolution: {integrity: sha512-Tx0r/iXI6r+lRsdvkFDlut0N08jWMnKRZ6Gkq+Nmw75lZe4e6o3EkSnkaBP5NF6+m5PTGAr9JP43N3LyeoglsA==}
@@ -25282,6 +25333,8 @@ snapshots:
       - utf-8-validate
       - zod
 
+  '@noble/ciphers@1.0.0': {}
+
   '@noble/curves@1.2.0':
     dependencies:
       '@noble/hashes': 1.3.2
@@ -33052,6 +33105,14 @@ snapshots:
       '@noble/hashes': 1.4.0
       '@scure/bip32': 1.4.0
       '@scure/bip39': 1.3.0
+
+  ethereum-cryptography@3.0.0:
+    dependencies:
+      '@noble/ciphers': 1.0.0
+      '@noble/curves': 1.6.0
+      '@noble/hashes': 1.5.0
+      '@scure/bip32': 1.5.0
+      '@scure/bip39': 1.4.0
 
   ethereumjs-abi@0.6.8:
     dependencies:
@@ -41928,7 +41989,6 @@ snapshots:
       yn: 3.1.1
     optionalDependencies:
       '@swc/core': 1.10.1(@swc/helpers@0.5.15)
-    optional: true
 
   ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.15))(@types/node@22.8.4)(typescript@5.6.3):
     dependencies:
