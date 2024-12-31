@@ -47,6 +47,11 @@
 
 > **Note for Windows Users:** [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/install-manual) is required.
 
+### For Windows Users (Optional)
+
+* Install the Remote Development extension in Visual Studio.
+* Press **F1** in Visual Studio, type  **"Remote"** , and select  **Remote Explorer: Focus on WSL Targets View** .
+
 ### Use the Starter (Recommended)
 
 ```bash
@@ -55,8 +60,10 @@ cd eliza-starter
 cp .env.example .env
 pnpm i && pnpm build && pnpm start
 ```
+
 Once the agent is running, You should see the message to run "pnpm start:client" at the end.
-Open another terminal and move to same directory and then run below command and follow the URL to chat to your agent. 
+Open another terminal and move to same directory and then run below command and follow the URL to chat to your agent.
+
 ```bash
 pnpm start:client
 ```
@@ -99,12 +106,13 @@ sh scripts/start.sh
 ### Edit the character file
 
 1. Open `packages/core/src/defaultCharacter.ts` to modify the default character. Uncomment and edit.
-
 2. To load custom characters:
-    - Use `pnpm start --characters="path/to/your/character.json"`
-    - Multiple character files can be loaded simultaneously
+
+   - Use `pnpm start --characters="path/to/your/character.json"`
+   - Multiple character files can be loaded simultaneously
 3. Connect with X (Twitter)
-    - change `"clients": []` to `"clients": ["twitter"]` in the character file to connect with X
+
+   - change `"clients": []` to `"clients": ["twitter"]` in the character file to connect with X
 
 ### Manually Start Eliza
 
