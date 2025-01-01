@@ -589,6 +589,32 @@ export async function generateText({
                 break;
             }
 
+            case ModelProviderName.DEEPSEEK: {
+                elizaLogger.debug("Initializing DeepSeek model.");
+                const deepseek = createOpenAI({
+                    apiKey: apiKey,
+                    baseURL: endpoint,
+                    fetch: runtime.fetch,
+                });
+
+                const { text: deepseekResponse } = await aiGenerateText({
+                    model: deepseek.languageModel(model),
+                    prompt: context,
+                    system:
+                        runtime.character.system ??
+                        settings.SYSTEM_PROMPT ??
+                        undefined,
+                    temperature: temperature,
+                    maxTokens: max_response_length,
+                    frequencyPenalty: frequency_penalty,
+                    presencePenalty: presence_penalty,
+                });
+
+                response = deepseekResponse;
+                elizaLogger.debug("Received response from DeepSeek model.");
+                break;
+            }
+
             default: {
                 const errorMessage = `Unsupported provider: ${provider}`;
                 elizaLogger.error(errorMessage);
