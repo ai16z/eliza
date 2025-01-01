@@ -613,6 +613,11 @@ export type Plugin = {
     clients?: Client[];
 };
 
+export interface DynamicPlugin {
+    secrets: string | string[];
+    importFn: () => Promise<Plugin>;
+}
+
 /**
  * Available client platforms
  */
