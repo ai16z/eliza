@@ -11,7 +11,7 @@
         "@lifi/sdk": "3.4.1",
         "@lifi/types": "16.3.0",
         "tsup": "8.3.5",
-        "viem": "2.21.53"
+        "viem": "^2.21.58"
     },
     "scripts": {
         "build": "tsup --format esm --dts",

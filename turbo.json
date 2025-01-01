@@ -25,6 +25,10 @@
             "outputs": ["dist/**"],
             "dependsOn": ["@elizaos/plugin-node#build"]
         },
+        "@elizaos/plugin-evm#build": {
+            "outputs": ["dist/**"],
+            "dependsOn": ["@elizaos/plugin-tee#build"]
+        },
         "eliza-docs#build": {
             "outputs": ["build/**"]
         },

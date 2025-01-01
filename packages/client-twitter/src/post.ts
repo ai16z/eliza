@@ -464,7 +464,7 @@ export class TwitterPostClient {
                     .replace(/^\s*{?\s*"text":\s*"|"\s*}?\s*$/g, "") // Remove JSON-like wrapper
                     .replace(/^['"](.*)['"]$/g, "$1") // Remove quotes
                     .replace(/\\"/g, '"') // Unescape quotes
-                    .replace(/\\n/g, "\n") // Unescape newlines
+                    .replace(/\\n/g, "\n\n") // Unescape newlines, ensures double spaces
                     .trim();
             }
 
@@ -491,7 +491,7 @@ export class TwitterPostClient {
             const removeQuotes = (str: string) =>
                 str.replace(/^['"](.*)['"]$/, "$1");
 
-            const fixNewLines = (str: string) => str.replaceAll(/\\n/g, "\n");
+            const fixNewLines = (str: string) => str.replaceAll(/\\n/g, "\n\n"); //ensures double spaces
 
             // Final cleaning
             cleanedContent = removeQuotes(fixNewLines(cleanedContent));
