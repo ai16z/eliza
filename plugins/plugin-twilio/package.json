@@ -1,0 +1,27 @@
+{
+    "name": "@eliza/plugin-twilio",
+    "version": "1.0.0",
+    "description": "Eliza plugin for voice and text interactions using Twilio, ElevenLabs, and Deepgram",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+      "build": "tsc",
+      "test": "node dist/test/test.js",
+      "clean": "rm -rf dist",
+      "prebuild": "npm run clean",
+      "dev": "tsc -w"
+    },
+    "dependencies": {
+      "@deepgram/sdk": "^3.9.0",
+      "axios": "^1.7.9",
+      "twilio": "^5.4.0"
+    },
+    "devDependencies": {
+      "@types/node": "^22.10.3",
+      "dotenv": "^16.4.7",
+      "typescript": "^5.7.2"
+    },
+    "peerDependencies": {
+      "@ai16z/eliza": "^0.1.6"
+    }
+  }
