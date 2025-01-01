@@ -55,3 +55,10 @@ coverage
 .eslintcache
 
 agent/content
+
+# MoonDev's Secret Keys 🌙
+dontshare.ts
+dontshare.py
+/Users/md/Dropbox/dev/github/eliza/packages/plugin-trading/python_trading/dontshare.py
+/Users/md/Dropbox/dev/github/eliza/packages/plugin-trading/python_trading/dontshare.ts
+*.pyc
