@@ -9,7 +9,6 @@
     "@elizaos/plugin-trustdb": "workspace:*",
     "@story-protocol/core-sdk": "1.2.0-rc.3",
     "tsup": "8.3.5",
-    "viem": "2.21.54",
     "@pinata/sdk": "^2.1.0"
   },
   "scripts": {

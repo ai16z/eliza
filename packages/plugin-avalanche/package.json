@@ -5,8 +5,7 @@
   "type": "module",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@elizaos/core": "workspace:*",
-    "viem": "2.21.49"
+    "@elizaos/core": "workspace:*"
   },
   "devDependencies": {
     "tsup": "8.3.5"

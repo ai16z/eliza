@@ -687,6 +687,10 @@ export type Character = {
     /** Image model provider to use, if different from modelProvider */
     imageModelProvider?: ModelProviderName;
 
+
+    /** Image Vision model provider to use, if different from modelProvider */
+    imageVisionModelProvider?: ModelProviderName;
+
     /** Optional model endpoint override */
     modelEndpointOverride?: string;
 
@@ -1100,6 +1104,7 @@ export interface IAgentRuntime {
     token: string | null;
     modelProvider: ModelProviderName;
     imageModelProvider: ModelProviderName;
+    imageVisionModelProvider: ModelProviderName;
     character: Character;
     providers: Provider[];
     actions: Action[];

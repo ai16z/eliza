@@ -10,8 +10,7 @@
         "@lifi/data-types": "5.15.5",
         "@lifi/sdk": "3.4.1",
         "@lifi/types": "16.3.0",
-        "tsup": "8.3.5",
-        "viem": "^2.21.58"
+        "tsup": "8.3.5"
     },
     "scripts": {
         "build": "tsup --format esm --dts",
