@@ -95,6 +95,13 @@ TWITTER_USERNAME= # Account username
 TWITTER_PASSWORD= # Account password
 TWITTER_EMAIL= # Account email
 
+
+TWITTER_API_IO_KEY=elizaOS_public_key_love_truth_future
+# 第三方推特API，不需要使用自己的账号获取twitter上的数据。避免自己的账号被封禁和速率限制。
+# 当前Key是一个共享，只是作为测试使用，当前支持50QPS，但是使用人数多的话，也可能会有并发问题。
+# 在这里获取自己的免费的KEY：https://twitterapi.io 保证稳定性。
+
+
 X_SERVER_URL=
 XAI_API_KEY=
 XAI_MODEL=

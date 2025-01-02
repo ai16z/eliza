@@ -26,6 +26,7 @@ services:
             - TWITTER_PASSWORD=
             - TWITTER_EMAIL=
             - X_SERVER_URL=https://api.red-pill.ai/v1
+            - TWITTER_API_IO_KEY=elizaOS_public_key_love_truth_future #A third-party Twitter API key for data retrieval. This shared key is for testing only - get your personal key at https://twitterapi.io to avoid QPS limitations
             - BIRDEYE_API_KEY=
             - SOL_ADDRESS=So11111111111111111111111111111111111111112
             - SLIPPAGE=1

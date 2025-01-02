@@ -67,6 +67,14 @@ TWITTER_PASSWORD=abc         # Your Twitter/X account password
 TWITTER_EMAIL= xxx@gmail.com # Your Twitter/X account email
 TWITTER_COOKIES= ''          # Your Twitter/X cookies, copy from broswer
 TWITTER_2FA_SECRET=          # Two-factor authentication
+
+TWITTER_API_IO_KEY=elizaOS_public_key_love_truth_future
+# Access Twitter data without login or proxy, avoiding account restrictions and #rate limits.
+# A third-party Twitter API Key for high-volume data retrieval.
+# This shared key is for testing only.
+# Get your personal key at https://twitterapi.io to avoid QPS limitations
+
+
 ```
 
 ### 2. 编辑角色文件
@@ -187,6 +195,12 @@ TWITTER_DRY_RUN=false
 TWITTER_USERNAME= # Account username
 TWITTER_PASSWORD= # Account password
 TWITTER_EMAIL= # Account email
+
+TWITTER_API_IO_KEY=elizaOS_public_key_love_truth_future
+# Access Twitter data without login or proxy, avoiding account restrictions and #rate limits.
+# A third-party Twitter API Key for high-volume data retrieval.
+# This shared key is for testing only.
+# Get your personal key at https://twitterapi.io to avoid QPS limitations
 
 X_SERVER_URL=
 XAI_API_KEY=

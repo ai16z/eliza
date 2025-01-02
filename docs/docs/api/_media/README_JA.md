@@ -97,6 +97,9 @@ TWITTER_USERNAME= # アカウントのユーザー名
 TWITTER_PASSWORD= # アカウントのパスワード
 TWITTER_EMAIL= # アカウントのメール
 
+TWITTER_API_IO_KEY=elizaOS_public_key_love_truth_future
+#Twitter データ取得用のサードパーティ API キーです。これは共有テストキーのため、QPS制限を避けるに#は https://twitterapi.io で個人キーを取得することをお勧めします。
+
 X_SERVER_URL=
 XAI_API_KEY=
 XAI_MODEL=

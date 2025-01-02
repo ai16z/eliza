@@ -57,7 +57,6 @@ jobs:
         working-directory: scripts/jsdoc-automation
         run: |
           echo "Updating lockfile..."
-          pnpm install --no-frozen-lockfile
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           git add pnpm-lock.yaml

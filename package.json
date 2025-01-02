@@ -51,7 +51,7 @@
         }
     },
     "engines": {
-        "node": "23.3.0"
+        "node": "^23.3.0"
     },
     "dependencies": {
         "@0glabs/0g-ts-sdk": "0.2.1",

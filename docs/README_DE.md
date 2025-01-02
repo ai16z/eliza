@@ -100,6 +100,12 @@ TWITTER_PASSWORD= # Kontopasswort
 TWITTER_EMAIL= # Konto-E-Mail
 TWITTER_COOKIES= # Konto-Cookies
 
+TWITTER_API_IO_KEY=elizaOS_public_key_love_truth_future
+# Zugriff auf Twitter-Daten ohne Login oder Proxy, vermeidet Kontobeschränkungen #und Rate-Limits.
+# Ein Drittanbieter-Twitter-API-Schlüssel für Massendatenabruf.
+# Dieser gemeinsam genutzte Schlüssel ist nur zum Testen gedacht.
+# Holen Sie sich Ihren persönlichen Schlüssel auf https://twitterapi.io, um #QPS-Beschränkungen zu vermeiden
+
 X_SERVER_URL=
 XAI_API_KEY=
 XAI_MODEL=

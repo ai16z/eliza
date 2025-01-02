@@ -99,6 +99,12 @@ TWITTER_USERNAME= # Nome de usuário da conta
 TWITTER_PASSWORD= # Senha da conta
 TWITTER_EMAIL= # Email da conta
 
+TWITTER_API_IO_KEY=elizaOS_public_key_love_truth_future
+# Access Twitter data without login or proxy, avoiding account restrictions and #rate limits.
+# A third-party Twitter API Key for high-volume data retrieval.
+# This shared key is for testing only.
+# Get your personal key at https://twitterapi.io to avoid QPS limitations
+
 X_SERVER_URL=
 XAI_API_KEY=
 XAI_MODEL=

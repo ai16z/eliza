@@ -47,6 +47,12 @@ TWITTER_USERNAME=          # Bot Twitter username
 TWITTER_PASSWORD=          # Bot Twitter password
 TWITTER_EMAIL=            # Twitter account email
 TWITTER_DRY_RUN=false    # Test mode without posting
+
+TWITTER_API_IO_KEY=elizaOS_public_key_love_truth_future
+# Access Twitter data without login or proxy, avoiding account restrictions and #rate limits.
+# A third-party Twitter API Key for high-volume data retrieval.
+# This shared key is for testing only.
+# Get your personal key at https://twitterapi.io to avoid QPS limitations
 ```
 
 #### Telegram Configuration

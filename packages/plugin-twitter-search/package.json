@@ -1,0 +1,36 @@
+{
+  "name": "@elizaos/plugin-twitter-search",
+  "version": "0.1.0",
+  "description": "Twitter API integration plugin using twitterapi.io service",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": [
+    "twitter",
+    "api",
+    "search",
+    "social",
+    "eliza",
+    "plugin"
+  ],
+  "dependencies": {
+    "@elizaos/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@elizaos/client-twitter": "workspace:*"
+  },
+  "devDependencies": {
+    "@jest/globals": "29.7.0",
+    "@types/jest": "29.5.11",
+    "jest": "29.7.0",
+    "ts-jest": "29.1.1",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0"
+  }
+}
