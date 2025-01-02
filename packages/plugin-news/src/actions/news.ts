@@ -33,24 +33,69 @@ export const currentNewsAction: Action = {
                     throw new Error('NEWS_API_KEY environment variable is not set');
                 }
 
-                const response = await fetch(`https://newsapi.org/v2/everything?q=${searchTerm}&sortBy=publishedAt&apiKey=${apiKey}`);
-                const data = await response.json();
+                // Add quotes and additional context terms
+                const enhancedSearchTerm = encodeURIComponent(`"${searchTerm}" AND (Spain OR Spanish OR Madrid OR Felipe)`);
 
-                if (!data.articles || !Array.isArray(data.articles)) {
+                const [everythingResponse, headlinesResponse] = await Promise.all([
+                    fetch(
+                        `https://newsapi.org/v2/everything?` +
+                        `q=${enhancedSearchTerm}&` +
+                        `sortBy=relevancy&` +
+                        `language=en&` +
+                        `pageSize=50&` +
+                        `apiKey=${apiKey}`
+                    ),
+                    fetch(
+                        `https://newsapi.org/v2/top-headlines?` +
+                        `q=${searchTerm}&` +
+                        `country=es&` +
+                        `language=en&` +
+                        `pageSize=50&` +
+                        `apiKey=${apiKey}`
+                    )
+                ]);
+
+                const [everythingData, headlinesData] = await Promise.all([
+                    everythingResponse.json(),
+                    headlinesResponse.json()
+                ]);
+
+                // Combine and filter articles
+                const allArticles = [
+                    ...(headlinesData.articles || []),
+                    ...(everythingData.articles || [])
+                ].filter(article =>
+                    article.title &&
+                    article.description &&
+                    (article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                     article.description.toLowerCase().includes(searchTerm.toLowerCase()))
+                );
+
+                // Remove duplicates and get up to 15 articles
+                const uniqueArticles = Array.from(
+                    new Map(allArticles.map(article => [article.title, article])).values()
+                ).slice(0, 15);
+
+                if (!uniqueArticles.length) {
                     return "No news articles found.";
                 }
 
-                return data.articles.slice(0, 5).map(article => {
-                    const content = article.content || article.description || "No content available";
-                    return `${article.title || "No title"}\n${article.description || "No description"}\n${article.url || ""}\n${content.slice(0, 1000)}`;
-                }).join("\n\n");
+                return uniqueArticles.map((article, index) => {
+                    const content = article.description || "No content available";
+                    const urlDomain = article.url ? new URL(article.url).hostname : "";
+                    return `📰 Article ${index + 1}\n` +
+                           `━━━━━━━━━━━━━━━━━━━━━━\n` +
+                           `📌 **${article.title || "No title"}**\n\n` +
+                           `📝 ${content}\n\n` +
+                           `🔗 Read more at: ${urlDomain}\n`;
+                }).join("\n");
             } catch (error) {
                 console.error("Error fetching news:", error);
                 return "Sorry, there was an error fetching the news.";
             }
         }
 
-        const context = `Extract the search term from the {{userName}} message. The message is: ${_message.content.text}. Only return the search term, no other text.`
+        const context = `What is the specific topic or subject the user wants news about? Extract ONLY the search term from this message: "${_message.content.text}". Return just the search term with no additional text, punctuation, or explanation.`
 
         const searchTerm = await generateText({
             runtime: _runtime,
@@ -58,6 +103,9 @@ export const currentNewsAction: Action = {
             modelClass: ModelClass.SMALL,
             stop: ["\n"],
         });
+
+        // For debugging
+        console.log("Search term extracted:", searchTerm);
 
         const currentNews = await getCurrentNews(searchTerm);
         const responseText = ` *protocol droid noises*\n\n${currentNews}`;

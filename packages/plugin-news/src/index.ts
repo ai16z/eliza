@@ -1,10 +1,10 @@
 import { Plugin } from "@ai16z/eliza";
-import { currentNewsAction } from "./actions/news.ts";
-
-export * as actions from "./actions";
+import { currentNewsAction } from "./actions/news";
 
 export const newsPlugin: Plugin = {
-    name: "news",
+    name: "newsPlugin",
     description: "Get the latest news about a specific topic if asked by the user.",
     actions: [currentNewsAction],
 };
+
+export default newsPlugin;
