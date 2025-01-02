@@ -1,0 +1,30 @@
+{
+    "name": "@elizaos/plugin-cosmos",
+    "version": "0.1.0-alpha.1",
+    "main": "dist/index.js",
+    "type": "module",
+    "types": "dist/index.d.ts",
+    "dependencies": {
+        "@cosmjs/amino": "^0.29.2",
+        "@cosmjs/cosmwasm-stargate": "^0.32.4",
+        "@cosmjs/stargate": "^0.29.2",
+        "@elizaos/core": "workspace:*",
+        "bignumber.js": "9.1.2",
+        "chain-registry": "*",
+        "cosmjs-utils": "*",
+        "node-cache": "5.1.2",
+        "osmojs": "16.15.0",
+        "tsup": "8.3.5",
+        "vitest": "^0.34.1"
+    },
+    "scripts": {
+        "build": "tsup --format esm,cjs --dts",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "lint": "eslint . --fix"
+    },
+    "peerDependencies": {
+        "form-data": "4.0.1",
+        "whatwg-url": "7.1.0"
+    }
+}

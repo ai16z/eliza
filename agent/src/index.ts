@@ -45,6 +45,7 @@ import {
     webhookPlugin,
 } from "@elizaos/plugin-coinbase";
 import { confluxPlugin } from "@elizaos/plugin-conflux";
+import { cosmosPlugin } from "@elizaos/plugin-cosmos";
 import { evmPlugin } from "@elizaos/plugin-evm";
 import { storyPlugin } from "@elizaos/plugin-story";
 import { flowPlugin } from "@elizaos/plugin-flow";
@@ -608,6 +609,7 @@ export async function createAgent(
             getSecret(character, "AVALANCHE_PRIVATE_KEY")
                 ? avalanchePlugin
                 : null,
+            getSecret(character, "COSMOS_MNEMONIC") ? cosmosPlugin : null,
         ].filter(Boolean),
         providers: [],
         actions: [],
