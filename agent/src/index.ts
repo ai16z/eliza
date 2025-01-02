@@ -63,7 +63,7 @@ import { zksyncEraPlugin } from "@elizaos/plugin-zksync-era";
 import { cronosZkEVMPlugin } from "@elizaos/plugin-cronoszkevm";
 import { abstractPlugin } from "@elizaos/plugin-abstract";
 import { avalanchePlugin } from "@elizaos/plugin-avalanche";
-import { webSearchPlugin } from "@elizaos/plugin-web-search";
+import { birdeyePlugin } from "@elizaos/plugin-birdeye";
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
@@ -608,6 +608,7 @@ export async function createAgent(
             getSecret(character, "AVALANCHE_PRIVATE_KEY")
                 ? avalanchePlugin
                 : null,
+            getSecret(character, "BIRDEYE_API_KEY") ? birdeyePlugin : null,
         ].filter(Boolean),
         providers: [],
         actions: [],

@@ -60,6 +60,7 @@
     "@elizaos/plugin-fuel": "workspace:*",
     "@elizaos/plugin-avalanche": "workspace:*",
     "@elizaos/plugin-web-search": "workspace:*",
+    "@elizaos/plugin-birdeye": "workspace:*",
     "readline": "1.3.0",
     "ws": "8.18.0",
     "yargs": "17.7.2"
