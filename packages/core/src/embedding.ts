@@ -19,6 +19,7 @@ export const EmbeddingProvider = {
     Ollama: "Ollama",
     GaiaNet: "GaiaNet",
     BGE: "BGE",
+    Heurist: "Heurist",
 } as const;
 
 export type EmbeddingProviderType =
@@ -38,7 +39,9 @@ export const getEmbeddingConfig = (): EmbeddingConfig => ({
               ? 1024 // Ollama mxbai-embed-large
               : settings.USE_GAIANET_EMBEDDING?.toLowerCase() === "true"
                 ? 768 // GaiaNet
-                : 384, // BGE
+                : settings.USE_HEURIST_EMBEDDING?.toLowerCase() === "true"
+                  ? 1024 // Heurist
+                  : 384, // BGE
     model:
         settings.USE_OPENAI_EMBEDDING?.toLowerCase() === "true"
             ? "text-embedding-3-small"
@@ -46,7 +49,9 @@ export const getEmbeddingConfig = (): EmbeddingConfig => ({
               ? settings.OLLAMA_EMBEDDING_MODEL || "mxbai-embed-large"
               : settings.USE_GAIANET_EMBEDDING?.toLowerCase() === "true"
                 ? settings.GAIANET_EMBEDDING_MODEL || "nomic-embed"
-                : "BGE-small-en-v1.5",
+                : settings.USE_HEURIST_EMBEDDING?.toLowerCase() === "true"
+                  ? settings.HEURIST_EMBEDDING_MODEL || "BAAI/bge-large-en-v1.5"
+                  : "BGE-small-en-v1.5",
     provider:
         settings.USE_OPENAI_EMBEDDING?.toLowerCase() === "true"
             ? "OpenAI"
@@ -54,7 +59,9 @@ export const getEmbeddingConfig = (): EmbeddingConfig => ({
               ? "Ollama"
               : settings.USE_GAIANET_EMBEDDING?.toLowerCase() === "true"
                 ? "GaiaNet"
-                : "BGE",
+                : settings.USE_HEURIST_EMBEDDING?.toLowerCase() === "true"
+                  ? "Heurist"
+                  : "BGE",
 });
 
 async function getRemoteEmbedding(
@@ -125,6 +132,7 @@ export function getEmbeddingType(runtime: IAgentRuntime): "local" | "remote" {
         isNode &&
         runtime.character.modelProvider !== ModelProviderName.OPENAI &&
         runtime.character.modelProvider !== ModelProviderName.GAIANET &&
+        runtime.character.modelProvider !== ModelProviderName.HEURIST &&
         !settings.USE_OPENAI_EMBEDDING;
 
     return isLocal ? "local" : "remote";
@@ -139,6 +147,8 @@ export function getEmbeddingZeroVector(): number[] {
         embeddingDimension = 1024; // Ollama mxbai-embed-large dimension
     } else if (settings.USE_GAIANET_EMBEDDING?.toLowerCase() === "true") {
         embeddingDimension = 768; // GaiaNet dimension
+    } else if (settings.USE_HEURIST_EMBEDDING?.toLowerCase() === "true") {
+        embeddingDimension = 1024; // Heurist dimension
     }
 
     return Array(embeddingDimension).fill(0);
@@ -218,6 +228,17 @@ export async function embed(runtime: IAgentRuntime, input: string) {
                 settings.MEDIUM_GAIANET_SERVER_URL ||
                 settings.LARGE_GAIANET_SERVER_URL,
             apiKey: settings.GAIANET_API_KEY || runtime.token,
+            dimensions: config.dimensions,
+        });
+    }
+
+    if (config.provider === EmbeddingProvider.Heurist) {
+        return await getRemoteEmbedding(input, {
+            model: config.model,
+            endpoint:
+                runtime.character.modelEndpointOverride ||
+                models[ModelProviderName.HEURIST].endpoint,
+            apiKey: settings.HEURIST_API_KEY || runtime.token,
             dimensions: config.dimensions,
         });
     }
