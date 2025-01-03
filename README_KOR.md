@@ -12,14 +12,18 @@
 
 ## ✨ 기능
 
-- 🛠 SNS 지원: 디스코드, 트위터, 텔레그램 모두 지원됩니다.
-- 🔗 다양한 모델 지원 (Llama, Grok, OpenAI, Anthropic 등)
-- 👥 다중 지원: 다중 에이전트 및 채팅방이 지원됩니다.
-- 📚 높은 유연성: 개발자가 쉽게 데이터를 추가하고, 이를 활용해 다양한 기능을 만들 수 있습니다.
-- 💾 검색 지원: 당신의 데이터와 작업을 쉽게 찾아볼 수 있도록, 검색 기능을 지원합니다.
-- 🚀 높은 확장성: 자신의 동작과 클라이언트를 만들어 기능을 확장할 수 있습니다.
-- ☁️ 다양한 AI 모델 지원: local Llama, OpenAI, Anthropic, Groq 등 다양한 AI 모델을 지원합니다
-- 📦 즐겁게 개발해 봐요!
+- 🛠 SNS 통합 지원: Discord, Twitter, Telegram을 모두 지원합니다.
+- 🔗 다양한 모델 호환: Llama, Grok, OpenAI, Anthropic 등 다양한 AI 모델을 지원합니다.
+- 👥 다중 에이전트 및 채팅방 지원: 여러 에이전트와 채팅방을 손쉽게 관리할 수 있습니다.
+- 📚 문서 처리 및 상호작용: 데이터를 손쉽게 추가하고 활용할 수 있는 기능을 제공합니다.
+- 💾 검색 가능한 메모리 및 문서 저장소: 데이터를 빠르고 간편하게 검색하고 액세스할 수 있습니다.
+- 🚀 높은 확장성: 사용자 정의 동작 및 클라이언트를 만들어 기능을 확장할 수 있습니다.
+- ☁️ 다양한 AI 모델 지원: Local Llama, OpenAI, Anthropic, Groq 등과 호환됩니다.
+- 📦 쉽게 시작하세요: 바로 작동하며 손쉽게 활용할 수 있습니다!
+
+## 비디오 튜토리얼
+
+[AI Agent Dev School](https://www.youtube.com/watch?v=ArptLpQiKfI&list=PLx5pnFXdPTRzWla0RaOxALTSTnVq53fKL)
 
 ## 🎯 eliza로 어떤걸 만들 수 있을까요?
 
@@ -37,21 +41,25 @@
 - [Node.js 23.3+](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 - [pnpm](https://pnpm.io/installation)
 
-> **Windows 사용자 참고:** [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/install-manual) 필요.
+> **Windows 사용자 참고:** [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/install-manual)가 필요합니다.
 
 ### Starter 사용 (권장)
 
 ```bash
 git clone https://github.com/elizaos/eliza-starter.git
-
+cd eliza-starter
 cp .env.example .env
-
-pnpm i && pnpm start
+pnpm i && pnpm build && pnpm start
+```
+에이전트가 실행되면 마지막에 "pnpm start:client"를 실행하라는 메시지가 표시됩니다. 
+다른 터미널을 열고 같은 디렉토리로 이동한 뒤 아래 명령어를 실행하세요. 표시된 URL을 열어 에이전트와 대화하세요.
+```bash
+pnpm start:client
 ```
 
-[문서](https://elizaos.github.io/eliza/)를 참고하여 Eliza를 커스마이징 방법을 확인하세요.
+[문서](https://elizaos.github.io/eliza/)를 참고하여 Eliza를 커스터마이징하는 방법을 배워보세요.
 
-### 직접 실행하기 (경험자만 권장)
+### Eliza를 수동으로 실행하기 (경험자에게만 권장)
 
 ```bash
 # 리포지토리 클론
@@ -107,16 +115,16 @@ pnpm clean
 
 #### 추가 요구 사항
 
-시작 시 에러가 발생하면 Sharp를 설치해야 할 수 있습니다. 아래 명령어를 사용하여 설치하세요:
+시작할 때 오류가 발생하면 Sharp를 설치해야 할 수도 있습니다. 아래 명령어를 실행하여 설치하세요:
 
 ```
 pnpm install --include=optional sharp
 ```
 
-### Community & contact
+### 커뮤니티 & 문의
 
-- [Github Issues](https://github.com/elizaos/eliza/issues). 용도: Eliza 사용 중 발견된 버그 리포트, 기능 제안.
-- [Discord](https://discord.gg/ai16z). 용도: 애플리케이션 공유 및 커뮤니티 활동.
+- [Github Issues](https://github.com/elizaos/eliza/issues). liza 사용 중 발견된 버그 보고 및 기능 제안에 적합합니다.
+- [Discord](https://discord.gg/ai16z). 애플리케이션 공유 및 커뮤니티와의 소통에 적합합니다.
 
 ## 컨트리뷰터
 
