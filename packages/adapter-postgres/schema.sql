@@ -10,9 +10,25 @@
 -- DROP TABLE IF EXISTS rooms CASCADE;
 -- DROP TABLE IF EXISTS accounts CASCADE;
 
+-- Create extensions schema first
+CREATE SCHEMA IF NOT EXISTS extensions;
 
-CREATE EXTENSION IF NOT EXISTS vector;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_extension
+        WHERE extname = 'vector'
+    ) THEN
+        CREATE EXTENSION vector
+        SCHEMA extensions;
+    END IF;
+END $$;
+
 CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+
+-- Add extensions schema to search path
+SET search_path TO public, extensions;
 
 -- Create a function to determine vector dimension
 CREATE OR REPLACE FUNCTION get_embedding_dimension()
