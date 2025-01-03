@@ -12,6 +12,8 @@ export interface TransferParams {
     memo?: bigint;
 }
 
+export type Platform = 'launch-bob' | 'pick-pump';
+
 export interface ICPBalance {
     e8s: bigint;
 }

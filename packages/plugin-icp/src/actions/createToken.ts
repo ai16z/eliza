@@ -15,7 +15,9 @@ import {
 } from "@elizaos/core";
 import { idlFactory } from "../canisters/pick-pump/index.did";
 import { _SERVICE } from "../canisters/pick-pump/index.did.d";
-import { ActorCreator, CreateMemeTokenArg } from "../types";
+import { idlFactory as bobidlFactory } from "../canisters/launch-bob/index.did";
+import { _SERVICE as _BOB_SERVICE, CreateTokenArg } from "../canisters/launch-bob/index.did.d";
+import { ActorCreator, CreateMemeTokenArg, Platform } from "../types";
 import { unwrapOption, wrapOption } from "../utils/common/types/options";
 import { unwrapRustResultMap } from "../utils/common/types/results";
 import { icpWalletProvider } from "../providers/wallet";
@@ -25,8 +27,34 @@ import { CANISTER_IDS } from "../constants/canisters";
 
 async function createTokenTransaction(
     creator: ActorCreator,
-    tokenInfo: CreateMemeTokenArg
-) {
+    tokenInfo: CreateMemeTokenArg,
+    platform: Platform,
+): Promise<any> {
+    if (platform == 'launch-bob') {
+        const actor: _BOB_SERVICE = await creator(
+            bobidlFactory,
+            CANISTER_IDS.LAUNCH_BOB_FUN
+        );
+
+        const result = await actor.create_token({
+            name: tokenInfo.name,
+            ticker: tokenInfo.symbol,
+            description: tokenInfo.description,
+            image: tokenInfo.logo,
+            maybe_twitter: wrapOption(tokenInfo.twitter),
+            maybe_website: wrapOption(tokenInfo.website),
+            maybe_telegram: wrapOption(tokenInfo.telegram),
+        } as CreateTokenArg);
+
+        return unwrapRustResultMap(
+            result,
+            (ok) => ({...ok}),
+            (err) => {
+                throw new Error(`Token creation failed: ${err}`);
+            }
+        );
+    }
+
     const actor: _SERVICE = await creator(idlFactory, CANISTER_IDS.PICK_PUMP);
     const result = await actor.create_token({
         ...tokenInfo,
@@ -190,8 +218,11 @@ export const executeCreateToken: Action = {
                 name: response.name,
                 symbol: response.symbol,
                 description: response.description,
+                website: response.website,
+                twitter: response.twitter,
+                telegram: response.telegram,
                 logo: logoUploadResult.urls.gateway,
-            });
+            }, 'launch-bob');
 
             const responseMsg = {
                 text: `✨ Created new meme token:\n🪙 ${response.name} (${response.symbol})\n📝 ${response.description}`,
