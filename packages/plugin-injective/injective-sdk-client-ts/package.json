@@ -1,0 +1,44 @@
+{
+  "name": "injective-ts-lib",
+  "version": "1.0.0",
+  "description": "Injective Protocol TypeScript Library",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint . ",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@injectivelabs/grpc-web": "0.0.1",
+    "@injectivelabs/networks": "1.14.33",
+    "@injectivelabs/sdk-ts": "1.14.33",
+    "@injectivelabs/token-metadata": "1.14.11",
+    "@injectivelabs/ts-types": "1.14.33",
+    "@injectivelabs/utils": "1.14.33",
+    "@injectivelabs/wallet-base": "1.14.33",
+    "@injectivelabs/wallet-core": "1.14.33",
+    "axios": "^1.6.2",
+    "bignumber.js": "^9.1.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/eslint__js": "^8.42.3",
+    "@types/jest": "^29.5.10",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.14.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.1.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.2",
+    "typescript-eslint": "^8.19.0"
+  }
+}

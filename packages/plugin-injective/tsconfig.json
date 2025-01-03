@@ -1,0 +1,16 @@
+{
+    "extends": "../core/tsconfig.json",
+    "compilerOptions": {
+        "outDir": "dist",
+        "rootDir": ".",
+        "rootDirs": [
+            "src",
+            "injective-sdk-client-ts"
+        ],
+        "types": ["node"]
+    },
+        "include" : [
+            "src/**/*.ts",
+            "injective-sdk-client-ts/**/*.ts",
+    ]
+}
