@@ -28,6 +28,14 @@ export class ImageDescriptionService
 {
     static serviceType: ServiceType = ServiceType.IMAGE_DESCRIPTION;
 
+    private static readonly SUPPORTED_FORMATS = {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp'
+    };
+
     private modelId: string = "onnx-community/Florence-2-base-ft";
     private device: string = "gpu";
     private model: PreTrainedModel | null = null;
@@ -133,32 +141,62 @@ export class ImageDescriptionService
     private async recognizeWithOpenAI(
         imageUrl: string
     ): Promise<{ title: string; description: string }> {
+        elizaLogger.debug(`Attempting to recognize image: ${imageUrl}`);
+        
+        const { isValid, mimeType } = this.validateImageFormat(imageUrl);
+        if (!isValid) {
+            const supportedFormats = Object.keys(ImageDescriptionService.SUPPORTED_FORMATS)
+                .map(ext => ext.slice(1))
+                .join(', ');
+            const errorMessage = `Unsupported image format for ${imageUrl}. Please use one of the following formats: ${supportedFormats}`;
+            elizaLogger.error('Image format validation failed:', {
+                url: imageUrl,
+                supportedFormats,
+                error: errorMessage
+            });
+            throw new Error(errorMessage);
+        }
+        elizaLogger.debug(`Image format validated successfully: ${mimeType}`);
+
         const isGif = imageUrl.toLowerCase().endsWith(".gif");
         let imageData: Buffer | null = null;
 
         try {
             if (isGif) {
-                const { filePath } =
-                    await this.extractFirstFrameFromGif(imageUrl);
+                elizaLogger.debug('Processing GIF image, extracting first frame');
+                const { filePath } = await this.extractFirstFrameFromGif(imageUrl);
                 imageData = fs.readFileSync(filePath);
+                elizaLogger.debug('Successfully extracted first frame from GIF');
             } else if (fs.existsSync(imageUrl)) {
+                elizaLogger.debug('Reading local image file');
                 imageData = fs.readFileSync(imageUrl);
             } else {
+                elizaLogger.debug('Fetching remote image');
                 const response = await fetch(imageUrl);
                 if (!response.ok) {
-                    throw new Error(
-                        `Failed to fetch image: ${response.statusText}`
-                    );
+                    const errorMessage = `Failed to fetch image: ${response.statusText} (${response.status})`;
+                    elizaLogger.error('Image fetch failed:', {
+                        url: imageUrl,
+                        status: response.status,
+                        statusText: response.statusText
+                    });
+                    throw new Error(errorMessage);
                 }
                 imageData = Buffer.from(await response.arrayBuffer());
+                elizaLogger.debug('Successfully fetched remote image');
             }
 
             if (!imageData || imageData.length === 0) {
-                throw new Error("Failed to fetch image data");
+                const errorMessage = "Failed to fetch image data: Empty response";
+                elizaLogger.error('Image data validation failed:', {
+                    url: imageUrl,
+                    error: errorMessage
+                });
+                throw new Error(errorMessage);
             }
 
-            const prompt =
-                "Describe this image and give it a title. The first line should be the title, and then a line break, then a detailed description of the image. Respond with the format 'title\ndescription'";
+            const prompt = "Describe this image and give it a title. The first line should be the title, and then a line break, then a detailed description of the image. Respond with the format 'title\\ndescription'";
+            elizaLogger.debug('Sending image to OpenAI for recognition');
             const text = await this.requestOpenAI(
                 imageUrl,
                 imageData,
@@ -168,12 +206,22 @@ export class ImageDescriptionService
             );
 
             const [title, ...descriptionParts] = text.split("\n");
+            elizaLogger.debug('Successfully generated image description', {
+                titleLength: title.length,
+                descriptionLength: descriptionParts.join("\n").length
+            });
+            
             return {
                 title,
                 description: descriptionParts.join("\n"),
             };
         } catch (error) {
-            elizaLogger.error("Error in recognizeWithOpenAI:", error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            elizaLogger.error('Error in recognizeWithOpenAI:', {
+                url: imageUrl,
+                error: errorMessage,
+                stack: error instanceof Error ? error.stack : undefined
+            });
             throw error;
         }
     }
@@ -186,16 +234,28 @@ export class ImageDescriptionService
         isLocalFile: boolean = false
     ): Promise<string> {
         for (let attempt = 0; attempt < 3; attempt++) {
+            elizaLogger.debug(`OpenAI API request attempt ${attempt + 1}/3`);
             try {
                 const shouldUseBase64 = isGif || isLocalFile;
-                const mimeType = isGif
-                    ? "png"
-                    : path.extname(imageUrl).slice(1) || "jpeg";
+                const { mimeType } = this.validateImageFormat(imageUrl);
+                if (!mimeType) {
+                    const errorMessage = "Invalid image format detected during OpenAI request";
+                    elizaLogger.error('MIME type validation failed:', {
+                        url: imageUrl,
+                        error: errorMessage
+                    });
+                    throw new Error(errorMessage);
+                }
 
                 const base64Data = imageData.toString("base64");
                 const imageUrlToUse = shouldUseBase64
-                    ? `data:image/${mimeType};base64,${base64Data}`
+                    ? `data:${mimeType};base64,${base64Data}`
                     : imageUrl;
+
+                elizaLogger.debug('Preparing OpenAI API request', {
+                    isBase64: shouldUseBase64,
+                    mimeType
+                });
 
                 const content = [
                     { type: "text", text: prompt },
@@ -207,9 +267,8 @@ export class ImageDescriptionService
                     },
                 ];
 
-                const endpoint =
-                    models[this.runtime.imageModelProvider].endpoint ??
-                    "https://api.openai.com/v1";
+                const endpoint = models[this.runtime.imageModelProvider].endpoint ?? "https://api.openai.com/v1";
+                elizaLogger.debug(`Using OpenAI endpoint: ${endpoint}`);
 
                 const response = await fetch(endpoint + "/chat/completions", {
                     method: "POST",
@@ -226,30 +285,44 @@ export class ImageDescriptionService
 
                 if (!response.ok) {
                     const responseText = await response.text();
-                    elizaLogger.error(
-                        "OpenAI API error:",
-                        response.status,
-                        "-",
-                        responseText
-                    );
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    elizaLogger.error('OpenAI API error:', {
+                        status: response.status,
+                        response: responseText,
+                        attempt: attempt + 1
+                    });
+                    throw new Error(`OpenAI API error (${response.status}): ${responseText}`);
                 }
 
                 const data = await response.json();
-                return data.choices[0].message.content;
+                elizaLogger.debug('Successfully received OpenAI API response', {
+                    status: response.status,
+                    hasChoices: !!data.choices,
+                    choicesLength: data.choices?.length,
+                    firstChoice: data.choices?.[0],
+                    rawResponse: data
+                });
+                const responseContent = data.choices[0].message.content;
+                elizaLogger.debug('Extracted content from response', {
+                    content: responseContent,
+                    contentLength: responseContent.length
+                });
+                return responseContent;
             } catch (error) {
-                elizaLogger.error(
-                    "OpenAI request failed (attempt",
-                    attempt + 1,
-                    "):",
-                    error
-                );
+                const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+                elizaLogger.error('OpenAI request failed:', {
+                    attempt: attempt + 1,
+                    error: errorMessage,
+                    stack: error instanceof Error ? error.stack : undefined
+                });
                 if (attempt === 2) throw error;
             }
         }
-        throw new Error(
-            "Failed to recognize image with OpenAI after 3 attempts"
-        );
+        const finalError = "Failed to recognize image with OpenAI after 3 attempts";
+        elizaLogger.error('All OpenAI API attempts failed', {
+            url: imageUrl,
+            error: finalError
+        });
+        throw new Error(finalError);
     }
 
     private async processQueue(): Promise<void> {
@@ -337,6 +410,15 @@ export class ImageDescriptionService
             writeStream.on("finish", () => resolve({ filePath: tempFilePath }));
             writeStream.on("error", reject);
         });
+    }
+
+    private validateImageFormat(imageUrl: string): { isValid: boolean; mimeType: string | null } {
+        const extension = path.extname(imageUrl).toLowerCase();
+        const mimeType = ImageDescriptionService.SUPPORTED_FORMATS[extension];
+        return {
+            isValid: !!mimeType,
+            mimeType: mimeType || null
+        };
     }
 }
 

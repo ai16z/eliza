@@ -3,6 +3,7 @@ import {
     IAgentRuntime,
     IImageDescriptionService,
     Memory,
+    ServiceType,
     State,
     UUID,
     getEmbeddingZeroVector,
@@ -146,6 +147,12 @@ export class ClientBase extends EventEmitter {
         } else {
             this.twitterClient = new Scraper();
             ClientBase._twitterClients[username] = this.twitterClient;
+        }
+
+        // Initialize image description service
+        this.imageDescriptionService = runtime.getService(ServiceType.IMAGE_DESCRIPTION) as IImageDescriptionService;
+        if (!this.imageDescriptionService) {
+            throw new Error("Image description service not found");
         }
 
         this.directions =

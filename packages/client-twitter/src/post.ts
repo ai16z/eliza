@@ -362,8 +362,45 @@ export class TwitterPostClient {
         try {
             elizaLogger.log(`Posting new tweet:\n`);
 
-            let result;
+            // Extract image URLs from the content
+            const imageUrlRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp))/gi;
+            const imageUrls = cleanedContent.match(imageUrlRegex) || [];
 
+            // Process images if any
+            let imageDescriptions: string[] = [];
+            if (imageUrls.length > 0) {
+                elizaLogger.debug('Processing images in tweet:', {
+                    imageCount: imageUrls.length,
+                    urls: imageUrls
+                });
+
+                // Get descriptions for each image
+                for (const imageUrl of imageUrls) {
+                    try {
+                        const { description } = await client.imageDescriptionService.describeImage(imageUrl);
+                        imageDescriptions.push(description);
+                        elizaLogger.debug('Generated image description:', {
+                            url: imageUrl,
+                            description
+                        });
+                    } catch (error) {
+                        elizaLogger.error('Failed to generate image description:', {
+                            url: imageUrl,
+                            error: error instanceof Error ? error.message : 'Unknown error'
+                        });
+                        // Continue with other images even if one fails
+                    }
+                }
+            }
+
+            // Add image descriptions to the tweet content if available
+            if (imageDescriptions.length > 0) {
+                const descriptions = imageDescriptions.map((desc, i) => `Image ${i + 1}: ${desc}`).join('\n');
+                cleanedContent = `${cleanedContent}\n\n${descriptions}`;
+                elizaLogger.debug('Added image descriptions to tweet content');
+            }
+
+            let result;
             if (cleanedContent.length > DEFAULT_MAX_TWEET_LENGTH) {
                 result = await this.handleNoteTweet(
                     client,
@@ -374,21 +411,27 @@ export class TwitterPostClient {
                 result = await this.sendStandardTweet(client, cleanedContent);
             }
 
-            const tweet = this.createTweetObject(
-                result,
-                client,
-                twitterUsername
-            );
+            if (result) {
+                const tweet = this.createTweetObject(
+                    result,
+                    client,
+                    twitterUsername
+                );
 
-            await this.processAndCacheTweet(
-                runtime,
-                client,
-                tweet,
-                roomId,
-                newTweetContent
-            );
+                await this.processAndCacheTweet(
+                    runtime,
+                    client,
+                    tweet,
+                    roomId,
+                    newTweetContent
+                );
+
+                elizaLogger.log("Tweet posted successfully:", tweet.permanentUrl);
+                return tweet;
+            }
         } catch (error) {
-            elizaLogger.error("Error sending tweet:", error);
+            elizaLogger.error("Error posting tweet:", error);
+            throw error;
         }
     }
 
