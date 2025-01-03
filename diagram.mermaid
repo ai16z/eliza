@@ -1,0 +1,67 @@
+flowchart TB
+    subgraph Integration
+        direction TB
+        Clients[Client Connectors]:::clients
+        Models[Model Providers]:::models
+    end
+
+    subgraph Core
+        direction TB
+        Runtime[Agent Runtime]:::core
+        Memory[Memory Manager]:::core
+        Cache[Cache Manager]:::core
+        Services[Service Layer]:::core
+    end
+
+    subgraph Plugins
+        direction TB
+        CorePlugins[Core Plugins]:::plugin
+        BlockchainPlugins[Blockchain Plugins]:::plugin
+        IntegrationPlugins[Integration Plugins]:::plugin
+    end
+
+    subgraph Infrastructure
+        direction TB
+        DB[(Database Adapters)]:::infra
+        CacheSys[(Cache Systems)]:::infra
+        Storage[(File Storage)]:::infra
+    end
+
+    Clients --> Runtime
+    Models --> Runtime
+    Runtime --> Memory
+    Runtime --> Cache
+    Runtime --> Services
+    Memory --> DB
+    Cache --> CacheSys
+    Services --> Storage
+    Runtime --> Plugins
+    
+    %% Component Mappings
+    click Runtime "https://github.com/elizaOS/eliza/blob/main/packages/core/src/runtime.ts"
+    click Memory "https://github.com/elizaOS/eliza/blob/main/packages/core/src/memory.ts"
+    click Cache "https://github.com/elizaOS/eliza/blob/main/packages/core/src/cache.ts"
+    click DB "https://github.com/elizaOS/eliza/tree/main/packages/adapter-postgres/"
+    click Services "https://github.com/elizaOS/eliza/tree/main/packages/core/src/services/"
+    click Clients "https://github.com/elizaOS/eliza/tree/main/packages/client-discord/"
+    click Models "https://github.com/elizaOS/eliza/blob/main/packages/core/src/providers.ts"
+    click CorePlugins "https://github.com/elizaOS/eliza/tree/main/packages/plugin-bootstrap/"
+    click BlockchainPlugins "https://github.com/elizaOS/eliza/tree/main/packages/plugin-solana/"
+    click IntegrationPlugins "https://github.com/elizaOS/eliza/tree/main/packages/plugin-story/"
+
+    %% Styling
+    classDef core fill:#2374ab,stroke:#000,stroke-width:2px,color:#fff
+    classDef clients fill:#57a773,stroke:#000,stroke-width:2px,color:#fff
+    classDef models fill:#ff8c42,stroke:#000,stroke-width:2px,color:#fff
+    classDef plugin fill:#845ec2,stroke:#000,stroke-width:2px,color:#fff
+    classDef infra fill:#4a4e69,stroke:#000,stroke-width:2px,color:#fff
+
+    %% Legend
+    subgraph Legend
+        direction TB
+        L1[Core Components]:::core
+        L2[Client Connectors]:::clients
+        L3[Model Providers]:::models
+        L4[Plugins]:::plugin
+        L5[Infrastructure]:::infra
+    end
