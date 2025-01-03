@@ -191,17 +191,16 @@ const summarizeAction = {
 
         state.attachmentsWithText = attachmentsWithText;
         state.objective = objective;
-
+        const template = await trimTokens(
+            summarizationTemplate,
+            chunkSize + 500,
+            runtime
+        );
         const context = composeContext({
             state,
             // make sure it fits, we can pad the tokens a bit
             // Get the model's tokenizer based on the current model being used
-            template: trimTokens(
-                summarizationTemplate,
-                chunkSize + 500,
-                (model.model[ModelClass.SMALL] ||
-                    "gpt-4o-mini") as TiktokenModel // Use the same model as generation; Fallback if no SMALL model configured
-            ),
+            template,
         });
 
         const summary = await generateText({

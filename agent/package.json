@@ -38,6 +38,7 @@
     "@elizaos/plugin-coinbase": "workspace:*",
     "@elizaos/plugin-conflux": "workspace:*",
     "@elizaos/plugin-evm": "workspace:*",
+    "@elizaos/plugin-echochambers": "workspace:*",
     "@elizaos/plugin-flow": "workspace:*",
     "@elizaos/plugin-gitbook": "workspace:*",
     "@elizaos/plugin-story": "workspace:*",
