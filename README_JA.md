@@ -1,181 +1,138 @@
-# Eliza
+# Eliza 🤖
 
-<img src="./docs/static/img/eliza_banner.jpg" alt="Eliza Banner" width="100%" />
+<div align="center">
+  <img src="./docs/static/img/eliza_banner.jpg" alt="Eliza Banner" width="100%" />
+</div>
 
-## 機能
+<div align="center">
 
--   🛠 Discord、Twitter、Telegramのフル機能コネクタ
+📖 [Documentation](https://elizaos.github.io/eliza/) | 🎯 [Examples](https://github.com/thejoven/awesome-eliza)
+
+</div>
+
+## 🚩 システム概要
+
+<div align="center">
+  <img src="./docs/static/img/eliza_diagram.jpg" alt="Eliza Diagram" width="100%" />
+</div>
+
+## ✨ 機能
+
+-   🛠 多機能なDiscord、Twitter、Telegramコネクタ
 -   👥 マルチエージェントおよびルームサポート
--   📚 ドキュメントの簡単な取り込みと対話
--   💾 検索可能なメモリおよびドキュメントストア
--   🚀 高い拡張性 - 機能を拡張するための独自のアクションとクライアントを作成可能
--   ☁️ Llama、OpenAI、Anthropic、Groqなど、多くのモデルをサポート
--   📦 すぐに使える！
+-   📚 ドキュメントの取り込みと対話を容易に実現可能
+-   💾 メモリおよびドキュメントストアへのアクセス
+-   🚀 高い拡張性 - 独自のアクションとクライアントを作成可能
+-   ☁️  Llama、OpenAI、Anthropic、Groqなど、多くのモデルをサポート
+-   📦 とにかく使いやすい！
 
-## 何に使えるのか？
+## チュートリアルビデオ
+
+[AIエージェント開発スクール](https://www.youtube.com/watch?v=ArptLpQiKfI&list=PLx5pnFXdPTRzWla0RaOxALTSTnVq53fKL)
+
+## 🎯 ユースケース
 
 -   🤖 チャットボット
 -   🕵️ 自律エージェント
 -   📈 ビジネスプロセスの処理
 -   🎮 ビデオゲームのNPC
+-   🧠 トレーディング
 
-# 始め方
+# 🚀 クイックスタートガイド
 
-**必須条件:**
+### 事前に用意する必要があるコンポーネント
 
--   [Node.js 23+](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
--   [pnpm](https://pnpm.io/installation)
+- [Python 2.7+](https://www.python.org/downloads/)
+- [Node.js 23+](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+- [pnpm](https://pnpm.io/installation)
 
-### .envファイルの編集
+> **Windowsユーザ向け:** [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/install-manual)が必要です
 
--   .env.exampleを.envにコピーし、適切な値を入力
--   TWITTER環境変数を編集して、ボットのユーザー名とパスワードを追加
+### スターターを利用する方法（推奨）
 
-### キャラクターファイルの編集
-
--   `src/core/defaultCharacter.ts`ファイルを確認 - これを変更可能
--   `pnpm start --characters="path/to/your/character.json"`を使用してキャラクターをロードし、複数のボットを同時に実行可能
-
-.envファイルとキャラクターファイルを設定した後、以下のコマンドでボットを起動可能:
-
+```bash
+git clone https://github.com/elizaos/eliza-starter.git
+cd eliza-starter
+cp .env.example .env
+pnpm i && pnpm build && pnpm start
 ```
+エージェントが正常に実行されると、"pnpm start:client"を実行することを指示するメッセージが最後に出力されます。
+新しくターミナルを開き、上述のコマンドを実行したディレクトリに移動、そこで以下のコマンドを実行し、出力されたURLにアクセスすることでエージェントとチャットを行うことができます。
+```bash
+pnpm start:client
+```
+Elizaをカスタマイズするための方法は[ドキュメンテーション](https://elizaos.github.io/eliza/)を参照してください。
+
+### マニュアルによる起動（実際に何をやっているかがわかる人向け）
+
+```bash
+# リポジトリのクローン
+git clone https://github.com/elizaos/eliza.git
+
+# 最新版のチェックアウト
+# 本プロジェクトはとても頻繁に更新されるため、最新版の利用を推奨します
+git checkout $(git describe --tags --abbrev=0)
+
+# Elizaのビルドと起動
 pnpm i
+pnpm build
 pnpm start
+
+# 本プロジェクトは頻繁に更新されるため、しばらく触っていなかった場合、プロジェクトを一度クリーンにすることを推奨します
+pnpm clean
 ```
 
-# Elizaのカスタマイズ
+#### その他の必要事項について
 
-### カスタムアクションの追加
-
-コアディレクトリでのGitの競合を避けるために、カスタムアクションを`custom_actions`ディレクトリに追加し、それを`elizaConfig.yaml`ファイルに追加することをお勧めします。例については`elizaConfig.example.yaml`ファイルを参照してください。
-
-## 異なるモデルでの実行
-
-### Llamaでの実行
-
-`XAI_MODEL`環境変数を`meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo`または`meta-llama/Meta-Llama-3.1-405B-Instruct`に設定することで、Llama 70Bまたは405Bモデルを実行可能
-
-### Grokでの実行
-
-`XAI_MODEL`環境変数を`grok-beta`に設定することで、Grokモデルを実行可能
-
-### OpenAIでの実行
-
-`XAI_MODEL`環境変数を`gpt-4o-mini`または`gpt-4o`に設定することで、OpenAIモデルを実行可能
-
-## 追加の要件
-
-Sharpをインストールする必要があるかもしれません。起動時にエラーが表示された場合は、以下のコマンドでインストールを試みてください:
+Sharpのインストールが必要になる場合があります。もしエージェントの起動時にエラーが発生した場合、以下のコマンドを実行しSharpをインストールしてみてください:
 
 ```
 pnpm install --include=optional sharp
 ```
 
-# 環境設定
+### Gitpodを利用した起動
 
-���まざまなプラットフォームに接続するために、.envファイルに環境変数を追加する必要があります:
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/elizaos/eliza/tree/main)
 
-```
-# 必須環境変数
-DISCORD_APPLICATION_ID=
-DISCORD_API_TOKEN= # ボットトークン
-OPENAI_API_KEY=sk-* # OpenAI APIキー、sk-で始まる
-ELEVENLABS_XI_API_KEY= # elevenlabsからのAPIキー
+### .env ファイルの編集
 
-# ELEVENLABS設定
-ELEVENLABS_MODEL_ID=eleven_multilingual_v2
-ELEVENLABS_VOICE_ID=21m00Tcm4TlvDq8ikWAM
-ELEVENLABS_VOICE_STABILITY=0.5
-ELEVENLABS_VOICE_SIMILARITY_BOOST=0.9
-ELEVENLABS_VOICE_STYLE=0.66
-ELEVENLABS_VOICE_USE_SPEAKER_BOOST=false
-ELEVENLABS_OPTIMIZE_STREAMING_LATENCY=4
-ELEVENLABS_OUTPUT_FORMAT=pcm_16000
-
-TWITTER_DRY_RUN=false
-TWITTER_USERNAME= # アカウントのユーザー名
-TWITTER_PASSWORD= # アカウントのパスワード
-TWITTER_EMAIL= # アカウントのメール
-
-X_SERVER_URL=
-XAI_API_KEY=
-XAI_MODEL=
-
-
-# Claudeに質問するため
-ANTHROPIC_API_KEY=
-
-# EVM
-EVM_PRIVATE_KEY=EXAMPLE_WALLET_PRIVATE_KEY
-
-# Solana
-SOLANA_PRIVATE_KEY=EXAMPLE_WALLET_PRIVATE_KEY
-SOLANA_PUBLIC_KEY=EXAMPLE_WALLET_PUBLIC_KEY
-
-# Fallback Wallet Configuration (deprecated)
-WALLET_PRIVATE_KEY=EXAMPLE_WALLET_PRIVATE_KEY
-WALLET_PUBLIC_KEY=EXAMPLE_WALLET_PUBLIC_KEY
-
-BIRDEYE_API_KEY=
-
-SOL_ADDRESS=So11111111111111111111111111111111111111112
-SLIPPAGE=1
-RPC_URL=https://api.mainnet-beta.solana.com
-HELIUS_API_KEY=
-
-
-## Telegram
-TELEGRAM_BOT_TOKEN=
-
-TOGETHER_API_KEY=
-```
-
-# ローカル推論設定
-
-### CUDA設定
-
-NVIDIA GPUを持っている場合、CUDAをインストールしてローカル推論を大幅に高速化可能
+以下のように .env.example ファイルを .env としてコピーし、適切な値を設定します。
 
 ```
-pnpm install
-npx --no node-llama-cpp source download --gpu cuda
+cp .env.example .env
 ```
 
-CUDA Toolkit、cuDNN、cuBLASをインストールしていることを確認してください。
+.env の利用はオプショナルです。もし、複数の異なるエージェントを実行する場合、シークレット情報はキャラクターJSONを通して設定することができます。
 
-### ローカルでの実行
+### Elizaの自動起動
 
-XAI_MODELを追加し、[Llamaでの実行](#run-with-llama)のオプションのいずれかに設定 - X_SERVER_URLとXAI_API_KEYを空白のままにしておくと、huggingfaceからモデルをダウンロードし、ローカルでクエリを実行します。
-
-# クライアント
-
-## Discordボット
-
-Discordボットの設定に関するヘルプについては、こちらを参照してください: https://discordjs.guide/preparations/setting-up-a-bot-application.html
-
-# 開発
-
-## テスト
-
-テストスイートを実行するには:
+以下のコマンドを実行すると、自動的にプロジェクトのセットアップを行い、デフォルトのキャラクターを用いてエージェントを起動します。
 
 ```bash
-pnpm test           # テストを一度実行
-pnpm test:watch    # ウォッチモードでテストを実行
+sh scripts/start.sh
 ```
 
-データベース固有のテストの場合:
+### キャラクターファイルの編集
 
-```bash
-pnpm test:sqlite   # SQLiteでテストを実行
-pnpm test:sqljs    # SQL.jsでテストを実行
-```
+1. デフォルトキャラクターを変更する場合、`packages/core/src/defaultCharacter.ts` を開き、設定を変更します
 
-テストはJestを使用して記述されており、`src/**/*.test.ts`ファイルにあります。テスト環境は次のように構成されています:
+2. カスタムキャラクターを読み込む場合:
+    - エージェントの起動時に`pnpm start --characters="path/to/your/character.json"`のようにキャラクターファイルを指定します
+    - 複数のキャラクターファイルを同時に読み込むことも可能です
+3. X (Twitter)への接続
+    - キャラクターファイルの `"clients": []` を `"clients": ["twitter"]` に変更することで接続することができます
 
--   `.env.test`から環境変数をロード
--   長時間実行されるテストのために2分のタイムアウトを使用
--   ESMモジュールをサポート
--   テストを順番に実行 (--runInBand)
+### コミュニティと連絡先
 
-新しいテストを作成するには、テストするコードの隣に`.test.ts`ファイルを追加します。
+- [GitHub Issues](https://github.com/elizaos/eliza/issues). Elizaを使っていて発見したバグや機能追加提案などはこちら
+- [Discord](https://discord.gg/ai16z). あなたが作成したアプリケーションをシェアしたり、他のコミュニティメンバーと議論したい場合はこちら
+
+## Contributors
+
+<a href="https://github.com/elizaos/eliza/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=elizaos/eliza" />
+</a>
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=elizaos/eliza&type=Date)](https://star-history.com/#elizaos/eliza&Date)

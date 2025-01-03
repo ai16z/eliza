@@ -80,6 +80,22 @@ git clone https://github.com/elizaos/eliza.git
 # Checkout the latest release
 # This project iterates fast, so we recommend checking out the latest release
 git checkout $(git describe --tags --abbrev=0)
+
+# Build and start Eliza
+pnpm i
+pnpm build
+pnpm start
+
+# The project iterates fast, sometimes you need to clean the project if you are coming back to the project
+pnpm clean
+```
+
+#### Additional Requirements
+
+You may need to install Sharp. If you see an error when starting up, try installing it with the following command:
+
+```
+pnpm install --include=optional sharp
 ```
 
 ### Start Eliza with Gitpod
@@ -114,25 +130,6 @@ sh scripts/start.sh
     - Multiple character files can be loaded simultaneously
 3. Connect with X (Twitter)
     - change `"clients": []` to `"clients": ["twitter"]` in the character file to connect with X
-
-### Manually Start Eliza
-
-```bash
-pnpm i
-pnpm build
-pnpm start
-
-# The project iterates fast, sometimes you need to clean the project if you are coming back to the project
-pnpm clean
-```
-
-#### Additional Requirements
-
-You may need to install Sharp. If you see an error when starting up, try installing it with the following command:
-
-```
-pnpm install --include=optional sharp
-```
 
 ### Community & contact
 
