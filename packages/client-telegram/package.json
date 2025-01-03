@@ -7,6 +7,7 @@
   "dependencies": {
     "@elizaos/core": "workspace:*",
     "@telegraf/types": "7.1.0",
+    "https-proxy-agent": "^7.0.6",
     "telegraf": "4.16.3",
     "zod": "3.23.8"
   },

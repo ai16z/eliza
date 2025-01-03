@@ -3,7 +3,7 @@ import { message } from "telegraf/filters";
 import { IAgentRuntime, elizaLogger } from "@elizaos/core";
 import { MessageManager } from "./messageManager.ts";
 import { getOrCreateRecommenderInBe } from "./getOrCreateRecommenderInBe.ts";
-
+import { HttpsProxyAgent } from "https-proxy-agent";
 export class TelegramClient {
     private bot: Telegraf<Context>;
     private runtime: IAgentRuntime;
@@ -15,7 +15,17 @@ export class TelegramClient {
     constructor(runtime: IAgentRuntime, botToken: string) {
         elizaLogger.log("📱 Constructing new TelegramClient...");
         this.runtime = runtime;
-        this.bot = new Telegraf(botToken);
+        let tg_options = null;
+        const https_proxy = runtime.getSetting("HTTPS_PROXY");
+        if (https_proxy != null && https_proxy != "") {
+            elizaLogger.info("use https_proxy", https_proxy);
+            tg_options = {
+                telegram: {
+                    agent: new HttpsProxyAgent(https_proxy),
+                },
+            };
+        }
+        this.bot = new Telegraf(botToken, tg_options);
         this.messageManager = new MessageManager(this.bot, this.runtime);
         this.backend = runtime.getSetting("BACKEND_URL");
         this.backendToken = runtime.getSetting("BACKEND_TOKEN");
