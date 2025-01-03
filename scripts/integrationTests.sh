@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Check Node.js version
-REQUIRED_NODE_VERSION=23
+REQUIRED_NODE_VERSION=23.3.0
 CURRENT_NODE_VERSION=$(node -v | cut -d'.' -f1 | sed 's/v//')
 
 if (( CURRENT_NODE_VERSION < REQUIRED_NODE_VERSION )); then

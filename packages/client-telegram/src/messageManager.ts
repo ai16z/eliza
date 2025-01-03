@@ -1,6 +1,11 @@
 import { Message } from "@telegraf/types";
 import { Context, Telegraf } from "telegraf";
-import { composeContext, elizaLogger, ServiceType, composeRandomUser } from "@elizaos/core";
+import {
+    composeContext,
+    elizaLogger,
+    ServiceType,
+    composeRandomUser,
+} from "@elizaos/core";
 import { getEmbeddingZeroVector } from "@elizaos/core";
 import {
     Content,
@@ -701,7 +706,7 @@ export class MessageManager {
                             i === 0 && replyToMessageId
                                 ? { message_id: replyToMessageId }
                                 : undefined,
-                        parse_mode: "Markdown",
+                        parse_mode: this.runtime.character.clientConfig.telegram.parseMode || undefined,
                     }
                 )) as Message.TextMessage;
 
