@@ -20,7 +20,7 @@ const factsProvider: Provider = {
 
         const memoryManager = new MemoryManager({
             runtime,
-            tableName: "facts",
+            memoryType: "facts",
         });
 
         const relevantFacts = [];

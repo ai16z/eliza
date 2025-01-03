@@ -24,7 +24,7 @@ Options for the manager.
 
 The AgentRuntime instance associated with this manager.
 
-• **opts.tableName**: `string`
+• **opts.memoryType**: `string`
 
 The name of the table this manager will operate on.
 
@@ -54,15 +54,15 @@ The AgentRuntime instance associated with this manager.
 
 ---
 
-### tableName
+### memoryType
 
-> **tableName**: `string`
+> **memoryType**: `string`
 
 The name of the database table this manager operates on.
 
 #### Implementation of
 
-[`IMemoryManager`](../interfaces/IMemoryManager.md).[`tableName`](../interfaces/IMemoryManager.md#tablename)
+[`IMemoryManager`](../interfaces/IMemoryManager.md).[`memoryType`](../interfaces/IMemoryManager.md#memoryType)
 
 #### Defined in
 

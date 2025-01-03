@@ -91,7 +91,7 @@ classDiagram
 
     class MemoryManager {
         -runtime: AgentRuntime
-        -tableName: string
+        -memoryType: string
         +createMemory()
         +searchMemories()
     }
@@ -223,7 +223,7 @@ await db.createMemory({
 
 // Search by embedding
 const memories = await db.searchMemories({
-    tableName: "messages",
+    memoryType: "messages",
     roomId,
     embedding: vectorData,
     match_threshold: 0.8,
@@ -236,7 +236,7 @@ const recent = await db.getMemories({
     roomId,
     count: 10,
     unique: true,
-    tableName: "messages",
+    memoryType: "messages",
     start: startTime,
     end: endTime,
 });
@@ -325,7 +325,7 @@ async searchMemoriesByEmbedding(
     count?: number;
     roomId?: UUID;
     unique?: boolean;
-    tableName: string;
+    memoryType: string;
   }
 ): Promise<Memory[]> {
   const client = await this.pool.connect();
@@ -339,7 +339,7 @@ async searchMemoriesByEmbedding(
 
     const values: any[] = [
       `[${embedding.join(",")}]`,
-      params.tableName
+      params.memoryType
     ];
 
     if (params.unique) {
@@ -382,7 +382,7 @@ async searchMemoriesByEmbedding(
 ```typescript
 // SQLite vector search implementation
 async searchMemories(params: {
-  tableName: string;
+  memoryType: string;
   roomId: UUID;
   embedding: number[];
   match_threshold: number;
@@ -391,7 +391,7 @@ async searchMemories(params: {
 }): Promise<Memory[]> {
   const queryParams = [
     new Float32Array(params.embedding),
-    params.tableName,
+    params.memoryType,
     params.roomId,
     params.match_count
   ];
@@ -594,7 +594,7 @@ class SqliteDatabaseAdapter extends DatabaseAdapter {
 
 ```typescript
 // Batch memory creation
-async createMemories(memories: Memory[], tableName: string) {
+async createMemories(memories: Memory[], memoryType: string) {
   const client = await this.pool.connect();
   try {
     await client.query('BEGIN');
@@ -609,7 +609,7 @@ async createMemories(memories: Memory[], tableName: string) {
     for (const memory of memories) {
       await stmt.execute([
         memory.id,
-        tableName,
+        memoryType,
         JSON.stringify(memory.content),
         memory.embedding,
         memory.userId,
@@ -673,7 +673,7 @@ class CustomDatabaseAdapter extends DatabaseAdapter {
     }
 
     // Implement required methods
-    async createMemory(memory: Memory, tableName: string): Promise<void> {
+    async createMemory(memory: Memory, memoryType: string): Promise<void> {
         // Custom implementation
     }
 

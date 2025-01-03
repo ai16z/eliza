@@ -188,7 +188,7 @@ All adapters support vector similarity search for memory retrieval:
 ```typescript
 // Search by embedding vector
 const memories = await db.searchMemories({
-  tableName: "memories",
+  memoryType: "memories",
   roomId: room.id,
   embedding: [0.1, 0.2, ...], // 1536-dimensional vector
   match_threshold: 0.8,
@@ -238,7 +238,7 @@ const db = new SqliteDatabaseAdapter(
 // Enable memory caching
 const memory = new MemoryManager({
   runtime,
-  tableName: "messages",
+  memoryType: "messages",
   cacheSize: 1000,
   cacheTTL: 3600,
 });
@@ -303,7 +303,7 @@ To create a custom adapter, implement the `DatabaseAdapter` interface:
 
 ```typescript
 class CustomDatabaseAdapter extends DatabaseAdapter {
-  async createMemory(memory: Memory, tableName: string): Promise<void> {
+  async createMemory(memory: Memory, memoryType: string): Promise<void> {
     // Custom implementation
   }
 
@@ -361,7 +361,7 @@ const db = new PostgresDatabaseAdapter({
 
 ```typescript
 // Clean up old memories periodically
-await db.removeAllMemories(roomId, tableName);
+await db.removeAllMemories(roomId, memoryType);
 ```
 
 3. **Vector Search Performance**

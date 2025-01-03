@@ -113,7 +113,7 @@ async function handler(runtime: IAgentRuntime, message: Memory) {
     // Get recent recommendations
     const recommendationsManager = new MemoryManager({
         runtime,
-        tableName: "recommendations",
+        memoryType: "recommendations",
     });
 
     const recentRecommendations = await recommendationsManager.getMemories({

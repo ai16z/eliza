@@ -22,9 +22,9 @@ Constructs a new MemoryManager instance.
 
 Options for the manager.
 
-• **opts.tableName**: `string`
+• **opts.memoryType**: `string`
 
-The name of the table this manager will operate on.
+The type of memory stored in the type field of the memories table in the database.
 
 • **opts.runtime**: [`IAgentRuntime`](../interfaces/IAgentRuntime.md)
 
@@ -56,15 +56,15 @@ The AgentRuntime instance associated with this manager.
 
 ***
 
-### tableName
+### memoryType
 
-> **tableName**: `string`
+> **memoryType**: `string`
 
 The name of the database table this manager operates on.
 
 #### Implementation of
 
-[`IMemoryManager`](../interfaces/IMemoryManager.md).[`tableName`](../interfaces/IMemoryManager.md#tableName)
+[`IMemoryManager`](../interfaces/IMemoryManager.md).[`memoryType`](../interfaces/IMemoryManager.md#memoryType)
 
 #### Defined in
 

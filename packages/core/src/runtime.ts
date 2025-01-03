@@ -151,22 +151,22 @@ export class AgentRuntime implements IAgentRuntime {
     clients: Record<string, any>;
 
     registerMemoryManager(manager: IMemoryManager): void {
-        if (!manager.tableName) {
-            throw new Error("Memory manager must have a tableName");
+        if (!manager.memoryType) {
+            throw new Error("Memory manager must have a memoryType");
         }
 
-        if (this.memoryManagers.has(manager.tableName)) {
+        if (this.memoryManagers.has(manager.memoryType)) {
             elizaLogger.warn(
-                `Memory manager ${manager.tableName} is already registered. Skipping registration.`
+                `Memory manager ${manager.memoryType} is already registered. Skipping registration.`
             );
             return;
         }
 
-        this.memoryManagers.set(manager.tableName, manager);
+        this.memoryManagers.set(manager.memoryType, manager);
     }
 
-    getMemoryManager(tableName: string): IMemoryManager | null {
-        return this.memoryManagers.get(tableName) || null;
+    getMemoryManager(memoryType: string): IMemoryManager | null {
+        return this.memoryManagers.get(memoryType) || null;
     }
 
     getService<T extends Service>(service: ServiceType): T | null {
@@ -272,27 +272,27 @@ export class AgentRuntime implements IAgentRuntime {
 
         this.messageManager = new MemoryManager({
             runtime: this,
-            tableName: "messages",
+            memoryType: "messages",
         });
 
         this.descriptionManager = new MemoryManager({
             runtime: this,
-            tableName: "descriptions",
+            memoryType: "descriptions",
         });
 
         this.loreManager = new MemoryManager({
             runtime: this,
-            tableName: "lore",
+            memoryType: "lore",
         });
 
         this.documentsManager = new MemoryManager({
             runtime: this,
-            tableName: "documents",
+            memoryType: "documents",
         });
 
         this.knowledgeManager = new MemoryManager({
             runtime: this,
-            tableName: "fragments",
+            memoryType: "fragments",
         });
 
         (opts.managers ?? []).forEach((manager: IMemoryManager) => {

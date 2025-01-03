@@ -66,7 +66,7 @@ The MemoryManager handles persistent storage and retrieval of context-aware info
 ```typescript
 class MemoryManager implements IMemoryManager {
     runtime: IAgentRuntime;
-    tableName: string;
+    memoryType: string;
 
     // Create new memories with embeddings
     async createMemory(memory: Memory, unique = false): Promise<void> {
@@ -76,7 +76,7 @@ class MemoryManager implements IMemoryManager {
 
         await this.runtime.databaseAdapter.createMemory(
             memory,
-            this.tableName,
+            this.memoryType,
             unique,
         );
     }
@@ -92,7 +92,7 @@ class MemoryManager implements IMemoryManager {
         },
     ): Promise<Memory[]> {
         return this.runtime.databaseAdapter.searchMemories({
-            tableName: this.tableName,
+            memoryType: this.memoryType,
             roomId: opts.roomId,
             embedding,
             match_threshold: opts.match_threshold ?? 0.8,
@@ -330,7 +330,7 @@ const similar = await memoryManager.searchMemoriesByEmbedding(embedding, {
 });
 
 // Clean up old memories periodically
-await memoryManager.removeAllMemories(roomId, tableName);
+await memoryManager.removeAllMemories(roomId, memoryType);
 ```
 
 ### State Composition
@@ -406,7 +406,7 @@ class DocumentMemoryManager extends MemoryManager {
     constructor(runtime: IAgentRuntime) {
         super({
             runtime,
-            tableName: "documents",
+            memoryType: "documents",
             useCache: true,
         });
     }
@@ -476,7 +476,7 @@ class StateManager {
     async loadState(roomId: UUID): Promise<State | null> {
         const states = await this.runtime.databaseAdapter.getMemories({
             roomId,
-            tableName: "states",
+            memoryType: "states",
             count: 1,
         });
 

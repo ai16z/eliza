@@ -20,19 +20,19 @@ export class MemoryManager implements IMemoryManager {
     runtime: IAgentRuntime;
 
     /**
-     * The name of the database table this manager operates on.
+     * The type of memory this manager operates on in the memories table in the database.
      */
-    tableName: string;
+    memoryType: string;
 
     /**
      * Constructs a new MemoryManager instance.
      * @param opts Options for the manager.
-     * @param opts.tableName The name of the table this manager will operate on.
+     * @param opts.memoryType The name of the table this manager will operate on.
      * @param opts.runtime The AgentRuntime instance associated with this manager.
      */
-    constructor(opts: { tableName: string; runtime: IAgentRuntime }) {
+    constructor(opts: { memoryType: string; runtime: IAgentRuntime }) {
         this.runtime = opts.runtime;
-        this.tableName = opts.tableName;
+        this.memoryType = opts.memoryType;
     }
 
     /**
@@ -101,7 +101,7 @@ export class MemoryManager implements IMemoryManager {
             roomId,
             count,
             unique,
-            tableName: this.tableName,
+            memoryType: this.memoryType,
             agentId: this.runtime.agentId,
             start,
             end,
@@ -115,7 +115,7 @@ export class MemoryManager implements IMemoryManager {
         }[]
     > {
         return await this.runtime.databaseAdapter.getCachedEmbeddings({
-            query_table_name: this.tableName,
+            query_table_name: this.memoryType,
             query_threshold: 2,
             query_input: content,
             query_field_name: "content",
@@ -151,7 +151,7 @@ export class MemoryManager implements IMemoryManager {
         } = opts;
 
         const result = await this.runtime.databaseAdapter.searchMemories({
-            tableName: this.tableName,
+            memoryType: this.memoryType,
             roomId,
             agentId: this.runtime.agentId,
             embedding: embedding,
@@ -184,14 +184,14 @@ export class MemoryManager implements IMemoryManager {
 
         await this.runtime.databaseAdapter.createMemory(
             memory,
-            this.tableName,
+            this.memoryType,
             unique
         );
     }
 
     async getMemoriesByRoomIds(params: { roomIds: UUID[] }): Promise<Memory[]> {
         return await this.runtime.databaseAdapter.getMemoriesByRoomIds({
-            tableName: this.tableName,
+            memoryType: this.memoryType,
             agentId: this.runtime.agentId,
             roomIds: params.roomIds,
         });
@@ -211,7 +211,7 @@ export class MemoryManager implements IMemoryManager {
     async removeMemory(memoryId: UUID): Promise<void> {
         await this.runtime.databaseAdapter.removeMemory(
             memoryId,
-            this.tableName
+            this.memoryType
         );
     }
 
@@ -223,7 +223,7 @@ export class MemoryManager implements IMemoryManager {
     async removeAllMemories(roomId: UUID): Promise<void> {
         await this.runtime.databaseAdapter.removeAllMemories(
             roomId,
-            this.tableName
+            this.memoryType
         );
     }
 
@@ -237,7 +237,7 @@ export class MemoryManager implements IMemoryManager {
         return await this.runtime.databaseAdapter.countMemories(
             roomId,
             unique,
-            this.tableName
+            this.memoryType
         );
     }
 }

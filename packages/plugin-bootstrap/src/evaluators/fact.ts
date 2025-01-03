@@ -69,7 +69,7 @@ async function handler(runtime: IAgentRuntime, message: Memory) {
 
     const factsManager = new MemoryManager({
         runtime,
-        tableName: "facts",
+        memoryType: "facts",
     });
 
     if (!facts) {

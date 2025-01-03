@@ -456,11 +456,11 @@ but I think the real solution is forthcoming as a base client interface
 
 ### getMemoryManager()
 
-> **getMemoryManager**(`tableName`): [`IMemoryManager`](../interfaces/IMemoryManager.md)
+> **getMemoryManager**(`memoryType`): [`IMemoryManager`](../interfaces/IMemoryManager.md)
 
 #### Parameters
 
-• **tableName**: `string`
+• **memoryType**: `string`
 
 #### Returns
 

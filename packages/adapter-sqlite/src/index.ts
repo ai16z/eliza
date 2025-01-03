@@ -148,16 +148,16 @@ export class SqliteDatabaseAdapter
     async getMemoriesByRoomIds(params: {
         agentId: UUID;
         roomIds: UUID[];
-        tableName: string;
+        memoryType: string;
     }): Promise<Memory[]> {
-        if (!params.tableName) {
+        if (!params.memoryType) {
             // default to messages
-            params.tableName = "messages";
+            params.memoryType = "messages";
         }
         const placeholders = params.roomIds.map(() => "?").join(", ");
         const sql = `SELECT * FROM memories WHERE type = ? AND agentId = ? AND roomId IN (${placeholders})`;
         const queryParams = [
-            params.tableName,
+            params.memoryType,
             params.agentId,
             ...params.roomIds,
         ];
@@ -189,10 +189,10 @@ export class SqliteDatabaseAdapter
         return null;
     }
 
-    async createMemory(memory: Memory, tableName: string): Promise<void> {
+    async createMemory(memory: Memory, memoryType: string): Promise<void> {
         // Delete any existing memory with the same ID first
         // const deleteSql = `DELETE FROM memories WHERE id = ? AND type = ?`;
-        // this.db.prepare(deleteSql).run(memory.id, tableName);
+        // this.db.prepare(deleteSql).run(memory.id, memoryType);
 
         let isUnique = true;
 
@@ -201,7 +201,7 @@ export class SqliteDatabaseAdapter
             const similarMemories = await this.searchMemoriesByEmbedding(
                 memory.embedding,
                 {
-                    tableName,
+                    memoryType,
                     agentId: memory.agentId,
                     roomId: memory.roomId,
                     match_threshold: 0.95, // 5% similarity threshold
@@ -219,7 +219,7 @@ export class SqliteDatabaseAdapter
         const sql = `INSERT OR REPLACE INTO memories (id, type, content, embedding, userId, roomId, agentId, \`unique\`, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         this.db.prepare(sql).run(
             memory.id ?? v4(),
-            tableName,
+            memoryType,
             content,
             new Float32Array(memory.embedding!), // Store as Float32Array
             memory.userId,
@@ -231,7 +231,7 @@ export class SqliteDatabaseAdapter
     }
 
     async searchMemories(params: {
-        tableName: string;
+        memoryType: string;
         roomId: UUID;
         agentId?: UUID;
         embedding: number[];
@@ -242,7 +242,7 @@ export class SqliteDatabaseAdapter
         // Build the query and parameters carefully
         const queryParams = [
             new Float32Array(params.embedding), // Ensure embedding is Float32Array
-            params.tableName,
+            params.memoryType,
             params.roomId,
         ];
 
@@ -286,13 +286,13 @@ export class SqliteDatabaseAdapter
             roomId?: UUID;
             agentId: UUID;
             unique?: boolean;
-            tableName: string;
+            memoryType: string;
         }
     ): Promise<Memory[]> {
         const queryParams = [
             // JSON.stringify(embedding),
             new Float32Array(embedding),
-            params.tableName,
+            params.memoryType,
             params.agentId,
         ];
 
@@ -417,13 +417,13 @@ export class SqliteDatabaseAdapter
         roomId: UUID;
         count?: number;
         unique?: boolean;
-        tableName: string;
+        memoryType: string;
         agentId: UUID;
         start?: number;
         end?: number;
     }): Promise<Memory[]> {
-        if (!params.tableName) {
-            throw new Error("tableName is required");
+        if (!params.memoryType) {
+            throw new Error("memoryType is required");
         }
         if (!params.roomId) {
             throw new Error("roomId is required");
@@ -431,7 +431,7 @@ export class SqliteDatabaseAdapter
         let sql = `SELECT * FROM memories WHERE type = ? AND agentId = ? AND roomId = ?`;
 
         const queryParams = [
-            params.tableName,
+            params.memoryType,
             params.agentId,
             params.roomId,
         ] as any[];
@@ -469,27 +469,27 @@ export class SqliteDatabaseAdapter
         }));
     }
 
-    async removeMemory(memoryId: UUID, tableName: string): Promise<void> {
+    async removeMemory(memoryId: UUID, memoryType: string): Promise<void> {
         const sql = `DELETE FROM memories WHERE type = ? AND id = ?`;
-        this.db.prepare(sql).run(tableName, memoryId);
+        this.db.prepare(sql).run(memoryType, memoryId);
     }
 
-    async removeAllMemories(roomId: UUID, tableName: string): Promise<void> {
+    async removeAllMemories(roomId: UUID, memoryType: string): Promise<void> {
         const sql = `DELETE FROM memories WHERE type = ? AND roomId = ?`;
-        this.db.prepare(sql).run(tableName, roomId);
+        this.db.prepare(sql).run(memoryType, roomId);
     }
 
     async countMemories(
         roomId: UUID,
         unique = true,
-        tableName = ""
+        memoryType = ""
     ): Promise<number> {
-        if (!tableName) {
-            throw new Error("tableName is required");
+        if (!memoryType) {
+            throw new Error("memoryType is required");
         }
 
         let sql = `SELECT COUNT(*) as count FROM memories WHERE type = ? AND roomId = ?`;
-        const queryParams = [tableName, roomId] as string[];
+        const queryParams = [memoryType, roomId] as string[];
 
         if (unique) {
             sql += " AND `unique` = 1";

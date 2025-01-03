@@ -78,13 +78,13 @@ export class SqlJsDatabaseAdapter
     async getMemoriesByRoomIds(params: {
         agentId: UUID;
         roomIds: UUID[];
-        tableName: string;
+        memoryType: string;
     }): Promise<Memory[]> {
         const placeholders = params.roomIds.map(() => "?").join(", ");
         const sql = `SELECT * FROM memories WHERE 'type' = ? AND agentId = ? AND roomId IN (${placeholders})`;
         const stmt = this.db.prepare(sql);
         const queryParams = [
-            params.tableName,
+            params.memoryType,
             params.agentId,
             ...params.roomIds,
         ];
@@ -224,7 +224,7 @@ export class SqlJsDatabaseAdapter
         return memory || null;
     }
 
-    async createMemory(memory: Memory, tableName: string): Promise<void> {
+    async createMemory(memory: Memory, memoryType: string): Promise<void> {
         let isUnique = true;
         if (memory.embedding) {
             // Check if a similar memory already exists
@@ -232,7 +232,7 @@ export class SqlJsDatabaseAdapter
                 memory.embedding,
                 {
                     agentId: memory.agentId,
-                    tableName,
+                    memoryType,
                     roomId: memory.roomId,
                     match_threshold: 0.95, // 5% similarity threshold
                     count: 1,
@@ -250,7 +250,7 @@ export class SqlJsDatabaseAdapter
 
         stmt.run([
             memory.id ?? v4(),
-            tableName,
+            memoryType,
             JSON.stringify(memory.content),
             JSON.stringify(memory.embedding),
             memory.userId,
@@ -263,7 +263,7 @@ export class SqlJsDatabaseAdapter
     }
 
     async searchMemories(params: {
-        tableName: string;
+        memoryType: string;
         agentId: UUID;
         roomId: UUID;
         embedding: number[];
@@ -288,7 +288,7 @@ export class SqlJsDatabaseAdapter
         const stmt = this.db.prepare(sql);
         stmt.bind([
             // JSON.stringify(params.embedding),
-            params.tableName,
+            params.memoryType,
             params.agentId,
             params.roomId,
             // params.match_count,
@@ -315,7 +315,7 @@ export class SqlJsDatabaseAdapter
             count?: number;
             roomId?: UUID;
             unique?: boolean;
-            tableName: string;
+            memoryType: string;
         }
     ): Promise<Memory[]> {
         let sql =
@@ -345,7 +345,7 @@ export class SqlJsDatabaseAdapter
         const stmt = this.db.prepare(sql);
         const bindings = [
             // JSON.stringify(embedding),
-            params.tableName,
+            params.memoryType,
             params.agentId,
         ];
         if (params.roomId) {
@@ -446,13 +446,13 @@ export class SqlJsDatabaseAdapter
         roomId: UUID;
         count?: number;
         unique?: boolean;
-        tableName: string;
+        memoryType: string;
         agentId?: UUID;
         start?: number;
         end?: number;
     }): Promise<Memory[]> {
-        if (!params.tableName) {
-            throw new Error("tableName is required");
+        if (!params.memoryType) {
+            throw new Error("memoryType is required");
         }
         if (!params.roomId) {
             throw new Error("roomId is required");
@@ -483,7 +483,7 @@ export class SqlJsDatabaseAdapter
 
         const stmt = this.db.prepare(sql);
         stmt.bind([
-            params.tableName,
+            params.memoryType,
             params.roomId,
             ...(params.start ? [params.start] : []),
             ...(params.end ? [params.end] : []),
@@ -502,27 +502,27 @@ export class SqlJsDatabaseAdapter
         return memories;
     }
 
-    async removeMemory(memoryId: UUID, tableName: string): Promise<void> {
+    async removeMemory(memoryId: UUID, memoryType: string): Promise<void> {
         const sql = `DELETE FROM memories WHERE type = ? AND id = ?`;
         const stmt = this.db.prepare(sql);
-        stmt.run([tableName, memoryId]);
+        stmt.run([memoryType, memoryId]);
         stmt.free();
     }
 
-    async removeAllMemories(roomId: UUID, tableName: string): Promise<void> {
+    async removeAllMemories(roomId: UUID, memoryType: string): Promise<void> {
         const sql = `DELETE FROM memories WHERE type = ? AND roomId = ?`;
         const stmt = this.db.prepare(sql);
-        stmt.run([tableName, roomId]);
+        stmt.run([memoryType, roomId]);
         stmt.free();
     }
 
     async countMemories(
         roomId: UUID,
         unique = true,
-        tableName = ""
+        memoryType = ""
     ): Promise<number> {
-        if (!tableName) {
-            throw new Error("tableName is required");
+        if (!memoryType) {
+            throw new Error("memoryType is required");
         }
 
         let sql = `SELECT COUNT(*) as count FROM memories WHERE type = ? AND roomId = ?`;
@@ -531,7 +531,7 @@ export class SqlJsDatabaseAdapter
         }
 
         const stmt = this.db.prepare(sql);
-        stmt.bind([tableName, roomId]);
+        stmt.bind([memoryType, roomId]);
 
         let count = 0;
         if (stmt.step()) {

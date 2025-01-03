@@ -599,11 +599,11 @@ The number of recent messages to be kept in memory.
 
 ### getMemoryManager()
 
-> **getMemoryManager**(`tableName`): [`IMemoryManager`](../interfaces/IMemoryManager.md)
+> **getMemoryManager**(`memoryType`): [`IMemoryManager`](../interfaces/IMemoryManager.md)
 
 #### Parameters
 
-• **tableName**: `string`
+• **memoryType**: `string`
 
 #### Returns
 

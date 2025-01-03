@@ -14,9 +14,9 @@
 
 ***
 
-### tableName
+### memoryType
 
-> **tableName**: `string`
+> **memoryType**: `string`
 
 #### Defined in
 

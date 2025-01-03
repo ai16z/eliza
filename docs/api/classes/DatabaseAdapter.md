@@ -203,7 +203,7 @@ An object containing parameters for the memory retrieval.
 
 • **params.unique?**: `boolean`
 
-• **params.tableName**: `string`
+• **params.memoryType**: `string`
 
 #### Returns
 
@@ -233,7 +233,7 @@ A Promise that resolves to an array of Memory objects.
 
 • **params.roomIds**: \`$\{string\}-$\{string\}-$\{string\}-$\{string\}-$\{string\}\`[]
 
-• **params.tableName**: `string`
+• **params.memoryType**: `string`
 
 #### Returns
 
@@ -389,7 +389,7 @@ Searches for memories based on embeddings and other specified parameters.
 
 An object containing parameters for the memory search.
 
-• **params.tableName**: `string`
+• **params.memoryType**: `string`
 
 • **params.agentId**: \`$\{string\}-$\{string\}-$\{string\}-$\{string\}-$\{string\}\`
 
@@ -477,7 +477,7 @@ Additional parameters for the search.
 
 • **params.unique?**: `boolean`
 
-• **params.tableName**: `string`
+• **params.memoryType**: `string`
 
 #### Returns
 
@@ -497,7 +497,7 @@ A Promise that resolves to an array of Memory objects.
 
 ### createMemory()
 
-> `abstract` **createMemory**(`memory`, `tableName`, `unique`?): `Promise`\<`void`\>
+> `abstract` **createMemory**(`memory`, `memoryType`, `unique`?): `Promise`\<`void`\>
 
 Creates a new memory in the database.
 
@@ -507,7 +507,7 @@ Creates a new memory in the database.
 
 The memory object to create.
 
-• **tableName**: `string`
+• **memoryType**: `string`
 
 The table where the memory should be stored.
 
@@ -533,7 +533,7 @@ A Promise that resolves when the memory has been created.
 
 ### removeMemory()
 
-> `abstract` **removeMemory**(`memoryId`, `tableName`): `Promise`\<`void`\>
+> `abstract` **removeMemory**(`memoryId`, `memoryType`): `Promise`\<`void`\>
 
 Removes a specific memory from the database.
 
@@ -543,7 +543,7 @@ Removes a specific memory from the database.
 
 The UUID of the memory to remove.
 
-• **tableName**: `string`
+• **memoryType**: `string`
 
 The table from which the memory should be removed.
 
@@ -565,7 +565,7 @@ A Promise that resolves when the memory has been removed.
 
 ### removeAllMemories()
 
-> `abstract` **removeAllMemories**(`roomId`, `tableName`): `Promise`\<`void`\>
+> `abstract` **removeAllMemories**(`roomId`, `memoryType`): `Promise`\<`void`\>
 
 Removes all memories associated with a specific room.
 
@@ -575,7 +575,7 @@ Removes all memories associated with a specific room.
 
 The UUID of the room whose memories should be removed.
 
-• **tableName**: `string`
+• **memoryType**: `string`
 
 The table from which the memories should be removed.
 
@@ -597,7 +597,7 @@ A Promise that resolves when all memories have been removed.
 
 ### countMemories()
 
-> `abstract` **countMemories**(`roomId`, `unique`?, `tableName`?): `Promise`\<`number`\>
+> `abstract` **countMemories**(`roomId`, `unique`?, `memoryType`?): `Promise`\<`number`\>
 
 Counts the number of memories in a specific room.
 
@@ -611,7 +611,7 @@ The UUID of the room for which to count memories.
 
 Specifies whether to count only unique memories.
 
-• **tableName?**: `string`
+• **memoryType?**: `string`
 
 Optional table name to count memories from.
 

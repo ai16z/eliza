@@ -34,7 +34,7 @@
 
 ### countMemories()
 
-> **countMemories**(`roomId`, `unique`?, `tableName`?): `Promise`\<`number`\>
+> **countMemories**(`roomId`, `unique`?, `memoryType`?): `Promise`\<`number`\>
 
 #### Parameters
 
@@ -42,7 +42,7 @@
 
 • **unique?**: `boolean`
 
-• **tableName?**: `string`
+• **memoryType?**: `string`
 
 #### Returns
 
@@ -92,13 +92,13 @@
 
 ### createMemory()
 
-> **createMemory**(`memory`, `tableName`, `unique`?): `Promise`\<`void`\>
+> **createMemory**(`memory`, `memoryType`, `unique`?): `Promise`\<`void`\>
 
 #### Parameters
 
 • **memory**: [`Memory`](Memory.md)
 
-• **tableName**: `string`
+• **memoryType**: `string`
 
 • **unique?**: `boolean`
 
@@ -264,7 +264,7 @@
 
 • **params.start?**: `number`
 
-• **params.tableName**: `string`
+• **params.memoryType**: `string`
 
 • **params.unique?**: `boolean`
 
@@ -516,13 +516,13 @@
 
 ### removeAllMemories()
 
-> **removeAllMemories**(`roomId`, `tableName`): `Promise`\<`void`\>
+> **removeAllMemories**(`roomId`, `memoryType`): `Promise`\<`void`\>
 
 #### Parameters
 
 • **roomId**: \`$\{string\}-$\{string\}-$\{string\}-$\{string\}-$\{string\}\`
 
-• **tableName**: `string`
+• **memoryType**: `string`
 
 #### Returns
 
@@ -554,13 +554,13 @@
 
 ### removeMemory()
 
-> **removeMemory**(`memoryId`, `tableName`): `Promise`\<`void`\>
+> **removeMemory**(`memoryId`, `memoryType`): `Promise`\<`void`\>
 
 #### Parameters
 
 • **memoryId**: \`$\{string\}-$\{string\}-$\{string\}-$\{string\}-$\{string\}\`
 
-• **tableName**: `string`
+• **memoryType**: `string`
 
 #### Returns
 
@@ -626,7 +626,7 @@
 
 • **params.roomId**: \`$\{string\}-$\{string\}-$\{string\}-$\{string\}-$\{string\}\`
 
-• **params.tableName**: `string`
+• **params.memoryType**: `string`
 
 • **params.unique**: `boolean`
 
@@ -658,7 +658,7 @@
 
 • **params.roomId?**: \`$\{string\}-$\{string\}-$\{string\}-$\{string\}-$\{string\}\`
 
-• **params.tableName**: `string`
+• **params.memoryType**: `string`
 
 • **params.unique?**: `boolean`
 

@@ -34,28 +34,28 @@ class MockDatabaseAdapter extends DatabaseAdapter {
             roomId?: UUID;
             agentId?: UUID;
             unique?: boolean;
-            tableName: string;
+            memoryType: string;
         }
     ): Promise<Memory[]> {
         throw new Error("Method not implemented.");
     }
     createMemory(
         _memory: Memory,
-        _tableName: string,
+        _memoryType: string,
         _unique?: boolean
     ): Promise<void> {
         throw new Error("Method not implemented.");
     }
-    removeMemory(_memoryId: UUID, _tableName: string): Promise<void> {
+    removeMemory(_memoryId: UUID, _memoryType: string): Promise<void> {
         throw new Error("Method not implemented.");
     }
-    removeAllMemories(_roomId: UUID, _tableName: string): Promise<void> {
+    removeAllMemories(_roomId: UUID, _memoryType: string): Promise<void> {
         throw new Error("Method not implemented.");
     }
     countMemories(
         _roomId: UUID,
         _unique?: boolean,
-        _tableName?: string
+        _memoryType?: string
     ): Promise<number> {
         throw new Error("Method not implemented.");
     }
@@ -144,7 +144,7 @@ class MockDatabaseAdapter extends DatabaseAdapter {
     async getMemoriesByRoomIds(params: {
         roomIds: `${string}-${string}-${string}-${string}-${string}`[];
         agentId?: `${string}-${string}-${string}-${string}-${string}`;
-        tableName: string;
+        memoryType: string;
     }): Promise<Memory[]> {
         return [
             {
@@ -176,7 +176,7 @@ class MockDatabaseAdapter extends DatabaseAdapter {
 
     // Mock method for searching memories
     async searchMemories(params: {
-        tableName: string;
+        memoryType: string;
         roomId: `${string}-${string}-${string}-${string}-${string}`;
         embedding: number[];
         match_threshold: number;
@@ -212,7 +212,7 @@ class MockDatabaseAdapter extends DatabaseAdapter {
         roomId: UUID;
         count?: number;
         unique?: boolean;
-        tableName: string;
+        memoryType: string;
     }): Promise<Memory[]> {
         return [
             {
@@ -270,7 +270,7 @@ describe("DatabaseAdapter Tests", () => {
             roomIds: [
                 "room-id" as `${string}-${string}-${string}-${string}-${string}`,
             ],
-            tableName: "test_table",
+            memoryType: "test_table",
         });
         expect(memories).toHaveLength(1);
         expect(memories[0].roomId).toBe("room-id");
@@ -291,7 +291,7 @@ describe("DatabaseAdapter Tests", () => {
 
     it("should search memories based on embedding", async () => {
         const memories = await adapter.searchMemories({
-            tableName: "test_table",
+            memoryType: "test_table",
             roomId: "room-id" as `${string}-${string}-${string}-${string}-${string}`,
             embedding: [0.1, 0.2, 0.3],
             match_threshold: 0.5,

@@ -59,7 +59,7 @@ const factsProvider: Provider = {
         const embedding = await embed(runtime, recentMessages);
         const memoryManager = new MemoryManager({
             runtime,
-            tableName: "facts",
+            memoryType: "facts",
         });
         const recentFactsData = await memoryManager.getMemories({
             roomId: message.roomId,
@@ -264,7 +264,7 @@ const comprehensiveProvider: Provider = {
             // Get relevant facts
             const facts = await runtime.messageManager.getMemories({
                 roomId: message.roomId,
-                tableName: "facts",
+                memoryType: "facts",
                 count: 3,
             });
 

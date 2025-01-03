@@ -87,13 +87,13 @@ export abstract class DatabaseAdapter<DB = any> implements IDatabaseAdapter {
         roomId: UUID;
         count?: number;
         unique?: boolean;
-        tableName: string;
+        memoryType: string;
     }): Promise<Memory[]>;
 
     abstract getMemoriesByRoomIds(params: {
         agentId: UUID;
         roomIds: UUID[];
-        tableName: string;
+        memoryType: string;
     }): Promise<Memory[]>;
 
     abstract getMemoryById(id: UUID): Promise<Memory | null>;
@@ -149,7 +149,7 @@ export abstract class DatabaseAdapter<DB = any> implements IDatabaseAdapter {
      * @returns A Promise that resolves to an array of Memory objects.
      */
     abstract searchMemories(params: {
-        tableName: string;
+        memoryType: string;
         agentId: UUID;
         roomId: UUID;
         embedding: number[];
@@ -182,50 +182,50 @@ export abstract class DatabaseAdapter<DB = any> implements IDatabaseAdapter {
             roomId?: UUID;
             agentId?: UUID;
             unique?: boolean;
-            tableName: string;
+            memoryType: string;
         }
     ): Promise<Memory[]>;
 
     /**
      * Creates a new memory in the database.
      * @param memory The memory object to create.
-     * @param tableName The table where the memory should be stored.
+     * @param memoryType The table where the memory should be stored.
      * @param unique Indicates if the memory should be unique.
      * @returns A Promise that resolves when the memory has been created.
      */
     abstract createMemory(
         memory: Memory,
-        tableName: string,
+        memoryType: string,
         unique?: boolean
     ): Promise<void>;
 
     /**
      * Removes a specific memory from the database.
      * @param memoryId The UUID of the memory to remove.
-     * @param tableName The table from which the memory should be removed.
+     * @param memoryType The table from which the memory should be removed.
      * @returns A Promise that resolves when the memory has been removed.
      */
-    abstract removeMemory(memoryId: UUID, tableName: string): Promise<void>;
+    abstract removeMemory(memoryId: UUID, memoryType: string): Promise<void>;
 
     /**
      * Removes all memories associated with a specific room.
      * @param roomId The UUID of the room whose memories should be removed.
-     * @param tableName The table from which the memories should be removed.
+     * @param memoryType The table from which the memories should be removed.
      * @returns A Promise that resolves when all memories have been removed.
      */
-    abstract removeAllMemories(roomId: UUID, tableName: string): Promise<void>;
+    abstract removeAllMemories(roomId: UUID, memoryType: string): Promise<void>;
 
     /**
      * Counts the number of memories in a specific room.
      * @param roomId The UUID of the room for which to count memories.
      * @param unique Specifies whether to count only unique memories.
-     * @param tableName Optional table name to count memories from.
+     * @param memoryType Optional table name to count memories from.
      * @returns A Promise that resolves to the number of memories.
      */
     abstract countMemories(
         roomId: UUID,
         unique?: boolean,
-        tableName?: string
+        memoryType?: string
     ): Promise<number>;
 
     /**

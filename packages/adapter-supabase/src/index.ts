@@ -111,10 +111,10 @@ export class SupabaseDatabaseAdapter extends DatabaseAdapter {
     async getMemoriesByRoomIds(params: {
         roomIds: UUID[];
         agentId?: UUID;
-        tableName: string;
+        memoryType: string;
     }): Promise<Memory[]> {
         let query = this.supabase
-            .from(params.tableName)
+            .from(params.memoryType)
             .select("*")
             .in("roomId", params.roomIds);
 
@@ -198,7 +198,7 @@ export class SupabaseDatabaseAdapter extends DatabaseAdapter {
     }
 
     async searchMemories(params: {
-        tableName: string;
+        memoryType: string;
         roomId: UUID;
         embedding: number[];
         match_threshold: number;
@@ -206,7 +206,7 @@ export class SupabaseDatabaseAdapter extends DatabaseAdapter {
         unique: boolean;
     }): Promise<Memory[]> {
         const result = await this.supabase.rpc("search_memories", {
-            query_table_name: params.tableName,
+            query_table_name: params.memoryType,
             query_roomId: params.roomId,
             query_embedding: params.embedding,
             query_match_threshold: params.match_threshold,
@@ -274,13 +274,13 @@ export class SupabaseDatabaseAdapter extends DatabaseAdapter {
         roomId: UUID;
         count?: number;
         unique?: boolean;
-        tableName: string;
+        memoryType: string;
         agentId?: UUID;
         start?: number;
         end?: number;
     }): Promise<Memory[]> {
         const query = this.supabase
-            .from(params.tableName)
+            .from(params.memoryType)
             .select("*")
             .eq("roomId", params.roomId);
 
@@ -323,11 +323,11 @@ export class SupabaseDatabaseAdapter extends DatabaseAdapter {
             roomId?: UUID;
             agentId?: UUID;
             unique?: boolean;
-            tableName: string;
+            memoryType: string;
         }
     ): Promise<Memory[]> {
         const queryParams = {
-            query_table_name: params.tableName,
+            query_table_name: params.memoryType,
             query_roomId: params.roomId,
             query_embedding: embedding,
             query_match_threshold: params.match_threshold,
@@ -364,14 +364,14 @@ export class SupabaseDatabaseAdapter extends DatabaseAdapter {
 
     async createMemory(
         memory: Memory,
-        tableName: string,
+        memoryType: string,
         unique = false
     ): Promise<void> {
         const createdAt = memory.createdAt ?? Date.now();
         if (unique) {
             const opts = {
                 // TODO: Add ID option, optionally
-                query_table_name: tableName,
+                query_table_name: memoryType,
                 query_userId: memory.userId,
                 query_content: memory.content.text,
                 query_roomId: memory.roomId,
@@ -391,7 +391,7 @@ export class SupabaseDatabaseAdapter extends DatabaseAdapter {
         } else {
             const result = await this.supabase
                 .from("memories")
-                .insert({ ...memory, createdAt, type: tableName });
+                .insert({ ...memory, createdAt, type: memoryType });
             const { error } = result;
             if (error) {
                 throw new Error(JSON.stringify(error));
@@ -410,9 +410,9 @@ export class SupabaseDatabaseAdapter extends DatabaseAdapter {
         }
     }
 
-    async removeAllMemories(roomId: UUID, tableName: string): Promise<void> {
+    async removeAllMemories(roomId: UUID, memoryType: string): Promise<void> {
         const result = await this.supabase.rpc("remove_memories", {
-            query_table_name: tableName,
+            query_table_name: memoryType,
             query_roomId: roomId,
         });
 
@@ -424,13 +424,13 @@ export class SupabaseDatabaseAdapter extends DatabaseAdapter {
     async countMemories(
         roomId: UUID,
         unique = true,
-        tableName: string
+        memoryType: string
     ): Promise<number> {
-        if (!tableName) {
-            throw new Error("tableName is required");
+        if (!memoryType) {
+            throw new Error("memoryType is required");
         }
         const query = {
-            query_table_name: tableName,
+            query_table_name: memoryType,
             query_roomId: roomId,
             query_unique: !!unique,
         };
