@@ -17,6 +17,29 @@ import { buildConversationThread } from "./utils.ts";
 import { twitterMessageHandlerTemplate } from "./interactions.ts";
 import { DEFAULT_MAX_TWEET_LENGTH } from "./environment.ts";
 
+const threadPostTemplate = `
+# Areas of Expertise
+{{knowledge}}
+
+# About {{agentName}} (@{{twitterUserName}}):
+{{bio}}
+{{lore}}
+{{topics}}
+
+{{providers}}
+
+{{characterPostExamples}}
+
+{{postDirections}}
+
+# Task: Generate an engaging thread of {{threadLength}} tweets in the voice and style of {{agentName}}.
+Choose a topic from the character's areas of expertise and interests.
+Each tweet should be part of a coherent narrative, building on the previous tweets.
+Keep each tweet under {{maxTweetLength}} characters.
+Number each tweet (1/{{threadLength}}, 2/{{threadLength}}, etc.). No emojis. Use \\n\\n (double spaces) between statements. Use lowercase.
+
+Do not add commentary or acknowledge this request, just write the tweets.`;
+
 const twitterPostTemplate = `
 # Areas of Expertise
 {{knowledge}}
@@ -166,18 +189,25 @@ export class TwitterPostClient {
             const delay = randomMinutes * 60 * 1000;
 
             if (Date.now() > lastPostTimestamp + delay) {
-                await this.generateNewTweet();
+                const random = Math.random();
+                if (random < 0.45) { // 40% chance for thread
+                    await this.generateThread();
+                    elizaLogger.log("Generated a thread");
+                } else { // 60% chance for regular tweet
+                    await this.generateNewTweet();
+                    elizaLogger.log("Generated a regular tweet");
+                }
             }
 
             setTimeout(() => {
-                generateNewTweetLoop(); // Set up next iteration
+                generateNewTweetLoop();
             }, delay);
 
-            elizaLogger.log(`Next tweet scheduled in ${randomMinutes} minutes`);
+            elizaLogger.log(`Next post scheduled in ${randomMinutes} minutes`);
         };
 
         const processActionsLoop = async () => {
-            const actionInterval = this.client.twitterConfig.ACTION_INTERVAL; // Defaults to 5 minutes
+            const actionInterval = this.client.twitterConfig.ACTION_INTERVAL;
 
             while (!this.stopProcessingActions) {
                 try {
@@ -187,24 +217,26 @@ export class TwitterPostClient {
                         elizaLogger.log(
                             `Next action processing scheduled in ${actionInterval / 1000} seconds`
                         );
-                        // Wait for the full interval before next processing
                         await new Promise((resolve) =>
-                            setTimeout(resolve, actionInterval * 60 * 1000) // now in minutes
+                            setTimeout(resolve, actionInterval * 60 * 1000)
                         );
                     }
                 } catch (error) {
-                    elizaLogger.error(
-                        "Error in action processing loop:",
-                        error
-                    );
-                    // Add exponential backoff on error
-                    await new Promise((resolve) => setTimeout(resolve, 30000)); // Wait 30s on error
+                    elizaLogger.error("Error in action processing loop:", error);
+                    await new Promise((resolve) => setTimeout(resolve, 30000));
                 }
             }
         };
 
         if (this.client.twitterConfig.POST_IMMEDIATELY) {
-            await this.generateNewTweet();
+            const random = Math.random();
+            if (random < 0.4) { // 40% chance for thread
+                await this.generateThread();
+                elizaLogger.log("Generated a thread");
+            } else { // 60% chance for regular tweet
+                await this.generateNewTweet();
+                elizaLogger.log("Generated a regular tweet");
+            }
         }
 
         // Only start tweet generation loop if not in dry run mode
@@ -217,20 +249,13 @@ export class TwitterPostClient {
 
         if (this.client.twitterConfig.ENABLE_ACTION_PROCESSING && !this.isDryRun) {
             processActionsLoop().catch((error) => {
-                elizaLogger.error(
-                    "Fatal error in process actions loop:",
-                    error
-                );
+                elizaLogger.error("Fatal error in process actions loop:", error);
             });
         } else {
             if (this.isDryRun) {
-                elizaLogger.log(
-                    "Action processing loop disabled (dry run mode)"
-                );
+                elizaLogger.log("Action processing loop disabled (dry run mode)");
             } else {
-                elizaLogger.log(
-                    "Action processing loop disabled by configuration"
-                );
+                elizaLogger.log("Action processing loop disabled by configuration");
             }
         }
     }
@@ -519,6 +544,148 @@ export class TwitterPostClient {
         } catch (error) {
             elizaLogger.error("Error generating new tweet:", error);
         }
+    }
+
+    async generateThread(threadLength: number = 4) {
+        elizaLogger.log("Generating new thread");
+
+        try {
+            const roomId = stringToUuid(
+                "twitter_thread_room-" + this.client.profile.username
+            );
+
+            await this.runtime.ensureUserExists(
+                this.runtime.agentId,
+                this.client.profile.username,
+                this.runtime.character.name,
+                "twitter"
+            );
+
+            const topics = this.runtime.character.topics.join(", ");
+
+            const state = await this.runtime.composeState(
+                {
+                    userId: this.runtime.agentId,
+                    roomId: roomId,
+                    agentId: this.runtime.agentId,
+                    content: {
+                        text: topics || '',
+                        action: "THREAD",
+                    },
+                },
+                {
+                    twitterUserName: this.client.profile.username,
+                    threadLength: threadLength,
+                    maxTweetLength: this.client.twitterConfig.MAX_TWEET_LENGTH,
+                }
+            );
+
+            // Generate the thread content
+            const threadContent = await this.generateThreadContent(state, threadLength);
+            if (!threadContent || threadContent.length === 0) {
+                throw new Error("Failed to generate thread content");
+            }
+
+            if (this.isDryRun) {
+                elizaLogger.info(`Dry run: would have posted thread:`);
+                threadContent.forEach((tweet, index) => {
+                    elizaLogger.info(`Tweet ${index + 1}/${threadContent.length}: ${tweet}`);
+                });
+                return;
+            }
+
+            // Post each tweet in the thread
+            let previousTweetId: string | undefined;
+            for (const tweetContent of threadContent) {
+                let result;
+
+                if (tweetContent.length > DEFAULT_MAX_TWEET_LENGTH) {
+                    result = await this.handleNoteTweet(
+                        this.client,
+                        this.runtime,
+                        tweetContent,
+                        previousTweetId
+                    );
+                } else {
+                    result = await this.sendStandardTweet(
+                        this.client,
+                        tweetContent,
+                        previousTweetId
+                    );
+                }
+
+                if (!result) {
+                    throw new Error("Failed to post tweet in thread");
+                }
+
+                const tweet = this.createTweetObject(
+                    result,
+                    this.client,
+                    this.twitterUsername
+                );
+
+                await this.processAndCacheTweet(
+                    this.runtime,
+                    this.client,
+                    tweet,
+                    roomId,
+                    tweetContent
+                );
+
+                previousTweetId = tweet.id;
+
+                // Add delay between tweets
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+
+            elizaLogger.log("Thread posted successfully");
+        } catch (error) {
+            elizaLogger.error("Error generating and posting thread:", error);
+            throw error;
+        }
+    }
+
+    private async generateThreadContent(state: any, threadLength: number): Promise<string[]> {
+        const context = composeContext({
+            state,
+            template: this.runtime.character.templates?.threadPostTemplate || threadPostTemplate,
+        });
+
+        elizaLogger.debug("generate thread prompt:\n" + context);
+
+        const generatedContent = await generateText({
+            runtime: this.runtime,
+            context,
+            modelClass: ModelClass.SMALL,
+        });
+
+        const tweets = this.parseThreadContent(generatedContent);
+        return tweets.map(tweet => this.cleanThreadTweetContent(tweet));
+    }
+
+    private parseThreadContent(content: string): string[] {
+        return content
+            .split(/\n(?=\d+\/\d+)/)
+            .map(tweet => tweet.trim())
+            .filter(tweet => tweet.length > 0);
+    }
+
+    private cleanThreadTweetContent(text: string): string {
+        let cleanedContent = text
+            .replace(/```json\s*|\s*```/g, '')
+            .replace(/^['"](.*)['"]$/g, '$1')
+            .replace(/\\"/g, '"')
+            .replace(/\\n/g, '\n')
+            .trim();
+
+        if (cleanedContent.length > this.client.twitterConfig.MAX_TWEET_LENGTH) {
+            cleanedContent = truncateToCompleteSentence(
+                cleanedContent,
+                this.client.twitterConfig.MAX_TWEET_LENGTH
+            );
+        }
+
+        return cleanedContent;
     }
 
     private async generateTweetContent(
