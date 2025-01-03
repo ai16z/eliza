@@ -6,7 +6,9 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import {
     generateObject as aiGenerateObject,
     generateText as aiGenerateText,
+    CoreTool,
     GenerateObjectResult,
+    StepResult as AIStepResult,
 } from "ai";
 import { Buffer } from "buffer";
 import { createOllama } from "ollama-ai-provider";
@@ -34,8 +36,13 @@ import {
     ServiceType,
     SearchResponse,
     ActionResponse,
+    TelemetrySettings,
 } from "./types.ts";
 import { fal } from "@fal-ai/client";
+import { tavily } from "@tavily/core";
+
+type Tool = CoreTool<any, any>;
+type StepResult = AIStepResult<any>;
 
 /**
  * Send a message to the model for a text generateText - receive a string back and parse how you'd like
@@ -54,12 +61,18 @@ export async function generateText({
     runtime,
     context,
     modelClass,
+    tools = {},
+    onStepFinish,
+    maxSteps = 1,
     stop,
     customSystemPrompt,
 }: {
     runtime: IAgentRuntime;
     context: string;
     modelClass: string;
+    tools?: Record<string, Tool>;
+    onStepFinish?: (event: StepResult) => Promise<void> | void;
+    maxSteps?: number;
     stop?: string[];
     customSystemPrompt?: string;
 }): Promise<string> {
@@ -164,6 +177,9 @@ export async function generateText({
     const max_response_length =
         modelConfiguration?.max_response_length ||
         models[provider].settings.maxOutputTokens;
+    const experimental_telemetry =
+        modelConfiguration?.experimental_telemetry ||
+        models[provider].settings.experimental_telemetry;
 
     const apiKey = runtime.token;
 
@@ -171,7 +187,7 @@ export async function generateText({
         elizaLogger.debug(
             `Trimming context to max length of ${max_context_length} tokens.`
         );
-        context = await trimTokens(context, max_context_length, "gpt-4o");
+        context = trimTokens(context, max_context_length, "gpt-4o");
 
         let response: string;
 
@@ -205,10 +221,14 @@ export async function generateText({
                         runtime.character.system ??
                         settings.SYSTEM_PROMPT ??
                         undefined,
+                    tools: tools,
+                    onStepFinish: onStepFinish,
+                    maxSteps: maxSteps,
                     temperature: temperature,
                     maxTokens: max_response_length,
                     frequencyPenalty: frequency_penalty,
                     presencePenalty: presence_penalty,
+                    experimental_telemetry: experimental_telemetry,
                 });
 
                 response = openaiResponse;
@@ -218,6 +238,7 @@ export async function generateText({
 
             case ModelProviderName.GOOGLE: {
                 const google = createGoogleGenerativeAI({
+                    apiKey,
                     fetch: runtime.fetch,
                 });
 
@@ -228,10 +249,14 @@ export async function generateText({
                         runtime.character.system ??
                         settings.SYSTEM_PROMPT ??
                         undefined,
+                    tools: tools,
+                    onStepFinish: onStepFinish,
+                    maxSteps: maxSteps,
                     temperature: temperature,
                     maxTokens: max_response_length,
                     frequencyPenalty: frequency_penalty,
                     presencePenalty: presence_penalty,
+                    experimental_telemetry: experimental_telemetry,
                 });
 
                 response = googleResponse;
@@ -254,10 +279,14 @@ export async function generateText({
                         runtime.character.system ??
                         settings.SYSTEM_PROMPT ??
                         undefined,
+                    tools: tools,
+                    onStepFinish: onStepFinish,
+                    maxSteps: maxSteps,
                     temperature: temperature,
                     maxTokens: max_response_length,
                     frequencyPenalty: frequency_penalty,
                     presencePenalty: presence_penalty,
+                    experimental_telemetry: experimental_telemetry,
                 });
 
                 response = anthropicResponse;
@@ -280,10 +309,14 @@ export async function generateText({
                         runtime.character.system ??
                         settings.SYSTEM_PROMPT ??
                         undefined,
+                    tools: tools,
+                    onStepFinish: onStepFinish,
+                    maxSteps: maxSteps,
                     temperature: temperature,
                     maxTokens: max_response_length,
                     frequencyPenalty: frequency_penalty,
                     presencePenalty: presence_penalty,
+                    experimental_telemetry: experimental_telemetry,
                 });
 
                 response = anthropicResponse;
@@ -310,10 +343,14 @@ export async function generateText({
                         runtime.character.system ??
                         settings.SYSTEM_PROMPT ??
                         undefined,
+                    tools: tools,
+                    onStepFinish: onStepFinish,
+                    maxSteps: maxSteps,
                     temperature: temperature,
                     maxTokens: max_response_length,
                     frequencyPenalty: frequency_penalty,
                     presencePenalty: presence_penalty,
+                    experimental_telemetry: experimental_telemetry,
                 });
 
                 response = grokResponse;
@@ -332,9 +369,13 @@ export async function generateText({
                         runtime.character.system ??
                         settings.SYSTEM_PROMPT ??
                         undefined,
+                    tools: tools,
+                    onStepFinish: onStepFinish,
+                    maxSteps: maxSteps,
                     maxTokens: max_response_length,
                     frequencyPenalty: frequency_penalty,
                     presencePenalty: presence_penalty,
+                    experimental_telemetry: experimental_telemetry,
                 });
 
                 response = groqResponse;
@@ -383,9 +424,13 @@ export async function generateText({
                         runtime.character.system ??
                         settings.SYSTEM_PROMPT ??
                         undefined,
+                    tools: tools,
+                    onStepFinish: onStepFinish,
+                    maxSteps: maxSteps,
                     maxTokens: max_response_length,
                     frequencyPenalty: frequency_penalty,
                     presencePenalty: presence_penalty,
+                    experimental_telemetry: experimental_telemetry,
                 });
 
                 response = redpillResponse;
@@ -410,9 +455,13 @@ export async function generateText({
                         runtime.character.system ??
                         settings.SYSTEM_PROMPT ??
                         undefined,
+                    tools: tools,
+                    onStepFinish: onStepFinish,
+                    maxSteps: maxSteps,
                     maxTokens: max_response_length,
                     frequencyPenalty: frequency_penalty,
                     presencePenalty: presence_penalty,
+                    experimental_telemetry: experimental_telemetry,
                 });
 
                 response = openrouterResponse;
@@ -435,10 +484,14 @@ export async function generateText({
                     const { text: ollamaResponse } = await aiGenerateText({
                         model: ollama,
                         prompt: context,
+                        tools: tools,
+                        onStepFinish: onStepFinish,
                         temperature: temperature,
+                        maxSteps: maxSteps,
                         maxTokens: max_response_length,
                         frequencyPenalty: frequency_penalty,
                         presencePenalty: presence_penalty,
+                        experimental_telemetry: experimental_telemetry,
                     });
 
                     response = ollamaResponse;
@@ -462,10 +515,14 @@ export async function generateText({
                         runtime.character.system ??
                         settings.SYSTEM_PROMPT ??
                         undefined,
+                    tools: tools,
+                    onStepFinish: onStepFinish,
                     temperature: temperature,
                     maxTokens: max_response_length,
+                    maxSteps: maxSteps,
                     frequencyPenalty: frequency_penalty,
                     presencePenalty: presence_penalty,
+                    experimental_telemetry: experimental_telemetry,
                 });
 
                 response = heuristResponse;
@@ -511,10 +568,14 @@ export async function generateText({
                         runtime.character.system ??
                         settings.SYSTEM_PROMPT ??
                         undefined,
+                    tools: tools,
+                    onStepFinish: onStepFinish,
+                    maxSteps: maxSteps,
                     temperature: temperature,
                     maxTokens: max_response_length,
                     frequencyPenalty: frequency_penalty,
                     presencePenalty: presence_penalty,
+                    experimental_telemetry: experimental_telemetry,
                 });
 
                 response = openaiResponse;
@@ -537,10 +598,14 @@ export async function generateText({
                         runtime.character.system ??
                         settings.SYSTEM_PROMPT ??
                         undefined,
+                    tools: tools,
+                    onStepFinish: onStepFinish,
+                    maxSteps: maxSteps,
                     temperature: temperature,
                     maxTokens: max_response_length,
                     frequencyPenalty: frequency_penalty,
                     presencePenalty: presence_penalty,
+                    experimental_telemetry: experimental_telemetry,
                 });
 
                 response = galadrielResponse;
@@ -562,7 +627,10 @@ export async function generateText({
                         runtime.character.system ??
                         settings.SYSTEM_PROMPT ??
                         undefined,
+                    tools: tools,
+                    onStepFinish: onStepFinish,
                     temperature: temperature,
+                    maxSteps: maxSteps,
                     maxTokens: max_response_length,
                 });
 
@@ -966,33 +1034,35 @@ export const generateImage = async (
     });
 
     const apiKey =
-    runtime.imageModelProvider === runtime.modelProvider
-        ? runtime.token
-        : (() => {
-            // First try to match the specific provider
-            switch (runtime.imageModelProvider) {
-                case ModelProviderName.HEURIST:
-                    return runtime.getSetting("HEURIST_API_KEY");
-                case ModelProviderName.TOGETHER:
-                    return runtime.getSetting("TOGETHER_API_KEY");
-                case ModelProviderName.FAL:
-                    return runtime.getSetting("FAL_API_KEY");
-                case ModelProviderName.OPENAI:
-                    return runtime.getSetting("OPENAI_API_KEY");
-                case ModelProviderName.VENICE:
-                    return runtime.getSetting("VENICE_API_KEY");
-                case ModelProviderName.LIVEPEER:
-                    return runtime.getSetting("LIVEPEER_GATEWAY_URL");
-                default:
-                    // If no specific match, try the fallback chain
-                    return (runtime.getSetting("HEURIST_API_KEY") ??
-                           runtime.getSetting("TOGETHER_API_KEY") ??
-                           runtime.getSetting("FAL_API_KEY") ??
-                           runtime.getSetting("OPENAI_API_KEY") ??
-                           runtime.getSetting("VENICE_API_KEY"))??
-                           runtime.getSetting("LIVEPEER_GATEWAY_URL");
-            }
-        })();
+        runtime.imageModelProvider === runtime.modelProvider
+            ? runtime.token
+            : (() => {
+                  // First try to match the specific provider
+                  switch (runtime.imageModelProvider) {
+                      case ModelProviderName.HEURIST:
+                          return runtime.getSetting("HEURIST_API_KEY");
+                      case ModelProviderName.TOGETHER:
+                          return runtime.getSetting("TOGETHER_API_KEY");
+                      case ModelProviderName.FAL:
+                          return runtime.getSetting("FAL_API_KEY");
+                      case ModelProviderName.OPENAI:
+                          return runtime.getSetting("OPENAI_API_KEY");
+                      case ModelProviderName.VENICE:
+                          return runtime.getSetting("VENICE_API_KEY");
+                      case ModelProviderName.LIVEPEER:
+                          return runtime.getSetting("LIVEPEER_GATEWAY_URL");
+                      default:
+                          // If no specific match, try the fallback chain
+                          return (
+                              runtime.getSetting("HEURIST_API_KEY") ??
+                              runtime.getSetting("TOGETHER_API_KEY") ??
+                              runtime.getSetting("FAL_API_KEY") ??
+                              runtime.getSetting("OPENAI_API_KEY") ??
+                              runtime.getSetting("VENICE_API_KEY") ??
+                              runtime.getSetting("LIVEPEER_GATEWAY_URL")
+                          );
+                  }
+              })();
     try {
         if (runtime.imageModelProvider === ModelProviderName.HEURIST) {
             const response = await fetch(
@@ -1182,28 +1252,31 @@ export const generateImage = async (
             });
 
             return { success: true, data: base64s };
-
         } else if (runtime.imageModelProvider === ModelProviderName.LIVEPEER) {
             if (!apiKey) {
                 throw new Error("Livepeer Gateway is not defined");
             }
             try {
                 const baseUrl = new URL(apiKey);
-                if (!baseUrl.protocol.startsWith('http')) {
+                if (!baseUrl.protocol.startsWith("http")) {
                     throw new Error("Invalid Livepeer Gateway URL protocol");
                 }
-                const response = await fetch(`${baseUrl.toString()}text-to-image`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        model_id: data.modelId || "ByteDance/SDXL-Lightning",
-                        prompt: data.prompt,
-                        width: data.width || 1024,
-                        height: data.height || 1024
-                    })
-                });
+                const response = await fetch(
+                    `${baseUrl.toString()}text-to-image`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            model_id:
+                                data.modelId || "ByteDance/SDXL-Lightning",
+                            prompt: data.prompt,
+                            width: data.width || 1024,
+                            height: data.height || 1024,
+                        }),
+                    }
+                );
                 const result = await response.json();
                 if (!result.images?.length) {
                     throw new Error("No images generated");
@@ -1225,19 +1298,19 @@ export const generateImage = async (
                         }
                         const blob = await imageResponse.blob();
                         const arrayBuffer = await blob.arrayBuffer();
-                        const base64 = Buffer.from(arrayBuffer).toString("base64");
+                        const base64 =
+                            Buffer.from(arrayBuffer).toString("base64");
                         return `data:image/jpeg;base64,${base64}`;
                     })
                 );
                 return {
                     success: true,
-                    data: base64Images
+                    data: base64Images,
                 };
             } catch (error) {
                 console.error(error);
                 return { success: false, error: error };
             }
-
         } else {
             let targetSize = `${data.width}x${data.height}`;
             if (
@@ -1300,34 +1373,20 @@ export const generateWebSearch = async (
     query: string,
     runtime: IAgentRuntime
 ): Promise<SearchResponse> => {
-    const apiUrl = "https://api.tavily.com/search";
-    const apiKey = runtime.getSetting("TAVILY_API_KEY");
-
     try {
-        const response = await fetch(apiUrl, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                api_key: apiKey,
-                query,
-                include_answer: true,
-                max_results: 3, // 5 (default)
-                topic: "general", // "general"(default) "news"
-                search_depth: "basic", // "basic"(default) "advanced"
-                include_images: false, // false (default) true
-            }),
-        });
-
-        if (!response.ok) {
-            throw new elizaLogger.error(
-                `HTTP error! status: ${response.status}`
-            );
+        const apiKey = runtime.getSetting("TAVILY_API_KEY") as string;
+        if (!apiKey) {
+            throw new Error("TAVILY_API_KEY is not set");
         }
-
-        const data: SearchResponse = await response.json();
-        return data;
+        const tvly = tavily({ apiKey });
+        const response = await tvly.search(query, {
+            includeAnswer: true,
+            maxResults: 3, // 5 (default)
+            topic: "general", // "general"(default) "news"
+            searchDepth: "basic", // "basic"(default) "advanced"
+            includeImages: false, // false (default) true
+        });
+        return response;
     } catch (error) {
         elizaLogger.error("Error:", error);
     }
@@ -1357,6 +1416,7 @@ interface ModelSettings {
     frequencyPenalty: number;
     presencePenalty: number;
     stop?: string[];
+    experimental_telemetry?: TelemetrySettings;
 }
 
 /**
@@ -1392,6 +1452,7 @@ export const generateObject = async ({
     const presence_penalty = models[provider].settings.presence_penalty;
     const max_context_length = models[provider].settings.maxInputTokens;
     const max_response_length = models[provider].settings.maxOutputTokens;
+    const experimental_telemetry = models[provider].settings.experimental_telemetry;
     const apiKey = runtime.token;
 
     try {
@@ -1404,6 +1465,7 @@ export const generateObject = async ({
             frequencyPenalty: frequency_penalty,
             presencePenalty: presence_penalty,
             stop: stop || models[provider].settings.stop,
+            experimental_telemetry: experimental_telemetry,
         };
 
         const response = await handleProvider({

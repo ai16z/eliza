@@ -24,18 +24,18 @@ jobs:
                   node-version: "23"
                   cache: "pnpm"
 
+            - name: Clean up
+              run: pnpm clean
+
             - name: Install dependencies
-              run: pnpm install -r
+              run: pnpm install -r --no-frozen-lockfile
 
             - name: Build packages
               run: pnpm build
 
-            - name: Check for API key
-              run: |
-                  if [ -z "$OPENAI_API_KEY" ]; then
-                      echo "Error: OPENAI_API_KEY is not set."
-                      exit 1
-                  fi
-
             - name: Run integration tests
-              run: pnpm run integrationTests
+              env:
+                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+                  COINBASE_COMMERCE_KEY: ${{ secrets.COINBASE_COMMERCE_KEY }}
+              run: |
+                  pnpm run integrationTests

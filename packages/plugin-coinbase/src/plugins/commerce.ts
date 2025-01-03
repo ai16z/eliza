@@ -82,7 +82,7 @@ export async function getAllCharges(apiKey: string) {
 // Function to fetch details of a specific charge
 export async function getChargeDetails(apiKey: string, chargeId: string) {
     elizaLogger.debug("Starting getChargeDetails function");
-    const getUrl = `${url}${chargeId}`;
+    const getUrl = `${url}/${chargeId}`;
 
     try {
         const response = await fetch(getUrl, {
@@ -204,8 +204,8 @@ export const createCoinbaseChargeAction: Action = {
                     text: `Charge created successfully: ${chargeResponse.hosted_url}`,
                     attachments: [
                         {
-                            id: crypto.randomUUID(),
-                            url: chargeResponse.id,
+                            id: chargeResponse.id,
+                            url: chargeResponse.hosted_url,
                             title: "Coinbase Commerce Charge",
                             description: `Charge ID: ${chargeResponse.id}`,
                             text: `Pay here: ${chargeResponse.hosted_url}`,
@@ -351,6 +351,7 @@ export const getAllChargesAction: Action = {
             callback(
                 {
                     text: `Successfully fetched all charges. Total charges: ${charges.length}`,
+                    attachments: charges,
                 },
                 []
             );
@@ -439,17 +440,20 @@ export const getChargeDetailsAction: Action = {
 
             elizaLogger.info("Fetched charge details:", chargeDetails);
 
+            const chargeData = chargeDetails.data;
+
             callback(
                 {
                     text: `Successfully fetched charge details for ID: ${charge.id}`,
                     attachments: [
                         {
-                            id: crypto.randomUUID(),
-                            url: chargeDetails.hosted_url,
+                            id: chargeData.id,
+                            url: chargeData.hosted_url,
                             title: `Charge Details for ${charge.id}`,
-                            description: `Details: ${JSON.stringify(chargeDetails, null, 2)}`,
                             source: "coinbase",
-                            text: "",
+                            description: JSON.stringify(chargeDetails, null, 2),
+                            text: `Pay here: ${chargeData.hosted_url}`,
+                            contentType: "application/json",
                         },
                     ],
                 },

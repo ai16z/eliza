@@ -22,6 +22,11 @@ on:
         required: true
         default: ''
         type: string
+      branch:
+        description: 'Target branch for PR (defaults to develop)'
+        required: false
+        default: 'develop'
+        type: string
 
 jobs:
   generate-docs:
@@ -49,7 +54,7 @@ jobs:
           run_install: false
 
       - name: Update lockfile
-        working-directory: packages/jsdoc-automation
+        working-directory: scripts/jsdoc-automation
         run: |
           echo "Updating lockfile..."
           pnpm install --no-frozen-lockfile
@@ -63,11 +68,11 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Install package dependencies
-        working-directory: packages/jsdoc-automation
+        working-directory: scripts/jsdoc-automation
         run: pnpm install --no-frozen-lockfile
 
       - name: Run documentation generator
-        working-directory: packages/jsdoc-automation
+        working-directory: scripts/jsdoc-automation
         run: |
           echo "Node version: $(node --version)"
           echo "NPM version: $(npm --version)"
@@ -79,3 +84,4 @@ jobs:
           INPUT_PULL_NUMBER: ${{ inputs.pull_number }}
           INPUT_EXCLUDED_DIRECTORIES: ${{ inputs.excluded_directories }}
           INPUT_REVIEWERS: ${{ inputs.reviewers }}
+          INPUT_BRANCH: ${{ inputs.branch }}

@@ -19,6 +19,7 @@ import { Transaction } from "@mysten/sui/transactions";
 import { SUI_DECIMALS } from "@mysten/sui/utils";
 
 import { walletProvider } from "../providers/wallet";
+import { parseAccount } from "../utils";
 
 type SuiNetwork = "mainnet" | "testnet" | "devnet" | "localnet";
 
@@ -139,8 +140,7 @@ export default {
         }
 
         try {
-            const privateKey = runtime.getSetting("SUI_PRIVATE_KEY");
-            const suiAccount = Ed25519Keypair.deriveKeypair(privateKey);
+            const suiAccount = parseAccount(runtime);
             const network = runtime.getSetting("SUI_NETWORK");
             const suiClient = new SuiClient({
                 url: getFullnodeUrl(network as SuiNetwork),

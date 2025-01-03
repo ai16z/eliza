@@ -7,6 +7,7 @@ export const DEFAULT_AGENT_ID = stringToUuid(DEFAULT_CHARACTER ?? uuidv4());
 
 function projectRoot() {
     return path.join(import.meta.dirname, "..");
+    // return "/Users/piotr/Documents/GitHub/Sifchain/eliza"
 }
 
 function log(message) {
@@ -95,7 +96,7 @@ async function sendPostRequest(url, method, payload) {
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        return data[0].text;
+        return data;
     } catch (error) {
         throw new Error(`Failed to send message: ${error.message}`);
     }
@@ -111,15 +112,21 @@ async function send(message) {
 }
 
 async function runIntegrationTest(fn) {
-    const proc = await startAgent();
-    try {
-        await fn();
-        log("✓ Test passed");
-    } catch (error) {
-        log("✗ Test failed");
-        logError(error);
-    } finally {
-        await stopAgent(proc);
+    const skip = fn.hasOwnProperty("skipIf") ? fn.skipIf : false;
+    if (skip) {
+        log(fn.description ? `Skipping test ${fn.description}...` : "Skipping test...");
+    } else {
+        log(fn.description ? `Running test ${fn.description}...` : "Running test...");
+        const proc = await startAgent();
+        try {
+            await fn();
+            log(fn.description ? `✓ Test ${fn.description} passed` : "✓ Test passed");
+        } catch (error) {
+            log(fn.description ? `✗ Test ${fn.description} failed` : "✗ Test failed");
+            logError(error);
+        } finally {
+            await stopAgent(proc);
+        }
     }
 }
 
@@ -134,5 +141,6 @@ export {
     send,
     runIntegrationTest,
     log,
-    logError
+    logError,
+    sleep
 }

@@ -1,16 +1,16 @@
 # Eliza - Multi-agent simulation framework
 
-# https://github.com/elizaos/eliza
+# https://github.com/elizaOS/eliza
 
 # Visit https://eliza.builders for support
 
 ## 🌍 README Translations
 
-[中文说明](./README_CN.md) | [Deutsch](./README_DE.md) | [Français](./README_FR.md) | [ไทย](./README_TH.md)
+[中文说明](./README_CN.md) | [Deutsch](./README_DE.md) | [Français](./README_FR.md) | [ไทย](./README_TH.md) | [Español](README_ES.md)
 
 # dev branch
 
-<img src="./docs/static/img/eliza_banner.jpg" alt="Eliza Banner" width="100%" />
+<img src="static/img/eliza_banner.jpg" alt="Eliza Banner" width="100%" />
 
 _As seen powering [@DegenSpartanAI](https://x.com/degenspartanai) and [@MarcAIndreessen](https://x.com/pmairca)_
 
