@@ -1261,6 +1261,11 @@ export interface IAwsS3Service extends Service {
     generateSignedUrl(fileName: string, expiresIn: number): Promise<string>;
 }
 
+export interface ITeeLogService extends Service {
+    getInstance(): ITeeLogService;
+    log(agentId: string, roomId: string, userId: string, type: string, content: string): Promise<boolean>;
+}
+
 export type SearchImage = {
     url: string;
     description?: string;
@@ -1295,6 +1300,7 @@ export enum ServiceType {
     AWS_S3 = "aws_s3",
     BUTTPLUG = "buttplug",
     SLACK = "slack",
+    TEE_LOG = "tee_log",
 }
 
 export enum LoggingLevel {

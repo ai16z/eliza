@@ -7,8 +7,10 @@ import {
     elizaLogger,
     getEnvVariable,
     validateCharacterConfig,
+    ServiceType,
 } from "@elizaos/core";
 
+import { TeeLogQuery, TeeLogService } from "@elizaos/plugin-tee-log";
 import { REST, Routes } from "discord.js";
 import { DirectClient } from ".";
 import { stringToUuid } from "@elizaos/core";
@@ -182,6 +184,97 @@ export function createApiRouter(
             res.status(500).json({ error: "Failed to fetch memories" });
         }
     });
+
+    router.get("/tee/agents", async (req, res) => {
+        try {
+            const allAgents = [];
+
+            for (const agentRuntime of agents.values()) {
+                const teeLogService = agentRuntime
+                    .getService<TeeLogService>(
+                    ServiceType.TEE_LOG
+                )
+                .getInstance();
+
+                const agents = await teeLogService.getAllAgents();
+                allAgents.push(...agents)
+            }
+
+            const runtime: AgentRuntime = agents.values().next().value;
+            const teeLogService = runtime.getService<TeeLogService>(ServiceType.TEE_LOG).getInstance();
+            const attestation = await teeLogService.generateAttestation(JSON.stringify(allAgents));
+            res.json({ agents: allAgents, attestation: attestation });
+        } catch (error) {
+            elizaLogger.error("Failed to get TEE agents:", error);
+            res.status(500).json({
+                error: "Failed to get TEE agents",
+            });
+        }
+    });
+
+    router.get("/tee/agents/:agentId", async (req, res) => {
+        try {
+            const agentId = req.params.agentId;
+            const agentRuntime = agents.get(agentId);
+            if (!agentRuntime) {
+                res.status(404).json({ error: "Agent not found" });
+                return;
+            }
+
+            const teeLogService = agentRuntime
+                .getService<TeeLogService>(
+                ServiceType.TEE_LOG
+            )
+            .getInstance();
+
+            const teeAgent = await teeLogService.getAgent(agentId);
+            const attestation = await teeLogService.generateAttestation(JSON.stringify(teeAgent));
+            res.json({ agent: teeAgent, attestation: attestation });
+        } catch (error) {
+            elizaLogger.error("Failed to get TEE agent:", error);
+            res.status(500).json({
+                error: "Failed to get TEE agent",
+            });
+        }
+    });
+
+    router.post(
+        "/tee/logs",
+        async (req: express.Request, res: express.Response) => {
+            try {
+                const query = req.body.query || {};
+                const page = parseInt(req.body.page) || 1;
+                const pageSize = parseInt(req.body.pageSize) || 10;
+
+                const teeLogQuery: TeeLogQuery = {
+                    agentId: query.agentId || "",
+                    roomId: query.roomId || "",
+                    userId: query.userId || "",
+                    type: query.type || "",
+                    containsContent: query.containsContent || "",
+                    startTimestamp: query.startTimestamp || undefined,
+                    endTimestamp: query.endTimestamp || undefined,
+                };
+                const agentRuntime: AgentRuntime = agents.values().next().value;
+                const teeLogService = agentRuntime
+                    .getService<TeeLogService>(
+                        ServiceType.TEE_LOG
+                    )
+                    .getInstance();
+                const pageQuery = await teeLogService.getLogs(teeLogQuery, page, pageSize);
+                const attestation = await teeLogService.generateAttestation(JSON.stringify(pageQuery));
+                res.json({
+                    logs: pageQuery,
+                    attestation: attestation,
+                });
+            } catch (error) {
+                elizaLogger.error("Failed to get TEE logs:", error);
+                res.status(500).json({
+                    error: "Failed to get TEE logs",
+                });
+            }
+        }
+    );
 
     return router;
 }

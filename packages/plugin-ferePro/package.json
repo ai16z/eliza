@@ -5,7 +5,7 @@
   "type": "module",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@elizaos/core": "^0.1.7-alpha.1",
+    "@elizaos/core": "^0.1.7-alpha.2",
     "tsup": "^8.3.5",
     "ws": "^8.18.0"
   },
