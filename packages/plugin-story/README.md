@@ -1,16 +1,17 @@
 # @elizaos/plugin-story
 
-The Story Protocol plugin enables interaction with Story Protocol's IP management and licensing system on the Odyssey testnet.
+A plugin for managing intellectual property (IP) operations through Story Protocol's IP management and licensing system on the Odyssey testnet.
 
-## Overview
+## Overview and Purpose
 
-This plugin provides functionality to:
+The Plugin Story simplifies the process of managing intellectual property by providing APIs and utilities for:
 
-- Register IP assets on Story Protocol
-- License IP assets
-- Attach license terms to IP assets
-- Query IP asset details and available licenses
-- Manage wallet interactions with Story Protocol
+- Registering IP assets on Story Protocol
+- Licensing IP assets
+- Attaching license terms to IP assets
+- Querying IP asset details and available licenses
+- Managing wallet interactions with Story Protocol
+- Integration with IPFS for decentralized storage
 
 ## Installation
 
@@ -18,9 +19,9 @@ This plugin provides functionality to:
 pnpm install @elizaos/plugin-story
 ```
 
-## Configuration
+## Configuration Requirements
 
-The plugin requires the following environment variables:
+The plugin requires the following environment variables and dependencies:
 
 ```env
 STORY_PRIVATE_KEY=your_private_key
@@ -29,69 +30,70 @@ STORY_API_BASE_URL=https://api.story.xyz
 PINATA_JWT=your_pinata_jwt_token
 ```
 
-## Usage
+Dependencies:
+- `@story-protocol/core-sdk`
+- `@pinata/sdk`
+- `viem`
+- `ethers`
+- `@elizaos/core`
+- `ipfs-http-client`
 
-Import and register the plugin in your Eliza configuration:
+## Usage Examples
+
+### Register Intellectual Property
 
 ```typescript
-import { storyPlugin } from "@elizaos/plugin-story";
+import { registerIP } from '@elizaos/plugin-story/actions/registerIP';
 
-export default {
-    plugins: [storyPlugin],
-    // ... other configuration
+const ipDetails = {
+  name: 'My First IP',
+  description: 'A sample intellectual property',
+  owner: '0x123...456',
 };
+
+try {
+  const registrationResult = await registerIP(ipDetails);
+  console.log('IP Registered Successfully:', registrationResult);
+} catch (error) {
+  console.error('IP Registration Failed:', error);
+}
 ```
 
-## Features
-
-### Register IP
-
-Register a new IP asset on Story Protocol:
+### License Intellectual Property
 
 ```typescript
-// Example conversation
-User: "I want to register my IP titled 'My Story' with the description 'An epic tale'";
-Assistant: "I'll help you register your IP on Story Protocol...";
+import { licenseIP } from '@elizaos/plugin-story/actions/licenseIP';
+
+const licenseData = {
+  ipId: 'IP123',
+  licenseType: 'Exclusive',
+  duration: 12, // in months
+};
+
+try {
+  const licenseResult = await licenseIP(licenseData);
+  console.log('IP Licensed Successfully:', licenseResult);
+} catch (error) {
+  console.error('IP Licensing Failed:', error);
+}
 ```
 
-### License IP
-
-License an existing IP asset:
+### Upload Data to IPFS
 
 ```typescript
-// Example conversation
-User: "I want to license IP Asset 0x1234...5678 with license terms ID 1";
-Assistant: "I'll help you license that IP asset...";
-```
+import { uploadJSONToIPFS } from '@elizaos/plugin-story/functions/uploadJSONToIPFS';
 
-### Attach Terms
+const jsonData = {
+  name: 'Sample Data',
+  description: 'Data to be stored on IPFS',
+};
 
-Attach license terms to an IP asset:
-
-```typescript
-// Example conversation
-User: "I want to attach commercial license terms with 10% revenue share to IP 0x1234...5678";
-Assistant: "I'll help you attach those license terms...";
-```
-
-### Get IP Details
-
-Query details about an IP asset:
-
-```typescript
-// Example conversation
-User: "Get details for IP Asset 0x1234...5678";
-Assistant: "Here are the details for that IP asset...";
-```
-
-### Get Available Licenses
-
-Query available licenses for an IP asset:
-
-```typescript
-// Example conversation
-User: "What licenses are available for IP Asset 0x1234...5678?";
-Assistant: "Here are the available licenses...";
+try {
+  const ipfsHash = await uploadJSONToIPFS(jsonData);
+  console.log('Data uploaded to IPFS. Hash:', ipfsHash);
+} catch (error) {
+  console.error('IPFS Upload Failed:', error);
+}
 ```
 
 ## API Reference
@@ -104,34 +106,51 @@ Assistant: "Here are the available licenses...";
 - `GET_IP_DETAILS`: Get details about an IP
 - `GET_AVAILABLE_LICENSES`: Get available licenses for an IP
 
+### Functions
+
+#### `uploadJSONToIPFS`
+
+Uploads JSON data to IPFS.
+
+**Parameters:**
+- `data: object`
+
+**Returns:**
+- `Promise<string>` - The IPFS hash of the uploaded data.
+
 ### Providers
 
 - `storyWalletProvider`: Manages wallet interactions with Story Protocol
 
+## Common Issues/Troubleshooting
+
+### Issue: IPFS Upload Fails
+- **Cause:** Invalid or large JSON data
+- **Solution:** Validate and compress JSON data before uploading
+
+### Issue: IP Registration Fails
+- **Cause:** Missing or invalid owner address
+- **Solution:** Verify the owner's blockchain address
+
 ## Development
 
-### Building
+### Building and Testing
 
 ```bash
-pnpm run build
+npm run build
+npm run test
 ```
 
-### Testing
+### Security Best Practices
+- Validate all inputs for IP management actions
+- Ensure proper authentication and authorization for licensing
+- Keep dependencies updated to prevent vulnerabilities
 
-```bash
-pnpm run test
-```
-
-## Dependencies
-
-- `@story-protocol/core-sdk`: Core SDK for Story Protocol
-- `@pinata/sdk`: IPFS pinning service
-- `viem`: Ethereum interaction library
-- Other standard dependencies listed in package.json
+### Performance Optimization
+- Optimize IPFS uploads by compressing data
+- Cache frequently accessed IP details for faster retrieval
 
 ## Future Enhancements
-
-The following features and improvements are planned for future releases:
 
 1. **IP Management**
 
