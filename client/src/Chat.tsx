@@ -1,16 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useMutation } from "@tanstack/react-query";
+import type { TextResponse } from "@/api";
+import { useSendMessageMutation } from "@/api";
 import { ImageIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./App.css";
-
-type TextResponse = {
-    text: string;
-    user: string;
-    attachments?: { url: string; contentType: string; title: string }[];
-};
 
 export default function Chat() {
     const { agentId } = useParams();
@@ -19,6 +14,7 @@ export default function Chat() {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const { mutate: sendMessage, isPending } = useSendMessageMutation({ setMessages, setSelectedFile });
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -28,32 +24,9 @@ export default function Chat() {
         scrollToBottom();
     }, [messages]);
 
-    const mutation = useMutation({
-        mutationFn: async (text: string) => {
-            const formData = new FormData();
-            formData.append("text", text);
-            formData.append("userId", "user");
-            formData.append("roomId", `default-room-${agentId}`);
-
-            if (selectedFile) {
-                formData.append("file", selectedFile);
-            }
-
-            const res = await fetch(`/api/${agentId}/message`, {
-                method: "POST",
-                body: formData,
-            });
-            return res.json() as Promise<TextResponse[]>;
-        },
-        onSuccess: (data) => {
-            setMessages((prev) => [...prev, ...data]);
-            setSelectedFile(null);
-        },
-    });
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!input.trim() && !selectedFile) return;
+        if ((!input.trim() && !selectedFile) || !agentId) return;
 
         // Add user message immediately to state
         const userMessage: TextResponse = {
@@ -63,7 +36,7 @@ export default function Chat() {
         };
         setMessages((prev) => [...prev, userMessage]);
 
-        mutation.mutate(input);
+        sendMessage({ text: input, agentId, selectedFile });
         setInput("");
     };
 
@@ -142,19 +115,19 @@ export default function Chat() {
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="Type a message..."
                             className="flex-1"
-                            disabled={mutation.isPending}
+                            disabled={isPending}
                         />
                         <Button
                             type="button"
                             variant="outline"
                             size="icon"
                             onClick={handleFileSelect}
-                            disabled={mutation.isPending}
+                            disabled={isPending}
                         >
                             <ImageIcon className="h-4 w-4" />
                         </Button>
-                        <Button type="submit" disabled={mutation.isPending}>
-                            {mutation.isPending ? "..." : "Send"}
+                        <Button type="submit" disabled={isPending}>
+                            {isPending ? "..." : "Send"}
                         </Button>
                     </form>
                     {selectedFile && (
