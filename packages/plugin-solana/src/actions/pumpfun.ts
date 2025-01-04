@@ -3,6 +3,7 @@ import { Wallet } from "@coral-xyz/anchor";
 import { generateImage } from "@elizaos/core";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { CreateTokenMetadata, PriorityFee, PumpFunSDK } from "pumpdotfun-sdk";
+import { SolanaAgentKit} from "solana-agent-kit"
 
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import {

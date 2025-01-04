@@ -7,6 +7,7 @@ import {
 import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import { getQuote } from "./swapUtils.ts";
 import { getWalletKey } from "../keypairUtils.ts";
+import { getSAK } from "../utils";
 
 async function invokeSwapDao(
     connection: Connection,
@@ -61,6 +62,7 @@ export const executeSwapForDAO: Action = {
         runtime: IAgentRuntime,
         message: Memory
     ): Promise<boolean> => {
+        const sak = await getSAK(runtime);
         const { inputToken, outputToken, amount } = message.content;
 
         try {
@@ -68,18 +70,16 @@ export const executeSwapForDAO: Action = {
                 runtime.getSetting("RPC_URL") as string
             );
 
-            const { keypair: authority } = await getWalletKey(runtime, true);
-
             const daoMint = new PublicKey(runtime.getSetting("DAO_MINT")); // DAO mint address
 
             // Derive PDAs
             const [statePDA] = await PublicKey.findProgramAddress(
                 [Buffer.from("state"), daoMint.toBuffer()],
-                authority.publicKey
+                sak.wallet_address
             );
             const [walletPDA] = await PublicKey.findProgramAddress(
                 [Buffer.from("wallet"), daoMint.toBuffer()],
-                authority.publicKey
+                sak.wallet_address
             );
 
             const quoteData = await getQuote(
@@ -100,14 +100,14 @@ export const executeSwapForDAO: Action = {
             const instructionData = Buffer.from(
                 JSON.stringify({
                     quote: quoteData.data,
-                    userPublicKey: authority.publicKey.toString(),
+                    userPublicKey: sak.wallet_address.toString(),
                     wrapAndUnwrapSol: true,
                 })
             );
 
             const txid = await invokeSwapDao(
                 connection,
-                authority,
+                sak.wallet,
                 statePDA,
                 walletPDA,
                 instructionData

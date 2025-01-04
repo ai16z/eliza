@@ -10,90 +10,13 @@ import {
     State,
     type Action,
 } from "@elizaos/core";
-import { Connection, PublicKey, VersionedTransaction } from "@solana/web3.js";
-import BigNumber from "bignumber.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import { getWalletKey } from "../keypairUtils.ts";
 import { walletProvider, WalletProvider } from "../providers/wallet.ts";
-import { getTokenDecimals } from "./swapUtils.ts";
+import { ACTIONS } from "solana-agent-kit";
+import { getSAK } from "../utils";
 
-async function swapToken(
-    connection: Connection,
-    walletPublicKey: PublicKey,
-    inputTokenCA: string,
-    outputTokenCA: string,
-    amount: number
-): Promise<any> {
-    try {
-        // Get the decimals for the input token
-        const decimals =
-            inputTokenCA === settings.SOL_ADDRESS
-                ? new BigNumber(9)
-                : new BigNumber(
-                      await getTokenDecimals(connection, inputTokenCA)
-                  );
-
-        console.log("Decimals:", decimals.toString());
-
-        // Use BigNumber for adjustedAmount: amount * (10 ** decimals)
-        const amountBN = new BigNumber(amount);
-        const adjustedAmount = amountBN.multipliedBy(
-            new BigNumber(10).pow(decimals)
-        );
-
-        console.log("Fetching quote with params:", {
-            inputMint: inputTokenCA,
-            outputMint: outputTokenCA,
-            amount: adjustedAmount,
-        });
-
-        const quoteResponse = await fetch(
-            `https://quote-api.jup.ag/v6/quote?inputMint=${inputTokenCA}&outputMint=${outputTokenCA}&amount=${adjustedAmount}&slippageBps=50`
-        );
-        const quoteData = await quoteResponse.json();
-
-        if (!quoteData || quoteData.error) {
-            console.error("Quote error:", quoteData);
-            throw new Error(
-                `Failed to get quote: ${quoteData?.error || "Unknown error"}`
-            );
-        }
-
-        console.log("Quote received:", quoteData);
-
-        const swapRequestBody = {
-            quoteResponse: quoteData,
-            userPublicKey: walletPublicKey.toString(),
-            wrapAndUnwrapSol: true,
-            computeUnitPriceMicroLamports: 2000000,
-            dynamicComputeUnitLimit: true,
-        };
-
-        console.log("Requesting swap with body:", swapRequestBody);
-
-        const swapResponse = await fetch("https://quote-api.jup.ag/v6/swap", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(swapRequestBody),
-        });
-
-        const swapData = await swapResponse.json();
-
-        if (!swapData || !swapData.swapTransaction) {
-            console.error("Swap error:", swapData);
-            throw new Error(
-                `Failed to get swap transaction: ${swapData?.error || "No swap transaction returned"}`
-            );
-        }
-
-        console.log("Swap transaction received");
-        return swapData;
-    } catch (error) {
-        console.error("Error in swapToken:", error);
-        throw error;
-    }
-}
+const TRADE_ACTION = ACTIONS.TRADE_ACTION;
 
 const swapTemplate = `Respond with a JSON markdown block containing only the extracted values. Use null for any values that cannot be determined.
 
@@ -167,14 +90,14 @@ async function getTokenFromWallet(runtime: IAgentRuntime, tokenSymbol: string) {
 // swapToken should took CA, not symbol
 
 export const executeSwap: Action = {
-    name: "EXECUTE_SWAP",
-    similes: ["SWAP_TOKENS", "TOKEN_SWAP", "TRADE_TOKENS", "EXCHANGE_TOKENS"],
+    name: TRADE_ACTION.name,
+    similes: TRADE_ACTION.similes,
     validate: async (runtime: IAgentRuntime, message: Memory) => {
         // Check if the necessary parameters are provided in the message
         console.log("Message:", message);
         return true;
     },
-    description: "Perform a token swap.",
+    description: TRADE_ACTION.description,
     handler: async (
         runtime: IAgentRuntime,
         message: Memory,
@@ -182,6 +105,7 @@ export const executeSwap: Action = {
         _options: { [key: string]: unknown },
         callback?: HandlerCallback
     ): Promise<boolean> => {
+        const sak = await getSAK(runtime);
         // composeState
         if (!state) {
             state = (await runtime.composeState(message)) as State;
@@ -281,61 +205,22 @@ export const executeSwap: Action = {
             const connection = new Connection(
                 "https://api.mainnet-beta.solana.com"
             );
-            const { publicKey: walletPublicKey } = await getWalletKey(
-                runtime,
-                false
-            );
 
             // const provider = new WalletProvider(connection, walletPublicKey);
 
-            console.log("Wallet Public Key:", walletPublicKey);
+            console.log("Wallet Public Key:", sak.wallet_address.toString());
             console.log("inputTokenSymbol:", response.inputTokenCA);
             console.log("outputTokenSymbol:", response.outputTokenCA);
             console.log("amount:", response.amount);
 
-            const swapResult = await swapToken(
-                connection,
-                walletPublicKey,
-                response.inputTokenCA as string,
-                response.outputTokenCA as string,
-                response.amount as number
+            const txid = await sak.trade(
+                new PublicKey(response.outputTokenCA),
+                response.amount,
+                new PublicKey(response.inputTokenCA),
             );
-
-            console.log("Deserializing transaction...");
-            const transactionBuf = Buffer.from(
-                swapResult.swapTransaction,
-                "base64"
-            );
-            const transaction =
-                VersionedTransaction.deserialize(transactionBuf);
-
-            console.log("Preparing to sign transaction...");
-
-            console.log("Creating keypair...");
-            const { keypair } = await getWalletKey(runtime, true);
-            // Verify the public key matches what we expect
-            if (keypair.publicKey.toBase58() !== walletPublicKey.toBase58()) {
-                throw new Error(
-                    "Generated public key doesn't match expected public key"
-                );
-            }
-
-            console.log("Signing transaction...");
-            transaction.sign([keypair]);
-
-            console.log("Sending transaction...");
 
             const latestBlockhash = await connection.getLatestBlockhash();
 
-            const txid = await connection.sendTransaction(transaction, {
-                skipPreflight: false,
-                maxRetries: 3,
-                preflightCommitment: "confirmed",
-            });
-
-            console.log("Transaction sent:", txid);
-
-            // Confirm transaction using the blockhash
             const confirmation = await connection.confirmTransaction(
                 {
                     signature: txid,

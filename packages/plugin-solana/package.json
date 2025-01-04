@@ -19,10 +19,10 @@
     "dist"
   ],
   "dependencies": {
-    "@elizaos/core": "workspace:*",
-    "@elizaos/plugin-trustdb": "workspace:*",
-    "@elizaos/plugin-tee": "workspace:*",
     "@coral-xyz/anchor": "0.30.1",
+    "@elizaos/core": "workspace:*",
+    "@elizaos/plugin-tee": "workspace:*",
+    "@elizaos/plugin-trustdb": "workspace:*",
     "@solana/spl-token": "0.4.9",
     "@solana/web3.js": "1.95.8",
     "bignumber": "1.1.0",
@@ -31,6 +31,7 @@
     "fomo-sdk-solana": "1.3.2",
     "node-cache": "5.1.2",
     "pumpdotfun-sdk": "1.3.2",
+    "solana-agent-kit": "^1.3.4",
     "tsup": "8.3.5",
     "vitest": "2.1.4"
   },
