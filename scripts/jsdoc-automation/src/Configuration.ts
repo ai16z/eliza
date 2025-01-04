@@ -27,6 +27,9 @@ interface ConfigurationData {
     pullRequestLabels: string[];
     pullRequestReviewers: string[];
     excludedFiles: string[];
+    generateJsDoc: boolean;
+    generateReadme: boolean;
+    language: string;
 }
 
 /**
@@ -37,6 +40,9 @@ export class Configuration implements Omit<ConfigurationData, 'rootDirectory'> {
     private _rootDirectory!: ConfigurationData['rootDirectory'];
     private readonly repoRoot: string;
     private _branch: string = 'develop';
+    private _language: string = 'English';
+    private _generateJsDoc: boolean = true;
+    private _generateReadme: boolean = true;
 
     public excludedDirectories: string[] = [];
     public repository: Repository = {
@@ -54,6 +60,22 @@ export class Configuration implements Omit<ConfigurationData, 'rootDirectory'> {
     constructor() {
         this.repoRoot = getRepoRoot();
         this.loadConfiguration();
+    }
+
+    get language(): string {
+        return this._language;
+    }
+
+    set language(value: string) {
+        this._language = value;
+    }
+
+    get generateJsDoc(): boolean {
+        return this._generateJsDoc;
+    }
+
+    get generateReadme(): boolean {
+        return this._generateReadme;
     }
 
     get rootDirectory(): ConfigurationData['rootDirectory'] {
@@ -86,7 +108,21 @@ export class Configuration implements Omit<ConfigurationData, 'rootDirectory'> {
 
     private loadConfiguration(): void {
         // First try to get from environment variables
+        this._language = process.env.INPUT_LANGUAGE || 'English';
+        console.log('Using language:', this._language);
         const rootDirectory = process.env.INPUT_ROOT_DIRECTORY;
+        this._generateJsDoc = process.env.INPUT_JSDOC
+            ? process.env.INPUT_JSDOC.toUpperCase() === 'T'
+            : true; // Default from workflow
+        this._generateReadme = process.env.INPUT_README
+            ? process.env.INPUT_README.toUpperCase() === 'T'
+            : true;  // Default from workflow
+
+        console.log('Documentation flags:', {
+            generateJsDoc: this._generateJsDoc,
+            generateReadme: this._generateReadme
+        });
+
         let inputs;
 
         console.log('Environment variables:', {

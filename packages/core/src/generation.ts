@@ -310,7 +310,6 @@ export async function generateText({
         switch (provider) {
             // OPENAI & LLAMACLOUD shared same structure.
             case ModelProviderName.OPENAI:
-            case ModelProviderName.ETERNALAI:
             case ModelProviderName.ALI_BAILIAN:
             case ModelProviderName.VOLENGINE:
             case ModelProviderName.LLAMACLOUD:
@@ -344,6 +343,52 @@ export async function generateText({
 
                 response = openaiResponse;
                 elizaLogger.debug("Received response from OpenAI model.");
+                break;
+            }
+
+            case ModelProviderName.ETERNALAI: {
+                elizaLogger.debug("Initializing EternalAI model.");
+                const openai = createOpenAI({
+                    apiKey,
+                    baseURL: endpoint,
+                    fetch: async (url: string, options: any) => {
+                        const fetching = await runtime.fetch(url, options);
+                        if (
+                            parseBooleanFromText(
+                                runtime.getSetting("ETERNAL_AI_LOG_REQUEST")
+                            )
+                        ) {
+                            elizaLogger.info(
+                                "Request data: ",
+                                JSON.stringify(options, null, 2)
+                            );
+                            const clonedResponse = fetching.clone();
+                            clonedResponse.json().then((data) => {
+                                elizaLogger.info(
+                                    "Response data: ",
+                                    JSON.stringify(data, null, 2)
+                                );
+                            });
+                        }
+                        return fetching;
+                    },
+                });
+
+                const { text: openaiResponse } = await aiGenerateText({
+                    model: openai.languageModel(model),
+                    prompt: context,
+                    system:
+                        runtime.character.system ??
+                        settings.SYSTEM_PROMPT ??
+                        undefined,
+                    temperature: temperature,
+                    maxTokens: max_response_length,
+                    frequencyPenalty: frequency_penalty,
+                    presencePenalty: presence_penalty,
+                });
+
+                response = openaiResponse;
+                elizaLogger.debug("Received response from EternalAI model.");
                 break;
             }
 
