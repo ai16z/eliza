@@ -79,8 +79,10 @@ Your response must include the JSON block.`;
  * @param text - The input text from which to extract and parse the JSON array.
  * @returns An array parsed from the JSON string if successful; otherwise, null.
  */
+
 export function parseJsonArrayFromText(text: string) {
     let jsonData = null;
+    let normalizedJson = null;
 
     // First try to parse with the original JSON format
     const jsonBlockMatch = text.match(jsonBlockPattern);
@@ -88,10 +90,11 @@ export function parseJsonArrayFromText(text: string) {
     if (jsonBlockMatch) {
         try {
             // Replace single quotes with double quotes before parsing
-            const normalizedJson = jsonBlockMatch[1].replace(/'/g, '"');
+            normalizedJson = jsonBlockMatch[1].replace(/'/g, '"');
             jsonData = JSON.parse(normalizedJson);
         } catch (e) {
             console.error("Error parsing JSON:", e);
+            console.error("JSON input was:", normalizedJson);
         }
     }
 
@@ -103,10 +106,11 @@ export function parseJsonArrayFromText(text: string) {
         if (arrayMatch) {
             try {
                 // Replace single quotes with double quotes before parsing
-                const normalizedJson = arrayMatch[0].replace(/'/g, '"');
+                normalizedJson = arrayMatch[0].replace(/'/g, '"');
                 jsonData = JSON.parse(normalizedJson);
             } catch (e) {
-                console.error("Error parsing JSON:", e);
+                console.error("Error parsing JSON as array:", e);
+                console.error("JSON input was:", normalizedJson);
             }
         }
     }
@@ -115,7 +119,7 @@ export function parseJsonArrayFromText(text: string) {
         return jsonData;
     }
 
-    return null;
+    return jsonData;
 }
 
 /**

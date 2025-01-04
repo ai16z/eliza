@@ -289,7 +289,7 @@ export class DirectClient {
                     }
                 );
 
-                await runtime.evaluate(memory, state);
+                await runtime.evaluate(memory, state, true);
 
                 // Check if we should suppress the initial message
                 const action = runtime.actions.find(
