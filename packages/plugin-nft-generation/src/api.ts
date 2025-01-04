@@ -1,7 +1,7 @@
 import express from "express";
 
 import { AgentRuntime } from "@elizaos/core";
-import { createCollection } from "./handlers/createCollection.ts";
+import { createSolanaCollection } from "./handlers/createSolanaCollection.ts";
 import { createNFT, createNFTMetadata } from "./handlers/createNFT.ts";
 import { verifyNFT } from "./handlers/verifyNFT.ts";
 
@@ -21,7 +21,7 @@ export function createNFTApiRouter(
                 return;
             }
             try {
-                const collectionAddressRes = await createCollection({
+                const collectionAddressRes = await createSolanaCollection({
                     runtime,
                     collectionName: runtime.character.name,
                     fee,

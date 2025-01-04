@@ -15,12 +15,9 @@ import {
 } from "@elizaos/plugin-image-generation";
 import { PublicKey } from "@solana/web3.js";
 import WalletSolana from "../provider/wallet/walletSolana.ts";
+import { collectionImageTemplate } from "../templates.ts";
 
-const collectionImageTemplate = `
-Generate a logo with the text "{{collectionName}}", using orange as the main color, with a sci-fi and mysterious background theme
-`;
-
-export async function createCollection({
+export async function createCollectionMetadata({
     runtime,
     collectionName,
     fee,
@@ -41,7 +38,6 @@ export async function createCollection({
         roomId,
         content: {
             text: "",
-
             source: "nft-generator",
         },
         createdAt: Date.now(),
@@ -79,8 +75,6 @@ export async function createCollection({
             `/${collectionName}`,
             false
         );
-        const publicKey = runtime.getSetting("SOLANA_PUBLIC_KEY");
-        const privateKey = runtime.getSetting("SOLANA_PRIVATE_KEY");
         const adminPublicKey = runtime.getSetting("SOLANA_ADMIN_PUBLIC_KEY");
         const collectionInfo = {
             name: `${collectionName}`,
@@ -100,19 +94,40 @@ export async function createCollection({
         );
         collectionInfo.uri = jsonFilePath.url;
 
-        const wallet = new WalletSolana(new PublicKey(publicKey), privateKey);
+        return collectionInfo;
 
-        const collectionAddressRes = await wallet.createCollection({
-            ...collectionInfo,
-        });
-
-        return {
-            network: "solana",
-            address: collectionAddressRes.address,
-            link: collectionAddressRes.link,
-            collectionInfo,
-        };
     }
 
-    return;
+    return null;
+}
+
+export async function createSolanaCollection({
+    runtime,
+    collectionName,
+    fee,
+}: {
+    runtime: IAgentRuntime;
+    collectionName: string;
+    fee?: number;
+}) {
+    const collectionInfo = await createCollectionMetadata({
+        runtime,
+        collectionName,
+        fee,
+    });
+    if (!collectionInfo) return null
+    const publicKey = runtime.getSetting("SOLANA_PUBLIC_KEY");
+    const privateKey = runtime.getSetting("SOLANA_PRIVATE_KEY");
+    const wallet = new WalletSolana(new PublicKey(publicKey), privateKey);
+
+    const collectionAddressRes = await wallet.createCollection({
+        ...collectionInfo,
+    });
+
+    return {
+        network: "solana",
+        address: collectionAddressRes.address,
+        link: collectionAddressRes.link,
+        collectionInfo,
+    };
 }
