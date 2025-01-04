@@ -92,8 +92,8 @@ export default function Chat() {
                                         : "justify-start"
                                 }`}
                             >
-                                <div
-                                    className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                                <pre
+                                    className={`max-w-[80%] rounded-lg px-4 py-2 whitespace-pre-wrap ${
                                         message.user === "user"
                                             ? "bg-primary text-primary-foreground"
                                             : "bg-muted"
@@ -115,7 +115,7 @@ export default function Chat() {
                                             />
                                         )
                                     ))}
-                                 </div>
+                                </pre>
                             </div>
                         ))
                     ) : (
