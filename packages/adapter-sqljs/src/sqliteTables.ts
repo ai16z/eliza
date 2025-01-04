@@ -92,6 +92,22 @@ CREATE TABLE IF NOT EXISTS "cache" (
     PRIMARY KEY ("key", "agentId")
 );
 
+-- Table: knowledge
+CREATE TABLE IF NOT EXISTS "knowledge" (
+    "id" TEXT PRIMARY KEY,
+    "agentId" TEXT,
+    "content" TEXT NOT NULL CHECK(json_valid("content")),
+    "embedding" BLOB,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "isMain" INTEGER DEFAULT 0,
+    "originalId" TEXT,
+    "chunkIndex" INTEGER,
+    "isShared" INTEGER DEFAULT 0,
+    FOREIGN KEY ("agentId") REFERENCES "accounts"("id"),
+    FOREIGN KEY ("originalId") REFERENCES "knowledge"("id"),
+    CHECK((isShared = 1 AND agentId IS NULL) OR (isShared = 0 AND agentId IS NOT NULL))
+);
+
 -- Index: relationships_id_key
 CREATE UNIQUE INDEX IF NOT EXISTS "relationships_id_key" ON "relationships" ("id");
 
@@ -100,5 +116,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS "memories_id_key" ON "memories" ("id");
 
 -- Index: participants_id_key
 CREATE UNIQUE INDEX IF NOT EXISTS "participants_id_key" ON "participants" ("id");
+
+-- Index: knowledge
+CREATE INDEX IF NOT EXISTS "knowledge_agent_key" ON "knowledge" ("agentId");
+CREATE INDEX IF NOT EXISTS "knowledge_agent_main_key" ON "knowledge" ("agentId", "isMain");
+CREATE INDEX IF NOT EXISTS "knowledge_original_key" ON "knowledge" ("originalId");
+CREATE INDEX IF NOT EXISTS "knowledge_content_key" ON "knowledge"
+    ((json_extract(content, '$.text')))
+    WHERE json_extract(content, '$.text') IS NOT NULL;
+CREATE INDEX IF NOT EXISTS "knowledge_created_key" ON "knowledge" ("agentId", "createdAt");
+CREATE INDEX IF NOT EXISTS "knowledge_shared_key" ON "knowledge" ("isShared");
 
 COMMIT;`;

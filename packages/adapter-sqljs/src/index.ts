@@ -12,6 +12,8 @@ import {
     type Memory,
     type Relationship,
     type UUID,
+    RAGKnowledgeItem,
+    elizaLogger
 } from "@elizaos/core";
 import { v4 } from "uuid";
 import { sqliteTables } from "./sqliteTables.ts";
@@ -801,5 +803,192 @@ export class SqlJsDatabaseAdapter
             console.log("Error removing cache", error);
             return false;
         }
+    }
+
+    async getKnowledge(params: {
+        id?: UUID;
+        agentId: UUID;
+        limit?: number;
+        query?: string;
+    }): Promise<RAGKnowledgeItem[]> {
+        let sql = `SELECT * FROM knowledge WHERE ("agentId" = ? OR "isShared" = 1)`;
+        const queryParams: any[] = [params.agentId];
+
+        if (params.id) {
+            sql += ` AND id = ?`;
+            queryParams.push(params.id);
+        }
+
+        if (params.limit) {
+            sql += ` LIMIT ?`;
+            queryParams.push(params.limit);
+        }
+
+        const stmt = this.db.prepare(sql);
+        stmt.bind(queryParams);
+        const results: RAGKnowledgeItem[] = [];
+
+        while (stmt.step()) {
+            const row = stmt.getAsObject() as any;
+            results.push({
+                id: row.id,
+                agentId: row.agentId,
+                content: JSON.parse(row.content),
+                embedding: row.embedding ? new Float32Array(row.embedding) : undefined, // Convert Uint8Array back to Float32Array
+                createdAt: row.createdAt
+            });
+        }
+        stmt.free();
+        return results;
+    }
+
+    async searchKnowledge(params: {
+        agentId: UUID;
+        embedding: Float32Array;
+        match_threshold: number;
+        match_count: number;
+        searchText?: string;
+    }): Promise<RAGKnowledgeItem[]> {
+        const cacheKey = `embedding_${params.agentId}_${params.searchText}`;
+        const cachedResult = await this.getCache({
+            key: cacheKey,
+            agentId: params.agentId
+        });
+
+        if (cachedResult) {
+            return JSON.parse(cachedResult);
+        }
+
+        let sql = `
+            WITH vector_scores AS (
+                SELECT id,
+                        1 / (1 + vec_distance_L2(embedding, ?)) as vector_score
+                FROM knowledge
+                WHERE ("agentId" IS NULL AND "isShared" = 1) OR "agentId" = ?
+                AND embedding IS NOT NULL
+            ),
+            keyword_matches AS (
+                SELECT id,
+                CASE
+                    WHEN json_extract(content, '$.text') LIKE ? THEN 3.0
+                    ELSE 1.0
+                END *
+                CASE
+                    WHEN json_extract(content, '$.metadata.isChunk') = 1 THEN 1.5
+                    WHEN json_extract(content, '$.metadata.isMain') = 1 THEN 1.2
+                    ELSE 1.0
+                END as keyword_score
+                FROM knowledge
+                WHERE ("agentId" IS NULL AND "isShared" = 1) OR "agentId" = ?
+            )
+            SELECT k.*,
+                v.vector_score,
+                kw.keyword_score,
+                (v.vector_score * kw.keyword_score) as combined_score
+            FROM knowledge k
+            JOIN vector_scores v ON k.id = v.id
+            LEFT JOIN keyword_matches kw ON k.id = kw.id
+            WHERE (k.agentId IS NULL AND k.isShared = 1) OR k.agentId = ?
+            AND (
+                v.vector_score >= ?  -- Using match_threshold parameter
+                OR (kw.keyword_score > 1.0 AND v.vector_score >= 0.3)
+            )
+            ORDER BY combined_score DESC
+            LIMIT ?
+        `;
+
+        const stmt = this.db.prepare(sql);
+        stmt.bind([
+            new Uint8Array(params.embedding.buffer),
+            params.agentId,
+            `%${params.searchText || ''}%`,
+            params.agentId,
+            params.agentId,
+            params.match_threshold,
+            params.match_count
+        ]);
+
+        const results: RAGKnowledgeItem[] = [];
+        while (stmt.step()) {
+            const row = stmt.getAsObject() as any;
+            results.push({
+                id: row.id,
+                agentId: row.agentId,
+                content: JSON.parse(row.content),
+                embedding: row.embedding ? new Float32Array(row.embedding) : undefined,
+                createdAt: row.createdAt,
+                similarity: row.keyword_score
+            });
+        }
+        stmt.free();
+
+        await this.setCache({
+            key: cacheKey,
+            agentId: params.agentId,
+            value: JSON.stringify(results)
+        });
+
+        return results;
+    }
+
+    async createKnowledge(knowledge: RAGKnowledgeItem): Promise<void> {
+        try {
+            const sql = `
+                INSERT INTO knowledge (
+                    id, "agentId", content, embedding, "createdAt",
+                    "isMain", "originalId", "chunkIndex", "isShared"
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+
+            const stmt = this.db.prepare(sql);
+            const metadata = knowledge.content.metadata || {};
+
+            stmt.run([
+                knowledge.id,
+                metadata.isShared ? null : knowledge.agentId,
+                JSON.stringify(knowledge.content),
+                knowledge.embedding ? new Uint8Array(knowledge.embedding.buffer) : null,
+                knowledge.createdAt || Date.now(),
+                metadata.isMain ? 1 : 0,
+                metadata.originalId || null,
+                metadata.chunkIndex || null,
+                metadata.isShared ? 1 : 0
+            ]);
+            stmt.free();
+        } catch (error: any) {
+            const isShared = knowledge.content.metadata?.isShared;
+            const isPrimaryKeyError = error?.code === 'SQLITE_CONSTRAINT_PRIMARYKEY';
+
+            if (isShared && isPrimaryKeyError) {
+                elizaLogger.info(`Shared knowledge ${knowledge.id} already exists, skipping`);
+                return;
+            } else if (!isShared && !error.message?.includes('SQLITE_CONSTRAINT_PRIMARYKEY')) {
+                elizaLogger.error(`Error creating knowledge ${knowledge.id}:`, {
+                    error,
+                    embeddingLength: knowledge.embedding?.length,
+                    content: knowledge.content
+                });
+                throw error;
+            }
+
+            elizaLogger.debug(`Knowledge ${knowledge.id} already exists, skipping`);
+        }
+    }
+
+    async removeKnowledge(id: UUID): Promise<void> {
+        const sql = `DELETE FROM knowledge WHERE id = ?`;
+        const stmt = this.db.prepare(sql);
+        stmt.run([id]);
+        stmt.free();
+    }
+
+    async clearKnowledge(agentId: UUID, shared?: boolean): Promise<void> {
+        const sql = shared ?
+            `DELETE FROM knowledge WHERE ("agentId" = ? OR "isShared" = 1)` :
+            `DELETE FROM knowledge WHERE "agentId" = ?`;
+
+        const stmt = this.db.prepare(sql);
+        stmt.run([agentId]);
+        stmt.free();
     }
 }

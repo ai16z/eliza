@@ -9,6 +9,7 @@
 -- DROP TABLE IF EXISTS memories CASCADE;
 -- DROP TABLE IF EXISTS rooms CASCADE;
 -- DROP TABLE IF EXISTS accounts CASCADE;
+-- DROP TABLE IF EXISTS knowledge CASCADE;
 
 
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -24,9 +25,6 @@ BEGIN
     -- Then check for Ollama
     ELSIF current_setting('app.use_ollama_embedding', TRUE) = 'true' THEN
         RETURN 1024;  -- Ollama mxbai-embed-large dimension
-    -- Then check for GAIANET
-    ELSIF current_setting('app.use_gaianet_embedding', TRUE) = 'true' THEN
-        RETURN 768;  -- Gaianet nomic-embed dimension
     ELSE
         RETURN 384;   -- BGE/Other embedding dimension
     END IF;
@@ -130,11 +128,38 @@ CREATE TABLE IF NOT EXISTS  cache (
     PRIMARY KEY ("key", "agentId")
 );
 
+DO $$
+DECLARE
+    vector_dim INTEGER;
+BEGIN
+    vector_dim := get_embedding_dimension();
+
+    EXECUTE format('
+        CREATE TABLE IF NOT EXISTS knowledge (
+            "id" UUID PRIMARY KEY,
+            "agentId" UUID REFERENCES accounts("id"),
+            "content" JSONB NOT NULL,
+            "embedding" vector(%s),
+            "createdAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+            "isMain" BOOLEAN DEFAULT FALSE,
+            "originalId" UUID REFERENCES knowledge("id"),
+            "chunkIndex" INTEGER,
+            "isShared" BOOLEAN DEFAULT FALSE,
+            CHECK((isShared = true AND "agentId" IS NULL) OR (isShared = false AND "agentId" IS NOT NULL))
+        )', vector_dim);
+END $$;
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_memories_embedding ON memories USING hnsw ("embedding" vector_cosine_ops);
 CREATE INDEX IF NOT EXISTS idx_memories_type_room ON memories("type", "roomId");
 CREATE INDEX IF NOT EXISTS idx_participants_user ON participants("userId");
 CREATE INDEX IF NOT EXISTS idx_participants_room ON participants("roomId");
 CREATE INDEX IF NOT EXISTS idx_relationships_users ON relationships("userA", "userB");
+CREATE INDEX IF NOT EXISTS idx_knowledge_agent ON knowledge("agentId");
+CREATE INDEX IF NOT EXISTS idx_knowledge_agent_main ON knowledge("agentId", "isMain");
+CREATE INDEX IF NOT EXISTS idx_knowledge_original ON knowledge("originalId");
+CREATE INDEX IF NOT EXISTS idx_knowledge_created ON knowledge("agentId", "createdAt");
+CREATE INDEX IF NOT EXISTS idx_knowledge_shared ON knowledge("isShared");
+CREATE INDEX IF NOT EXISTS idx_knowledge_embedding ON knowledge USING ivfflat (embedding vector_cosine_ops);
 
 COMMIT;

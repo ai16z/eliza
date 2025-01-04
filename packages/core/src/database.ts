@@ -6,6 +6,7 @@ import {
     type Memory,
     type Relationship,
     type UUID,
+    RAGKnowledgeItem,
     Participant,
     IDatabaseAdapter,
 } from "./types.ts";
@@ -379,6 +380,48 @@ export abstract class DatabaseAdapter<DB = any> implements IDatabaseAdapter {
     abstract getRelationships(params: {
         userId: UUID;
     }): Promise<Relationship[]>;
+
+     /**
+     * Retrieves knowledge items based on specified parameters.
+     * @param params Object containing search parameters
+     * @returns Promise resolving to array of knowledge items
+     */
+     abstract getKnowledge(params: {
+        id?: UUID;
+        agentId: UUID;
+        limit?: number;
+        query?: string;
+        conversationContext?: string;
+    }): Promise<RAGKnowledgeItem[]>;
+
+    abstract searchKnowledge(params: {
+        agentId: UUID;
+        embedding: Float32Array;
+        match_threshold: number;
+        match_count: number;
+        searchText?: string;
+    }): Promise<RAGKnowledgeItem[]>;
+
+    /**
+     * Creates a new knowledge item in the database.
+     * @param knowledge The knowledge item to create
+     * @returns Promise resolving when creation is complete
+     */
+    abstract createKnowledge(knowledge: RAGKnowledgeItem): Promise<void>;
+
+    /**
+     * Removes a knowledge item and its associated chunks from the database.
+     * @param id The ID of the knowledge item to remove
+     * @returns Promise resolving when removal is complete
+     */
+    abstract removeKnowledge(id: UUID): Promise<void>;
+
+    /**
+     * Removes an agents full knowledge database and its associated chunks from the database.
+     * @param agentId The Agent ID of the knowledge items to remove
+     * @returns Promise resolving when removal is complete
+     */
+    abstract clearKnowledge(agentId: UUID, shared?: boolean): Promise<void>;
 
     /**
      * Executes an operation with circuit breaker protection.

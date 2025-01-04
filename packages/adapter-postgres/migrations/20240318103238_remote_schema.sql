@@ -507,6 +507,63 @@ CREATE TABLE IF NOT EXISTS "public"."rooms" (
     "createdAt" timestamp with time zone DEFAULT ("now"() AT TIME ZONE 'utc'::"text") NOT NULL
 );
 
+CREATE OR REPLACE FUNCTION "public"."search_knowledge"(
+    "query_embedding" "extensions"."vector",
+    "query_agent_id" "uuid",
+    "match_threshold" double precision,
+    "match_count" integer,
+    "search_text" text
+) RETURNS TABLE (
+    "id" "uuid",
+    "agentId" "uuid",
+    "content" "jsonb",
+    "embedding" "extensions"."vector",
+    "createdAt" timestamp with time zone,
+    "similarity" double precision
+) LANGUAGE "plpgsql" AS $$
+BEGIN
+    RETURN QUERY
+    WITH vector_matches AS (
+        SELECT id,
+            1 - (embedding <=> query_embedding) as vector_score
+        FROM knowledge
+        WHERE (agentId IS NULL AND isShared = true) OR agentId = query_agent_id
+        AND embedding IS NOT NULL
+    ),
+    keyword_matches AS (
+        SELECT id,
+        CASE
+            WHEN content->>'text' ILIKE '%' || search_text || '%' THEN 3.0
+            ELSE 1.0
+        END *
+        CASE
+            WHEN content->'metadata'->>'isChunk' = 'true' THEN 1.5
+            WHEN content->'metadata'->>'isMain' = 'true' THEN 1.2
+            ELSE 1.0
+        END as keyword_score
+        FROM knowledge
+        WHERE (agentId IS NULL AND isShared = true) OR agentId = query_agent_id
+    )
+    SELECT
+        k.id,
+        k."agentId",
+        k.content,
+        k.embedding,
+        k."createdAt",
+        (v.vector_score * kw.keyword_score) as similarity
+    FROM knowledge k
+    JOIN vector_matches v ON k.id = v.id
+    LEFT JOIN keyword_matches kw ON k.id = kw.id
+    WHERE (k.agentId IS NULL AND k.isShared = true) OR k.agentId = query_agent_id
+    AND (
+        v.vector_score >= match_threshold
+        OR (kw.keyword_score > 1.0 AND v.vector_score >= 0.3)
+    )
+    ORDER BY similarity DESC
+    LIMIT match_count;
+END;
+$$;
+
 ALTER TABLE "public"."rooms" OWNER TO "postgres";
 
 ALTER TABLE ONLY "public"."relationships"
@@ -564,6 +621,9 @@ ALTER TABLE ONLY "public"."relationships"
 ALTER TABLE ONLY "public"."relationships"
     ADD CONSTRAINT "relationships_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."accounts"("id");
 
+ALTER TABLE ONLY "public"."knowledge"
+    ADD CONSTRAINT "knowledge_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "public"."accounts"("id") ON DELETE CASCADE;
+
 CREATE POLICY "Can select and update all data" ON "public"."accounts" USING (("auth"."uid"() = "id")) WITH CHECK (("auth"."uid"() = "id"));
 
 CREATE POLICY "Enable delete for users based on userId" ON "public"."goals" FOR DELETE TO "authenticated" USING (("auth"."uid"() = "userId"));
@@ -600,6 +660,18 @@ CREATE POLICY "Enable update for users of own id" ON "public"."rooms" FOR UPDATE
 
 CREATE POLICY "Enable users to delete their own relationships/friendships" ON "public"."relationships" FOR DELETE TO "authenticated" USING ((("auth"."uid"() = "userA") OR ("auth"."uid"() = "userB")));
 
+CREATE POLICY "Enable read access for all users" ON "public"."knowledge"
+    FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert for authenticated users only" ON "public"."knowledge"
+    FOR INSERT TO "authenticated" WITH CHECK (true);
+
+CREATE POLICY "Enable update for authenticated users" ON "public"."knowledge"
+    FOR UPDATE TO "authenticated" USING (true) WITH CHECK (true);
+
+CREATE POLICY "Enable delete for users based on agentId" ON "public"."knowledge"
+    FOR DELETE TO "authenticated" USING (("auth"."uid"() = "agentId"));
+
 ALTER TABLE "public"."accounts" ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE "public"."goals" ENABLE ROW LEVEL SECURITY;
@@ -613,6 +685,8 @@ ALTER TABLE "public"."participants" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."relationships" ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE "public"."rooms" ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE "public"."knowledge" ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "select_own_account" ON "public"."accounts" FOR SELECT USING (("auth"."uid"() = "id"));
 
@@ -703,6 +777,10 @@ GRANT ALL ON TABLE "public"."secrets" TO "service_role";
 GRANT ALL ON TABLE "public"."secrets" TO "supabase_admin";
 GRANT ALL ON TABLE "public"."secrets" TO "supabase_auth_admin";
 
+GRANT ALL ON TABLE "public"."knowledge" TO "authenticated";
+GRANT ALL ON TABLE "public"."knowledge" TO "service_role";
+GRANT ALL ON TABLE "public"."knowledge" TO "supabase_admin";
+GRANT ALL ON TABLE "public"."knowledge" TO "supabase_auth_admin";
 
 GRANT ALL ON FUNCTION "public"."get_participant_userState"("roomId" "uuid", "userId" "uuid") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_participant_userState"("roomId" "uuid", "userId" "uuid") TO "service_role";
@@ -710,7 +788,7 @@ GRANT ALL ON FUNCTION "public"."get_participant_userState"("roomId" "uuid", "use
 GRANT ALL ON FUNCTION "public"."get_participant_userState"("roomId" "uuid", "userId" "uuid") TO "supabase_auth_admin";
 
 GRANT ALL ON FUNCTION "public"."set_participant_userState"("roomId" "uuid", "userId" "uuid", "state" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."set_participant_userState"("roomId" "uuid", "userId" "uuid", "state" "text") TO "service_role";  
+GRANT ALL ON FUNCTION "public"."set_participant_userState"("roomId" "uuid", "userId" "uuid", "state" "text") TO "service_role";
 GRANT ALL ON FUNCTION "public"."set_participant_userState"("roomId" "uuid", "userId" "uuid", "state" "text") TO "supabase_admin";
 GRANT ALL ON FUNCTION "public"."set_participant_userState"("roomId" "uuid", "userId" "uuid", "state" "text") TO "supabase_auth_admin";
 
@@ -732,5 +810,10 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES  TO "service_role";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES  TO "supabase_admin";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES  TO "supabase_auth_admin";
+
+GRANT ALL ON FUNCTION "public"."search_knowledge"("query_embedding" "extensions"."vector", "query_agent_id" "uuid", "match_threshold" double precision, "match_count" integer, "search_text" text) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."search_knowledge"("query_embedding" "extensions"."vector", "query_agent_id" "uuid", "match_threshold" double precision, "match_count" integer, "search_text" text) TO "service_role";
+GRANT ALL ON FUNCTION "public"."search_knowledge"("query_embedding" "extensions"."vector", "query_agent_id" "uuid", "match_threshold" double precision, "match_count" integer, "search_text" text) TO "supabase_admin";
+GRANT ALL ON FUNCTION "public"."search_knowledge"("query_embedding" "extensions"."vector", "query_agent_id" "uuid", "match_threshold" double precision, "match_count" integer, "search_text" text) TO "supabase_auth_admin";
 
 RESET ALL;

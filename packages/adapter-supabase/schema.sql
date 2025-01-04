@@ -9,6 +9,7 @@
 -- DROP TABLE IF EXISTS memories CASCADE;
 -- DROP TABLE IF EXISTS rooms CASCADE;
 -- DROP TABLE IF EXISTS accounts CASCADE;
+-- DROP TABLE IF EXISTS knowledge CASCADE;
 
 
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -52,21 +53,6 @@ CREATE TABLE memories_1024 (
     "createdAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     "content" JSONB NOT NULL,
     "embedding" vector(1024),  -- Ollama mxbai-embed-large
-    "userId" UUID REFERENCES accounts("id"),
-    "agentId" UUID REFERENCES accounts("id"),
-    "roomId" UUID REFERENCES rooms("id"),
-    "unique" BOOLEAN DEFAULT true NOT NULL,
-    CONSTRAINT fk_room FOREIGN KEY ("roomId") REFERENCES rooms("id") ON DELETE CASCADE,
-    CONSTRAINT fk_user FOREIGN KEY ("userId") REFERENCES accounts("id") ON DELETE CASCADE,
-    CONSTRAINT fk_agent FOREIGN KEY ("agentId") REFERENCES accounts("id") ON DELETE CASCADE
-);
-
-CREATE TABLE memories_768 (
-    "id" UUID PRIMARY KEY,
-    "type" TEXT NOT NULL,
-    "createdAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    "content" JSONB NOT NULL,
-    "embedding" vector(768),  -- Gaianet nomic-embed
     "userId" UUID REFERENCES accounts("id"),
     "agentId" UUID REFERENCES accounts("id"),
     "roomId" UUID REFERENCES rooms("id"),
@@ -150,11 +136,31 @@ CREATE TABLE relationships (
     CONSTRAINT fk_user FOREIGN KEY ("userId") REFERENCES accounts("id") ON DELETE CASCADE
 );
 
+CREATE TABLE cache (
+    "key" TEXT NOT NULL,
+    "agentId" TEXT NOT NULL,
+    "value" JSONB DEFAULT '{}'::jsonb,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "expiresAt" TIMESTAMP,
+    PRIMARY KEY ("key", "agentId")
+);
+
+CREATE TABLE knowledge (
+    "id" UUID PRIMARY KEY,
+    "agentId" UUID REFERENCES accounts("id"),
+    "content" JSONB NOT NULL,
+    "embedding" vector(1536),
+    "createdAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    "isMain" BOOLEAN DEFAULT FALSE,
+    "originalId" UUID REFERENCES knowledge("id"),
+    "chunkIndex" INTEGER,
+    "isShared" BOOLEAN DEFAULT FALSE,
+    CHECK((isShared = true AND "agentId" IS NULL) OR (isShared = false AND "agentId" IS NOT NULL))
+);
+
 -- Add index for Ollama table
 CREATE INDEX idx_memories_1024_embedding ON memories_1024 USING hnsw ("embedding" vector_cosine_ops);
 CREATE INDEX idx_memories_1024_type_room ON memories_1024("type", "roomId");
-CREATE INDEX idx_memories_768_embedding ON memories_768 USING hnsw ("embedding" vector_cosine_ops);
-CREATE INDEX idx_memories_768_type_room ON memories_768("type", "roomId");
 CREATE INDEX idx_memories_1536_embedding ON memories_1536 USING hnsw ("embedding" vector_cosine_ops);
 CREATE INDEX idx_memories_384_embedding ON memories_384 USING hnsw ("embedding" vector_cosine_ops);
 CREATE INDEX idx_memories_1536_type_room ON memories_1536("type", "roomId");
@@ -162,5 +168,11 @@ CREATE INDEX idx_memories_384_type_room ON memories_384("type", "roomId");
 CREATE INDEX idx_participants_user ON participants("userId");
 CREATE INDEX idx_participants_room ON participants("roomId");
 CREATE INDEX idx_relationships_users ON relationships("userA", "userB");
+CREATE INDEX idx_knowledge_agent ON knowledge("agentId");
+CREATE INDEX idx_knowledge_agent_main ON knowledge("agentId", "isMain");
+CREATE INDEX idx_knowledge_original ON knowledge("originalId");
+CREATE INDEX idx_knowledge_created ON knowledge("agentId", "createdAt");
+CREATE INDEX idx_knowledge_shared ON knowledge("isShared");
+CREATE INDEX idx_knowledge_embedding ON knowledge USING ivfflat (embedding vector_cosine_ops);
 
 COMMIT;

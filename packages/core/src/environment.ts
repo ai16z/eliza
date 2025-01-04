@@ -76,7 +76,15 @@ export const CharacterSchema = z.object({
     postExamples: z.array(z.string()),
     topics: z.array(z.string()),
     adjectives: z.array(z.string()),
-    knowledge: z.array(z.string()).optional(),
+    knowledge: z.array(
+        z.union([
+            z.string(),
+            z.object({
+                path: z.string(),
+                shared: z.boolean().optional()
+            })
+        ])
+    ).optional(),
     clients: z.array(z.nativeEnum(Clients)),
     plugins: z.union([
       z.array(z.string()),
