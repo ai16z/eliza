@@ -14,6 +14,8 @@ import {
     stringToUuid,
     elizaLogger,
     getEmbeddingZeroVector,
+    IImageDescriptionService,
+    ServiceType
 } from "@elizaos/core";
 import { ClientBase } from "./base";
 import { buildConversationThread, sendTweet, wait } from "./utils.ts";
@@ -43,6 +45,8 @@ Recent interactions between {{agentName}} and other users:
 
 Current Post:
 {{currentPost}}
+Here is the descriptions of images in the Current post.
+{{imageDescriptions}}
 
 Thread of Tweets You Are Replying To:
 {{formattedConversation}}
@@ -53,6 +57,8 @@ Thread of Tweets You Are Replying To:
 
 Here is the current post text again. Remember to include an action if the current post text includes a prompt that asks for one of the available actions mentioned above (does not need to be exact)
 {{currentPost}}
+Here is the descriptions of images in the Current post.
+{{imageDescriptions}}
 ` + messageCompletionFooter;
 
 export const twitterShouldRespondTemplate = (targetUsersStr: string) =>
@@ -339,11 +345,36 @@ export class TwitterInteractionClient {
 
         elizaLogger.debug("formattedConversation: ", formattedConversation);
 
+        //Get image description for the provided iamges.
+        //console.log(tweet);
+        let imageDescriptionsArray = [];
+        try{
+            elizaLogger.debug('Getting images');
+            for (const photo of tweet.photos) {
+                elizaLogger.debug(photo.url);
+                const description = await this.runtime
+                    .getService<IImageDescriptionService>(
+                        ServiceType.IMAGE_DESCRIPTION
+                    )
+                    .describeImage(photo.url);
+                imageDescriptionsArray.push(description);
+            }
+        } catch (error) {
+    // Handle the error
+    elizaLogger.error("Error Occured during describing image: ", error);
+}
+
+
+
+
         let state = await this.runtime.composeState(message, {
             twitterClient: this.client.twitterClient,
             twitterUserName: this.client.twitterConfig.TWITTER_USERNAME,
             currentPost,
             formattedConversation,
+            imageDescriptions: imageDescriptionsArray.length > 0
+            ? `\nImages in Tweet:\n${imageDescriptionsArray.map((desc, i) =>
+              `Image ${i + 1}: Title: ${desc.title}\nDescription: ${desc.description}`).join("\n\n")}`:""
         });
 
         // check if the tweet exists, save if it doesn't
@@ -409,7 +440,6 @@ export class TwitterInteractionClient {
                 this.runtime.character?.templates?.messageHandlerTemplate ||
                 twitterMessageHandlerTemplate,
         });
-
         elizaLogger.debug("Interactions prompt:\n" + context);
 
         const response = await generateMessageResponse({
