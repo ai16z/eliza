@@ -1,0 +1,25 @@
+{
+  "name": "@elizaos/plugin-squid-router",
+  "version": "0.1.7-alpha.1",
+  "main": "dist/index.js",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@0xsquid/sdk": "2.8.29",
+    "@0xsquid/squid-types": "0.1.122",
+    "@elizaos/core": "workspace:*",
+    "ethers": "6.8.1",
+    "optional": "0.1.4",
+    "sharp": "0.33.5",
+    "tsup": "8.3.5"
+  },
+  "scripts": {
+    "build": "tsup --format esm --dts",
+    "dev": "tsup --format esm --dts --watch",
+    "test": "vitest run",
+    "lint": "eslint --fix  --cache ."
+  },
+  "peerDependencies": {
+    "whatwg-url": "7.1.0"
+  }
+}
