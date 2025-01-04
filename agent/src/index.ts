@@ -64,6 +64,7 @@ import { abstractPlugin } from "@elizaos/plugin-abstract";
 import { avalanchePlugin } from "@elizaos/plugin-avalanche";
 import { webSearchPlugin } from "@elizaos/plugin-web-search";
 import { echoChamberPlugin } from "@elizaos/plugin-echochambers";
+import { thirdwebPlugin } from "@elizaos/plugin-thirdweb";
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
@@ -599,6 +600,7 @@ export async function createAgent(
                 ? cronosZkEVMPlugin
                 : null,
             getSecret(character, "TON_PRIVATE_KEY") ? tonPlugin : null,
+            getSecret(character, "THIRDWEB_SECRET_KEY") ? thirdwebPlugin : null,
             getSecret(character, "SUI_PRIVATE_KEY") ? suiPlugin : null,
             getSecret(character, "STORY_PRIVATE_KEY") ? storyPlugin : null,
             getSecret(character, "FUEL_PRIVATE_KEY") ? fuelPlugin : null,
