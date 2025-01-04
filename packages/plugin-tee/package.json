@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@elizaos/core": "workspace:*",
-    "@phala/dstack-sdk": "0.1.6",
+    "@phala/dstack-sdk": "0.1.7",
     "@solana/spl-token": "0.4.9",
     "@solana/web3.js": "1.95.8",
     "bignumber": "1.1.0",

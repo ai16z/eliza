@@ -449,6 +449,10 @@ const response = await runtime.triggerAction("INVOKE_CONTRACT", {
 
 Integrates [Dstack SDK](https://github.com/Dstack-TEE/dstack) to enable TEE (Trusted Execution Environment) functionality and deploy secure & privacy-enhanced Eliza Agents:
 
+**Actions:**
+
+- `REMOTE_ATTESTATION` - Generate a Remote Attestation Quote based on `runtime.agentId` when the agent is prompted for a remote attestation. The quote is uploaded to the [proof.t16z.com](https://proof.t16z.com) service and the agent is informed of the attestation report URL.
+
 **Providers:**
 
 - `deriveKeyProvider` - Allows for secure key derivation within a TEE environment. It supports deriving keys for both Solana (Ed25519) and Ethereum (ECDSA) chains.
@@ -526,8 +530,12 @@ docker run --rm -p 8090:8090 phalanetwork/tappd-simulator:latest
 When using the provider through the runtime environment, ensure the following settings are configured:
 
 ```env
- # Optional, for simulator purposes if testing on mac or windows. Leave empty for Linux x86 machines.
-DSTACK_SIMULATOR_ENDPOINT="http://host.docker.internal:8090"
+# TEE_MODE options:
+# - LOCAL: Uses simulator at localhost:8090 (for local development)
+# - DOCKER: Uses simulator at host.docker.internal:8090 (for docker development)
+# - PRODUCTION: No simulator, uses production endpoints
+# Defaults to OFF if not specified
+TEE_MODE=OFF # LOCAL | DOCKER | PRODUCTION
 WALLET_SECRET_SALT=your-secret-salt // Required to single agent deployments
 ```
 
