@@ -93,7 +93,80 @@ Transfer native tokens on the same chain:
 Transfer 1 ETH to 0x742d35Cc6634C0532925a3b844Bc454e4438f44e
 ```
 
+<<<<<<< HEAD
+
 ### 2. Bridge
+
+=======
+
+### Propose
+
+Propose a proposal to a governor on a specific chain.
+
+- **Proposal**
+    - **Targets**
+    - **Values**
+    - **Calldatas**
+    - **Description**
+- **Chain**
+- **Governor**
+
+**Example usage:**
+
+```bash
+Propose a proposal to the 0xdeadbeef00000000000000000000000000000000 governor on Ethereum to transfer 1 ETH to 0xRecipient.
+```
+
+### Vote
+
+Vote on a proposal to a governor on a specific chain.
+
+- **Proposal ID**
+- **Support**
+- **Chain**
+- **Governor**
+
+**Example usage:**
+
+```bash
+Vote on the proposal with ID 1 to support the proposal on the 0xdeadbeef00000000000000000000000000000000 governor on Ethereum.
+```
+
+### Queue
+
+Queue a proposal to a governor on a specific chain.
+
+- **Proposal**
+    - **Targets**
+    - **Values**
+    - **Calldatas**
+    - **Description**
+- **Chain**
+- **Governor**
+
+**Example usage:**
+
+```bash
+Queue the proposal to the 0xdeadbeef00000000000000000000000000000000 governor on Ethereum.
+```
+
+### Execute
+
+Execute a proposal to a governor on a specific chain.
+
+- **Proposal ID**
+- **Chain**
+- **Governor**
+
+**Example usage:**
+
+```bash
+Execute the proposal with ID 1 on the 0xdeadbeef00000000000000000000000000000000 governor on Ethereum.
+```
+
+---
+
+> > > > > > > d7f24f77 (udpate readme.)
 
 Bridge tokens between different chains using LiFi:
 
@@ -109,6 +182,71 @@ Swap tokens on the same chain using LiFi:
 ```typescript
 // Example: Swap ETH for USDC
 Swap 1 ETH for USDC on Base
+```
+
+### 4. Propose
+
+Propose a proposal to a governor on a specific chain.
+
+- **Proposal**
+    - **Targets**
+    - **Values**
+    - **Calldatas**
+    - **Description**
+- **Chain**
+- **Governor**
+
+**Example usage:**
+
+```bash
+Propose a proposal to the 0xdeadbeef00000000000000000000000000000000 governor on Ethereum to transfer 1 ETH to 0xRecipient.
+```
+
+### 5. Vote
+
+Vote on a proposal to a governor on a specific chain.
+
+- **Proposal ID**
+- **Support**
+- **Chain**
+- **Governor**
+
+**Example usage:**
+
+```bash
+Vote on the proposal with ID 1 to support the proposal on the 0xdeadbeef00000000000000000000000000000000 governor on Ethereum.
+```
+
+### 6. Queue
+
+Queue a proposal to a governor on a specific chain.
+
+- **Proposal**
+    - **Targets**
+    - **Values**
+    - **Calldatas**
+    - **Description**
+- **Chain**
+- **Governor**
+
+**Example usage:**
+
+```bash
+Queue the proposal to the 0xdeadbeef00000000000000000000000000000000 governor on Ethereum.
+```
+
+### 7. Execute
+
+Execute a proposal to a governor on a specific chain.
+
+- **Proposal ID**
+- **Chain**
+- **Governor**
+
+**Example usage:**
+
+```bash
+Execute the proposal with ID 1 on the 0xdeadbeef00000000000000000000000000000000 governor on Ethereum.
 ```
 
 ## Development
@@ -137,81 +275,89 @@ pnpm test
 ### Core Components
 
 1. **WalletProvider**
-   - Manages wallet connections
-   - Handles chain switching
-   - Manages RPC endpoints
-   - Tracks balances
+
+    - Manages wallet connections
+    - Handles chain switching
+    - Manages RPC endpoints
+    - Tracks balances
 
 2. **Actions**
-   - TransferAction: Native token transfers
-   - BridgeAction: Cross-chain transfers
-   - SwapAction: Same-chain token swaps
+    - TransferAction: Native token transfers
+    - BridgeAction: Cross-chain transfers
+    - SwapAction: Same-chain token swaps
 
 ## Future Enhancements
 
 1. **Cross-Chain Operations**
-   - Enhanced bridge aggregation
-   - Multi-chain transaction batching
-   - Cross-chain liquidity management
-   - Bridge fee optimization
-   - Chain-specific gas strategies
-   - Cross-chain messaging
+
+    - Enhanced bridge aggregation
+    - Multi-chain transaction batching
+    - Cross-chain liquidity management
+    - Bridge fee optimization
+    - Chain-specific gas strategies
+    - Cross-chain messaging
 
 2. **DeFi Integration**
-   - Advanced swap routing
-   - Yield farming automation
-   - Liquidity pool management
-   - Position management tools
-   - MEV protection features
-   - Flash loan integration
+
+    - Advanced swap routing
+    - Yield farming automation
+    - Liquidity pool management
+    - Position management tools
+    - MEV protection features
+    - Flash loan integration
 
 3. **Smart Contract Management**
-   - Contract deployment templates
-   - Verification automation
-   - Upgrade management
-   - Security analysis tools
-   - Gas optimization
-   - ABI management system
+
+    - Contract deployment templates
+    - Verification automation
+    - Upgrade management
+    - Security analysis tools
+    - Gas optimization
+    - ABI management system
 
 4. **Token Operations**
-   - Batch transfer tools
-   - Token approval management
-   - Token metadata handling
-   - Custom token standards
-   - Token bridging optimization
-   - NFT support enhancement
+
+    - Batch transfer tools
+    - Token approval management
+    - Token metadata handling
+    - Custom token standards
+    - Token bridging optimization
+    - NFT support enhancement
 
 5. **Wallet Features**
-   - Multi-signature support
-   - Account abstraction
-   - Hardware wallet integration
-   - Social recovery options
-   - Transaction simulation
-   - Batch transaction processing
+
+    - Multi-signature support
+    - Account abstraction
+    - Hardware wallet integration
+    - Social recovery options
+    - Transaction simulation
+    - Batch transaction processing
 
 6. **Network Management**
-   - Dynamic RPC management
-   - Network health monitoring
-   - Fallback provider system
-   - Custom network addition
-   - Gas price optimization
-   - Network analytics
+
+    - Dynamic RPC management
+    - Network health monitoring
+    - Fallback provider system
+    - Custom network addition
+    - Gas price optimization
+    - Network analytics
 
 7. **Security Enhancements**
-   - Transaction validation
-   - Risk assessment tools
-   - Fraud detection
-   - Rate limiting
-   - Emergency shutdown
-   - Audit integration
+
+    - Transaction validation
+    - Risk assessment tools
+    - Fraud detection
+    - Rate limiting
+    - Emergency shutdown
+    - Audit integration
 
 8. **Developer Tools**
-   - Enhanced debugging
-   - Testing framework
-   - Documentation generator
-   - CLI improvements
-   - Performance profiling
-   - Integration templates
+    - Enhanced debugging
+    - Testing framework
+    - Documentation generator
+    - CLI improvements
+    - Performance profiling
+    - Integration templates
 
 We welcome community feedback and contributions to help prioritize these enhancements.
 
@@ -235,10 +381,12 @@ This plugin integrates with and builds upon several key technologies:
 - [wagmi](https://wagmi.sh/): Ethereum client library
 
 Special thanks to:
+
 - [Ethereum Developer community](https://ethereum.org/developers/)
 - The Eliza community for their contributions and feedback
 
 For more information about EVM capabilities:
+
 - [Ethereum Documentation](https://ethereum.org/developers/)
 - [LiFi Documentation](https://lifi.io)
 - [viem Documentation](https://viem.sh)
