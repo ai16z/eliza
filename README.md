@@ -80,6 +80,8 @@ git clone https://github.com/elizaos/eliza.git
 # Checkout the latest release
 # This project iterates fast, so we recommend checking out the latest release
 git checkout $(git describe --tags --abbrev=0)
+# If the above doesn't checkout the latest release, this should work:
+# git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
 ```
 
 ### Start Eliza with Gitpod
