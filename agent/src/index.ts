@@ -7,6 +7,8 @@ import { LensAgentClient } from "@elizaos/client-lens";
 import { SlackClientInterface } from "@elizaos/client-slack";
 import { TelegramClientInterface } from "@elizaos/client-telegram";
 import { TwitterClientInterface } from "@elizaos/client-twitter";
+import { DevaClientInterface } from "@elizaos/client-deva";
+import { webSearchPlugin } from "@elizaos/plugin-web-search";
 import {
     AgentRuntime,
     CacheManager,
@@ -441,6 +443,11 @@ export async function initializeClients(
     if (clientTypes.includes("slack")) {
         const slackClient = await SlackClientInterface.start(runtime);
         if (slackClient) clients.slack = slackClient; // Use object property instead of push
+    }
+
+    if (clientTypes.includes("deva")) {
+        const devaClients = await DevaClientInterface.start(runtime);
+        clients.push(devaClients);
     }
 
     function determineClientType(client: Client): string {
