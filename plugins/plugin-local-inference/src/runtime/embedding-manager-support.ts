@@ -390,6 +390,9 @@ function downloadFile(
 			}
 			https
 				.get(validatedUrl.toString(), { headers: downloadHeaders }, (res) => {
+					// A response can fail after the request succeeds; pipe does not
+					// forward that failure to the destination file.
+					res.on("error", settleError);
 					expectedBytes = parseContentLength(res.headers["content-length"]);
 					if (
 						res.statusCode &&
