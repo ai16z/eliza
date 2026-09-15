@@ -14,8 +14,16 @@ const PROVIDER_MARKER = "complete-provider-evidence-marker";
 const WALLET_MARKER = "wallet-observation-evidence-marker";
 
 function makeRuntime(rewriteText: string) {
-	const useModel = vi.fn(async (_model: string, _params: { prompt: string }) =>
-		JSON.stringify({ response: rewriteText, effectReceiptIds: [] }),
+	const useModel = vi.fn(async (_model: string, params: { prompt: string }) =>
+		JSON.stringify(
+			params.prompt.startsWith("Review recovered reply grounding.")
+				? {
+						grounded: true,
+						completedChangeClaim: false,
+						reason: "The fixture uncertainty statement is supported.",
+					}
+				: { response: rewriteText, effectReceiptIds: [] },
+		),
 	);
 	const runtime = {
 		agentId: "00000000-0000-0000-0000-000000000001",

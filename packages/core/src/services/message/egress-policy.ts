@@ -52,6 +52,7 @@ import {
 	financialObservationProviders,
 } from "./financial-observations";
 import { referenceRepeatedHistory } from "./history-wire";
+import { reviewRecoveredReply } from "./recovery-grounding";
 import {
 	replyClaimsCompletedSideEffect,
 	replyClaimsEmptyTrackedWorkState,
@@ -438,29 +439,33 @@ export async function resolvePlannedReplyEgress(args: {
 			groundingFailure: reason,
 		});
 	};
-	let rewritten = await rewrite(historySelection !== undefined);
+	let selected = historySelection !== undefined;
+	let rewritten = await rewrite(selected);
 	// A read cannot deliver its accompanying draft or trigger any action. The
 	// second call receives complete saved originals under the same recovery gate.
 	if (rewritten?.contextRequest === "full") {
 		await args.beforeContextRestore?.();
+		selected = false;
 		rewritten = await rewrite(false);
 	}
 	const reply = rewritten?.text;
 	// The renderer selects proof for its own prose, not an action's canned
 	// wording. Resolve every selected ID against this turn's authoritative
 	// receipts; invented IDs, previews and rolled-back effects stay rejected.
-	const proof = rewritten?.effectReceiptIds.length
-		? resolveAppliedUserFacingEffectReceipts(
-				{
-					verifiedUserFacing: true,
-					userFacingText: reply,
-					userFacingEffectReceiptIds: rewritten.effectReceiptIds,
-				},
-				mergeEffectReceipts(
-					...args.actionResults.map((result) => result.effectReceipts),
-				),
-			)
-		: null;
+	const resolveProof = () =>
+		rewritten?.effectReceiptIds.length
+			? resolveAppliedUserFacingEffectReceipts(
+					{
+						verifiedUserFacing: true,
+						userFacingText: reply,
+						userFacingEffectReceiptIds: rewritten.effectReceiptIds,
+					},
+					mergeEffectReceipts(
+						...args.actionResults.map((result) => result.effectReceipts),
+					),
+				)
+			: null;
+	const proof = resolveProof();
 	const rewrittenDecision = reply
 		? evaluatePlannedReplyEgress({
 				reply,
@@ -486,10 +491,51 @@ export async function resolvePlannedReplyEgress(args: {
 		args.runtime.reportError("MessageService.replyRecovery", error);
 		throw error;
 	}
+	const review = async (useSelection: boolean) => {
+		const evidenceJson = JSON.stringify(payload(useSelection));
+		const verdict = await reviewRecoveredReply({
+			runtime: args.runtime,
+			reply,
+			evidenceJson,
+			effectReceiptIds: rewritten?.effectReceiptIds ?? [],
+			allowFullContextRequest: useSelection,
+		});
+		if (evidenceJson !== JSON.stringify(payload(useSelection))) {
+			throw new ElizaError(
+				"Recovery evidence changed during grounding review",
+				{
+					code: "REPLY_GROUNDING_REVIEW_STALE",
+				},
+			);
+		}
+		return verdict;
+	};
+	let grounding = await review(selected);
+	if ("contextRequest" in grounding) {
+		await args.beforeContextRestore?.();
+		grounding = await review(false);
+	}
+	const finalProof = resolveProof();
+	if (
+		"contextRequest" in grounding ||
+		(rewritten?.effectReceiptIds.length && !finalProof) ||
+		!grounding.grounded ||
+		(grounding.completedChangeClaim && !finalProof)
+	) {
+		const error = new ElizaError(
+			"Recovered reply asserts an unsupported outcome",
+			{
+				code: "REPLY_GROUNDING_FAILED",
+				context: { roomId: args.message.roomId, messageId: args.message.id },
+			},
+		);
+		args.runtime.reportError("MessageService.replyRecovery", error);
+		throw error;
+	}
 	return {
 		text: reply,
 		effectReceiptIds:
-			proof?.map((receipt) => receipt.receiptId) ??
+			finalProof?.map((receipt) => receipt.receiptId) ??
 			appliedEffectReceiptIdsForReply(reply, args.actionResults),
 	};
 }
