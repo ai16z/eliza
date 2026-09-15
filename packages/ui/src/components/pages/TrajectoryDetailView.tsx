@@ -1341,10 +1341,19 @@ export function TrajectoryDetailView({
               setRunCopy({ detail, status: "pending" });
               try {
                 await copyToClipboard(JSON.stringify(detail, null, 2));
-                setRunCopy({ detail, status: "copied" });
+                // Navigation can start another copy before this request settles.
+                setRunCopy((current) =>
+                  current?.detail === detail && current.status === "pending"
+                    ? { ...current, status: "copied" }
+                    : current,
+                );
               } catch {
                 // error-policy:J4 Clipboard denial must remain visible and retryable.
-                setRunCopy({ detail, status: "failed" });
+                setRunCopy((current) =>
+                  current?.detail === detail && current.status === "pending"
+                    ? { ...current, status: "failed" }
+                    : current,
+                );
               }
             }}
           >
