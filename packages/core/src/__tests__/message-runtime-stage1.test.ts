@@ -1391,17 +1391,27 @@ describe("runV5MessageRuntimeStage1", () => {
 		expect(rows).toEqual(before);
 	});
 
-	it.each(["none", "non_applied"])(
-		"repairs conflicting direct-answer intents before dispatching fields or entering the planner (%s)",
-		async (status) => {
+	it.each([
+		["simple", "none"],
+		["simple", "non_applied"],
+		["general", "none"],
+		["general", "non_applied"],
+	])(
+		"repairs conflicting %s answer intents before dispatching fields or entering the planner (%s)",
+		async (context, status) => {
 			const quote = "Correction: the mug is violet; keep the yellow notebook.";
 			const runtime = makeRuntime([
 				stage1Response({
-					contexts: ["simple"],
+					contexts: [context],
 					intents: ["quote the correction"],
 					replyText: quote,
 					facts: ["Unaccepted draft extraction"],
-					extra: { replyEffectStatus: status },
+					extra: {
+						replyEffectStatus: status,
+						...(context === "general"
+							? { visualContinuation: { disposition: "none" } }
+							: {}),
+					},
 				}),
 				stage1Response({
 					contexts: ["simple"],
