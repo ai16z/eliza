@@ -2,10 +2,8 @@
  * Recovery envelope handed to the in-character rewrite when a planned reply is
  * rejected. The envelope carries only the validator's evidence contract: the
  * financial observation providers that ground a corrected quantity (plus the
- * CURRENT_TIME observation for a rejected stated time), never the turn's whole
- * provider store (live 2026-09-11 05:35Z: ~380K chars of room history rode
- * along on a completed_side_effect recovery and the rewrite request exceeded
- * the provider's context limit). A rejected stated time is answered from the
+ * CURRENT_TIME observation for a rejected stated time), alongside the complete
+ * saved recovery context. A rejected stated time is answered from the
  * provider's own rendering without a second model pass.
  */
 import { describe, expect, it, vi } from "vitest";
@@ -16,7 +14,7 @@ const PROVIDER_MARKER = "complete-provider-evidence-marker";
 const WALLET_MARKER = "wallet-observation-evidence-marker";
 
 function makeRuntime(rewriteText: string) {
-	const useModel = vi.fn(async () =>
+	const useModel = vi.fn(async (_model: string, _params: { prompt: string }) =>
 		JSON.stringify({ response: rewriteText, effectReceiptIds: [] }),
 	);
 	const runtime = {
@@ -58,21 +56,23 @@ const providers = {
 >;
 
 function rewritePrompt(useModel: ReturnType<typeof makeRuntime>["useModel"]) {
-	return String(
-		(useModel.mock.calls[0]?.[1] as { prompt?: string })?.prompt ?? "",
-	);
+	return useModel.mock.calls[0]?.[1].prompt ?? "";
 }
 
 describe("resolvePlannedReplyEgress recovery envelope", () => {
 	it("does not ship the provider store when correcting an unproven side-effect claim", async () => {
-		const { runtime, useModel } = useModelHarness("The event is gone.");
-		await resolvePlannedReplyEgress({
-			runtime,
-			message: makeMessage("delete the dentist appointment from my calendar"),
-			reply: "Deleted your dentist appointment from the calendar.",
-			providers,
-			actionResults: [] as ActionResult[],
-		}).catch(() => undefined);
+		const { runtime, useModel } = useModelHarness(
+			"Deleted your dentist appointment from the calendar.",
+		);
+		await expect(
+			resolvePlannedReplyEgress({
+				runtime,
+				message: makeMessage("delete the dentist appointment from my calendar"),
+				reply: "Deleted your dentist appointment from the calendar.",
+				providers,
+				actionResults: [] as ActionResult[],
+			}),
+		).rejects.toMatchObject({ code: "REPLY_GROUNDING_FAILED" });
 		expect(useModel).toHaveBeenCalled();
 		const prompt = rewritePrompt(useModel);
 		expect(prompt).toContain("completed_side_effect");
@@ -83,7 +83,18 @@ describe("resolvePlannedReplyEgress recovery envelope", () => {
 		const { runtime, useModel } = useModelHarness(
 			"I could not verify that balance.",
 		);
-		await resolvePlannedReplyEgress({
+		const recovery = {
+			context:
+				"Complete original λ雪 standing constraint and prior turn.\n".repeat(
+					1200,
+				),
+			pendingToolCalls: [{ id: "pending-original", name: "READ_BALANCE" }],
+			evaluatorOutputs: [
+				{ decision: "CONTINUE", reason: "verification pending" },
+			],
+			ownerExclusiveDisclosureUsed: false,
+		};
+		const result = await resolvePlannedReplyEgress({
 			runtime,
 			message: makeMessage("what is my SOL balance?"),
 			reply: "Your wallet balance is 4 SOL.",
@@ -96,7 +107,12 @@ describe("resolvePlannedReplyEgress recovery envelope", () => {
 				},
 			} as typeof providers,
 			actionResults: [] as ActionResult[],
-		}).catch(() => undefined);
+			recovery,
+		});
+		expect(result).toEqual({
+			text: "I could not verify that balance.",
+			effectReceiptIds: [],
+		});
 		expect(useModel).toHaveBeenCalled();
 		const prompt = rewritePrompt(useModel);
 		expect(prompt).toContain("financial_holding");
@@ -104,6 +120,9 @@ describe("resolvePlannedReplyEgress recovery envelope", () => {
 		expect(prompt).toContain(WALLET_MARKER);
 		// The room history provider is not part of that evidence contract.
 		expect(prompt).not.toContain(PROVIDER_MARKER);
+		expect(prompt).toContain(JSON.stringify(recovery.context));
+		expect(prompt).toContain(JSON.stringify(recovery.pendingToolCalls));
+		expect(prompt).toContain(JSON.stringify(recovery.evaluatorOutputs));
 	});
 });
 
