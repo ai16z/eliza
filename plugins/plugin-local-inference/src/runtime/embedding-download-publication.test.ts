@@ -20,6 +20,64 @@ afterEach(() => {
 	for (const directory of directories.splice(0))
 		fs.rmSync(directory, { recursive: true, force: true });
 });
+
+it("does not let a superseded redirect response cancel the active download", async () => {
+	const directory = fs.mkdtempSync(
+		path.join(os.tmpdir(), "embedding-redirect-"),
+	);
+	directories.push(directory);
+	const target = path.join(directory, "model.gguf");
+	const redirect = Object.assign(new PassThrough(), {
+		statusCode: 302,
+		headers: { location: "https://huggingface.co/owner/model/final.gguf" },
+	});
+	const active = Object.assign(new PassThrough(), {
+		statusCode: 200,
+		headers: { "content-length": "8" },
+	});
+	let requests = 0;
+	vi.spyOn(https, "get").mockImplementation(((...args: unknown[]) => {
+		const callback = args.at(-1) as (response: IncomingMessage) => void;
+		const response = requests++ === 0 ? redirect : active;
+		queueMicrotask(() => {
+			callback(response as unknown as IncomingMessage);
+			if (response === active) active.write("half");
+		});
+		return new EventEmitter();
+	}) as typeof https.get);
+	let halfway!: () => void;
+	const progress = new Promise<void>((resolve) => {
+		halfway = resolve;
+	});
+	const pending = ensureModel(
+		directory,
+		"owner/model",
+		"model.gguf",
+		false,
+		(phase, text) => {
+			if (phase === "downloading" && text?.includes("50%")) halfway();
+		},
+	);
+	const outcome = pending.then(
+		(value) => ({ value }),
+		(error: Error) => ({ error }),
+	);
+	await progress;
+	const redirectErrors: Error[] = [];
+	redirect.on("error", (error) => redirectErrors.push(error));
+	const closed = new Promise<void>((resolve) =>
+		redirect.once("close", resolve),
+	);
+	const failure = new Error("superseded redirect response failed");
+	redirect.destroy(failure);
+	await closed;
+	active.end("done");
+	expect(await outcome).toEqual({ value: target });
+	expect(redirectErrors).toEqual([failure]);
+	expect(requests).toBe(2);
+	expect(fs.readFileSync(target, "utf8")).toBe("halfdone");
+	expect(fs.readdirSync(directory)).toEqual(["model.gguf"]);
+});
 function controlledDownload() {
 	const stream = new PassThrough();
 	const response = Object.assign(stream, {
@@ -105,14 +163,9 @@ it("rejects a failed response stream and preserves the previous model", async ()
 			if (phase === "downloading" && text?.includes("50%")) halfway();
 		},
 	);
-	let outcome: "pending" | "resolved" | Error = "pending";
 	const observed = pending.then(
-		() => {
-			outcome = "resolved";
-		},
-		(error: Error) => {
-			outcome = error;
-		},
+		() => "resolved",
+		(error: Error) => error,
 	);
 	// Observe the transport error independently so the negative control reports
 	// the unresolved download contract rather than an uncaught EventEmitter error.
@@ -123,10 +176,8 @@ it("rejects a failed response stream and preserves the previous model", async ()
 	const failure = new Error("embedding response connection reset");
 	stream.destroy(failure);
 	await closed;
-	await Promise.resolve();
 	expect(transportErrors).toEqual([failure]);
-	expect(outcome).toBe(failure);
-	await observed;
+	expect(await observed).toBe(failure);
 	expect(fs.readFileSync(target, "utf8")).toBe("previous-complete-model");
 	expect(fs.readdirSync(directory)).toEqual(["model.gguf"]);
 });

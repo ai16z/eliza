@@ -329,8 +329,10 @@ function downloadFile(
 	return new Promise<void>((resolve, reject) => {
 		let settled = false;
 		let redirectCount = 0;
+		let activeHop = 0;
 
 		const request = (reqUrl: string) => {
+			const hop = ++activeHop;
 			let validatedUrl: URL;
 			try {
 				validatedUrl = validateDownloadUrl(reqUrl);
@@ -341,21 +343,29 @@ function downloadFile(
 				return;
 			}
 
-			const file = fs.createWriteStream(dest);
+			let file: fs.WriteStream | undefined;
 			let bytesReceived = 0;
 			let expectedBytes: number | null = null;
 			let lastProgressPercent = -1;
 
 			const settleError = (err: Error) => {
-				if (settled) return;
+				if (settled || hop !== activeHop) return;
 				settled = true;
-				file.close();
-				safeUnlink(dest);
-				reject(err);
+				const finish = () => {
+					safeUnlink(dest);
+					reject(err);
+				};
+				if (!file || file.closed) finish();
+				else {
+					// Opening may still be pending. Wait for close before unlinking,
+					// otherwise the later open can recreate a rejected download.
+					file.once("close", finish);
+					file.destroy();
+				}
 			};
 
 			const settleSuccess = () => {
-				if (settled) return;
+				if (settled || hop !== activeHop || !file) return;
 				if (expectedBytes != null && bytesReceived !== expectedBytes) {
 					settleError(
 						new Error(
@@ -401,8 +411,6 @@ function downloadFile(
 						res.headers.location
 					) {
 						res.resume();
-						file.close();
-						safeUnlink(dest);
 						redirectCount += 1;
 						if (redirectCount > maxRedirects) {
 							settleError(
@@ -437,6 +445,10 @@ function downloadFile(
 						);
 						return;
 					}
+					// Redirect bodies never own the output path. Only the final
+					// admitted response may open or publish downloaded bytes.
+					file = fs.createWriteStream(dest);
+					file.on("error", settleError);
 					res.on("data", (chunk: Buffer) => {
 						bytesReceived += chunk.length;
 						if (onProgress) {
@@ -452,7 +464,6 @@ function downloadFile(
 					});
 					res.pipe(file);
 					file.on("finish", settleSuccess);
-					file.on("error", settleError);
 				})
 				.on("error", settleError);
 		};
