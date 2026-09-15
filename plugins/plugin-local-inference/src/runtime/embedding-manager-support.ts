@@ -1,3 +1,8 @@
+/**
+ * Resolves embedding model files and downloads them for runtime warmup.
+ * A completed download replaces the final path only after its file closes;
+ * failed replacements preserve the existing model for concurrent readers.
+ */
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import https from "node:https";
