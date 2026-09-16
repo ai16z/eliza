@@ -1332,6 +1332,7 @@ export function TrajectoryDetailView({
       {collapsibleCalls ? (
         <div className="developer-evidence-footer">
           <Button
+            className="keyboard-focus-surface"
             size="touch"
             variant="outline"
             disabled={
