@@ -56,7 +56,10 @@ import {
 	replyClaimsCompletedSideEffect,
 	replyClaimsEmptyTrackedWorkState,
 } from "./side-effect-claims.ts";
-import { statedTimeIsUngrounded } from "./time-observations";
+import {
+	groundedCurrentTimeReply,
+	statedTimeIsUngrounded,
+} from "./time-observations";
 
 export type PlannedReplyClaimKind =
 	| "completed_side_effect"
@@ -148,6 +151,23 @@ export function capturePlannerReplyRecovery(
 	};
 }
 
+/**
+ * The reply is the result's exact verified sentence, or that sentence
+ * verbatim followed by the evaluator's grounded prose in the combination form
+ * the planner loop emits (`<verified>\n\n<prose>`, the verified block fenced
+ * when it is multiline). The canonical sentence is intact either way, so the
+ * result's receipts still ground the completion claim it makes; a reply that
+ * rewrites or embeds the sentence mid-prose is not bound.
+ */
+export function replyCarriesCanonicalText(
+	reply: string,
+	canonical: string,
+): boolean {
+	if (reply === canonical) return true;
+	if (reply.startsWith(`${canonical}\n\n`)) return true;
+	return reply.startsWith(`\`\`\`\n${canonical}\n\`\`\`\n\n`);
+}
+
 export function appliedEffectReceiptIdsForReply(
 	reply: string,
 	results: readonly ActionResult[],
@@ -182,7 +202,9 @@ export function appliedEffectReceiptIdsForReply(
 		if (receipts) return receipts.map((receipt) => receipt.receiptId);
 	}
 	for (const result of results) {
-		if (result.userFacingText?.trim() !== normalizedReply) continue;
+		const canonical = result.userFacingText?.trim();
+		if (!canonical || !replyCarriesCanonicalText(normalizedReply, canonical))
+			continue;
 		const receipts = resolveAppliedUserFacingEffectReceipts(
 			result,
 			allTurnReceipts,
@@ -370,6 +392,15 @@ export async function resolvePlannedReplyEgress(args: {
 			),
 		};
 	}
+	const reason =
+		decision.verdict === "reject" ? decision.kind : "missing_reply";
+	if (reason === "stated_time") {
+		// The provider's own rendering is the complete answer to "what time is
+		// it"; no model is needed to restate it, and a second model pass could
+		// invent a second date.
+		const grounded = groundedCurrentTimeReply(args.providers);
+		if (grounded) return { text: grounded, effectReceiptIds: [] };
+	}
 	const historySelection = args.recovery
 		? parseReplyRecoveryHistorySelection(
 				args.recovery.historySelection,
@@ -379,7 +410,7 @@ export async function resolvePlannedReplyEgress(args: {
 	const payload = (selected: boolean) => ({
 		request: args.message.content,
 		rejectedReply: args.reply,
-		reason: decision.verdict === "reject" ? decision.kind : "missing_reply",
+		reason,
 		results: renderActionResultsForModel([...args.actionResults], {
 			redactText: composeToolDiagnosticRedactor(args.runtime),
 		}).text,
@@ -397,13 +428,17 @@ export async function resolvePlannedReplyEgress(args: {
 					},
 				}
 			: {}),
-		// Match the validator's evidence contract; do not serialize the entire
-		// runtime provider store alongside the complete recovery context above.
+		// Match the validator's evidence contract: the financial observation
+		// providers that ground a corrected quantity, plus the CURRENT_TIME
+		// observation when a stated date or clock time was rejected. Never the
+		// entire runtime provider store alongside the complete recovery context
+		// above (live 2026-09-11 05:35Z: ~380K chars of room history rode along
+		// on a completed_side_effect recovery and the rewrite request exceeded
+		// the provider's context limit, failing the turn after the effect had
+		// applied).
 		providers: {
 			...financialObservationProviders(args.providers),
-			...(decision.verdict === "reject" &&
-			decision.kind === "stated_time" &&
-			args.providers?.CURRENT_TIME
+			...(reason === "stated_time" && args.providers?.CURRENT_TIME
 				? { CURRENT_TIME: args.providers.CURRENT_TIME }
 				: {}),
 		},
@@ -419,8 +454,7 @@ export async function resolvePlannedReplyEgress(args: {
 			text,
 			jsonPayload: JSON.parse(text) as JsonValue,
 			allowFullContextRequest: selected && historySelection !== undefined,
-			groundingFailure:
-				decision.verdict === "reject" ? decision.kind : "missing_reply",
+			groundingFailure: reason,
 		});
 	};
 	let rewritten = await rewrite(historySelection !== undefined);
