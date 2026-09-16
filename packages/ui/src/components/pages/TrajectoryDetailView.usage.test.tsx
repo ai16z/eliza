@@ -1,7 +1,8 @@
-/** Verifies rendered totals for the detail endpoint's missing-rollup shape. */
+/** Exercises recorded trajectory inspection and clipboard state with controlled API and platform boundaries. */
 // @vitest-environment jsdom
 
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -66,6 +67,139 @@ describe("TrajectoryDetailView recorded usage", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
+    api.copy.mockReset();
+  });
+
+  it.each(["copied", "failed"])(
+    "keeps the current copy pending when an older run's copy is %s",
+    async (olderOutcome) => {
+      const first = detail();
+      const second = {
+        ...detail(),
+        trajectory: { ...detail().trajectory, id: "second-run" },
+      };
+      api.getTrajectoryDetail
+        .mockResolvedValueOnce(first)
+        .mockResolvedValueOnce(second);
+      let settleOlder!: () => void;
+      let finishCurrent!: () => void;
+      api.copy
+        .mockImplementationOnce(
+          () =>
+            new Promise<void>((resolve, reject) => {
+              settleOlder =
+                olderOutcome === "copied"
+                  ? resolve
+                  : () => reject(new Error("Older clipboard request denied"));
+            }),
+        )
+        .mockImplementationOnce(
+          () =>
+            new Promise<void>((resolve) => {
+              finishCurrent = resolve;
+            }),
+        );
+      const view = render(
+        <TrajectoryDetailView
+          trajectoryId="recorded-correction"
+          collapsibleCalls
+        />,
+      );
+      fireEvent.click(
+        await screen.findByRole("button", { name: "Copy entire recorded run" }),
+      );
+      view.rerender(
+        <TrajectoryDetailView trajectoryId="second-run" collapsibleCalls />,
+      );
+      await waitFor(() =>
+        expect(
+          (
+            screen.getByRole("button", {
+              name: "Copy entire recorded run",
+            }) as HTMLButtonElement
+          ).disabled,
+        ).toBe(false),
+      );
+      const current = screen.getByRole("button", {
+        name: "Copy entire recorded run",
+      }) as HTMLButtonElement;
+      fireEvent.click(current);
+      expect(api.copy.mock.calls.map(([payload]) => payload)).toEqual([
+        JSON.stringify(first, null, 2),
+        JSON.stringify(second, null, 2),
+      ]);
+      await act(async () => settleOlder());
+      try {
+        expect(current.disabled).toBe(true);
+        expect(screen.getByRole("status").textContent).toBe("Copying…");
+      } finally {
+        await act(async () => finishCurrent());
+      }
+      expect(screen.getByRole("status").textContent).toBe(
+        "Recorded run copied.",
+      );
+      expect(current.disabled).toBe(false);
+    },
+  );
+
+  it("reports whole-run clipboard completion only after the full payload is copied", async () => {
+    const recorded = detail();
+    api.getTrajectoryDetail.mockResolvedValue(recorded);
+    let finishCopy!: () => void;
+    api.copy.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishCopy = resolve;
+        }),
+    );
+    render(
+      <TrajectoryDetailView
+        trajectoryId="recorded-correction"
+        collapsibleCalls
+      />,
+    );
+    const button = await screen.findByRole("button", {
+      name: "Copy entire recorded run",
+    });
+    fireEvent.click(button);
+    expect(api.copy).toHaveBeenCalledWith(JSON.stringify(recorded, null, 2));
+    expect((button as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole("status").textContent).toBe("Copying…");
+    finishCopy();
+    await waitFor(() =>
+      expect(screen.getByRole("status").textContent).toBe(
+        "Recorded run copied.",
+      ),
+    );
+    expect((button as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("shows a retryable clipboard failure instead of an unhandled rejection", async () => {
+    api.getTrajectoryDetail.mockResolvedValue(detail());
+    api.copy.mockRejectedValueOnce(new Error("Permission denied"));
+    render(
+      <TrajectoryDetailView
+        trajectoryId="recorded-correction"
+        collapsibleCalls
+      />,
+    );
+    const button = await screen.findByRole("button", {
+      name: "Copy entire recorded run",
+    });
+    fireEvent.click(button);
+    await waitFor(() =>
+      expect(screen.getByRole("status").textContent).toContain(
+        "Could not copy",
+      ),
+    );
+    expect((button as HTMLButtonElement).disabled).toBe(false);
+    api.copy.mockResolvedValueOnce(undefined);
+    fireEvent.click(button);
+    await waitFor(() =>
+      expect(screen.getByRole("status").textContent).toBe(
+        "Recorded run copied.",
+      ),
+    );
   });
 
   it("distinguishes missing provider text, captured text, empty results and raw metadata", async () => {

@@ -232,6 +232,14 @@ function plannerReplyRejectedByEgress() {
 	};
 }
 
+function acceptedRecoveryReview(reason: string) {
+	return JSON.stringify({
+		grounded: true,
+		completedChangeClaim: false,
+		reason,
+	});
+}
+
 function makeRuntime(
 	responses: unknown[],
 	settings?: Record<string, string>,
@@ -907,7 +915,37 @@ describe("runV5MessageRuntimeStage1", () => {
 							],
 						});
 					} else if (calls > 1) {
-						expect(text).not.toContain("history_literal_search_results:");
+						if (
+							calls === 2 &&
+							["matching", "multiple", "repeat", "repeat-id"].includes(mode)
+						) {
+							const queries =
+								mode === "multiple"
+									? ["BLUEBERRY", "Acknowledged", "OLD LITERAL"]
+									: ["OLD LITERAL"];
+							const receipt = JSON.parse(
+								text.match(/history_literal_search_results: (.+)/)?.[1] ??
+									"null",
+							);
+							expect(receipt).toEqual({
+								sourceSetId: text.match(
+									/completion_source_set: ([a-f0-9]{64})/,
+								)?.[1],
+								matchMode: "case-insensitive literal substring",
+								results: queries.map((query) => ({
+									query,
+									scannedSources: rows.length,
+									matchedSourceIds: rows.flatMap((row, i) =>
+										row.content.text
+											?.toLowerCase()
+											.includes(query.toLowerCase())
+											? [`h${i + 1}`]
+											: [],
+									),
+								})),
+							});
+						} else
+							expect(text).not.toContain("history_literal_search_results:");
 						if (mode === "revoked" || mode === "edited")
 							expect(text).not.toContain(rows[1].content.text);
 						else expect(text).toContain(rows[1].content.text);
@@ -1391,17 +1429,27 @@ describe("runV5MessageRuntimeStage1", () => {
 		expect(rows).toEqual(before);
 	});
 
-	it.each(["none", "non_applied"])(
-		"repairs conflicting direct-answer intents before dispatching fields or entering the planner (%s)",
-		async (status) => {
+	it.each([
+		["simple", "none"],
+		["simple", "non_applied"],
+		["general", "none"],
+		["general", "non_applied"],
+	])(
+		"repairs conflicting %s answer intents before dispatching fields or entering the planner (%s)",
+		async (context, status) => {
 			const quote = "Correction: the mug is violet; keep the yellow notebook.";
 			const runtime = makeRuntime([
 				stage1Response({
-					contexts: ["simple"],
+					contexts: [context],
 					intents: ["quote the correction"],
 					replyText: quote,
 					facts: ["Unaccepted draft extraction"],
-					extra: { replyEffectStatus: status },
+					extra: {
+						replyEffectStatus: status,
+						...(context === "general"
+							? { visualContinuation: { disposition: "none" } }
+							: {}),
+					},
 				}),
 				stage1Response({
 					contexts: ["simple"],
@@ -5796,6 +5844,9 @@ describe("runV5MessageRuntimeStage1", () => {
 						extra: { replyEffectStatus: status },
 					}),
 					JSON.stringify({ response: answer, effectReceiptIds: [] }),
+					acceptedRecoveryReview(
+						"The candidate declines unstarted work and preserves the fresh authorization requirement.",
+					),
 				],
 				undefined,
 				[...BUILTIN_RESPONSE_HANDLER_EVALUATORS],
@@ -5811,6 +5862,7 @@ describe("runV5MessageRuntimeStage1", () => {
 			expect(result.kind).toBe("direct_reply");
 			expect(useModelCalls(runtime).map(([type]) => type)).toEqual([
 				ModelType.RESPONSE_HANDLER,
+				ModelType.TEXT_SMALL,
 				ModelType.TEXT_SMALL,
 			]);
 			if (result.kind === "direct_reply")
@@ -7907,6 +7959,9 @@ describe("runV5MessageRuntimeStage1", () => {
 			JSON.stringify({
 				response: "I need more context to answer that question.",
 			}),
+			acceptedRecoveryReview(
+				"The candidate acknowledges missing information without asserting an effect.",
+			),
 		]);
 		const result = await runV5MessageRuntimeStage1({
 			runtime,
@@ -8029,6 +8084,9 @@ describe("runV5MessageRuntimeStage1", () => {
 			JSON.stringify({
 				response: "I need more context to answer that question.",
 			}),
+			acceptedRecoveryReview(
+				"The candidate acknowledges missing information without asserting an effect.",
+			),
 		]);
 		const result = await runV5MessageRuntimeStage1({
 			runtime,
@@ -8089,6 +8147,9 @@ describe("runV5MessageRuntimeStage1", () => {
 					JSON.stringify({
 						response: "I need more context to answer that question.",
 					}),
+					acceptedRecoveryReview(
+						"The candidate acknowledges missing information without asserting an effect.",
+					),
 				]),
 			);
 			const result = await runV5MessageRuntimeStage1({
@@ -8148,6 +8209,9 @@ describe("runV5MessageRuntimeStage1", () => {
 				JSON.stringify({
 					response: "I need more context to answer that question.",
 				}),
+				acceptedRecoveryReview(
+					"The candidate acknowledges missing information without asserting an effect.",
+				),
 			]);
 			runtime.providers = [
 				{
@@ -11070,6 +11134,9 @@ describe("runV5MessageRuntimeStage1", () => {
 					"You're all set — I've scheduled your reminder for tomorrow.",
 			}),
 			JSON.stringify({ response: "The search returned sunny weather." }),
+			acceptedRecoveryReview(
+				"The actual search result supports sunny weather; the candidate makes no reminder claim.",
+			),
 		]);
 		const searchHandler = vi.fn(async () => ({
 			success: true,
@@ -11109,6 +11176,7 @@ describe("runV5MessageRuntimeStage1", () => {
 			ModelType.RESPONSE_HANDLER,
 			ModelType.ACTION_PLANNER,
 			ModelType.RESPONSE_HANDLER,
+			ModelType.TEXT_SMALL,
 			ModelType.TEXT_SMALL,
 		]);
 		if (result.kind === "planned_reply") {

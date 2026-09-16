@@ -67,6 +67,12 @@ export interface HistoryDiscovery {
 	loadedSourceIds: ReadonlySet<string>;
 	/** Exact literal misses over this bound source set, never semantic absence. */
 	emptySearchResults?: readonly { query: string; scannedSources: number }[];
+	/** Complete literal hits, bound to the same originals as the loaded bodies. */
+	searchResults?: readonly {
+		query: string;
+		scannedSources: number;
+		matchedSourceIds: string[];
+	}[];
 }
 
 export function projectReviewedHistory(
@@ -174,8 +180,21 @@ export function requestedHistory(
 	if (selected.some((id) => !bound.sources.some((source) => source.id === id)))
 		return [ALL_HISTORY_REFERENCE];
 	const reply = raw?.replyText;
+	// A selected assistant recap can quote the original evidence even when the
+	// new draft paraphrases it. Resolve those exact source dependencies through
+	// the same authorized read barrier instead of treating the recap as proof.
+	const quotationTexts = [
+		...(typeof reply === "string" ? [reply] : []),
+		...bound.sources
+			.filter(
+				(source) =>
+					selected.includes(source.id) &&
+					source.event.segment.label === "prior_message:agent",
+			)
+			.map((source) => source.event.segment.content),
+	].filter((text) => /["'“‘`«「]/.test(text));
 	const quoted =
-		typeof reply === "string" && /["'“‘`«「]/.test(reply)
+		quotationTexts.length > 0
 			? bound.sources.filter(({ id, event }) => {
 					if (
 						projection.visibleEventIds.has(event.id) ||
@@ -183,7 +202,10 @@ export function requestedHistory(
 					)
 						return false;
 					const { content, metadata } = event.segment;
-					if (quotesCompleteSource(reply, content)) return true;
+					if (
+						quotationTexts.some((text) => quotesCompleteSource(text, content))
+					)
+						return true;
 					const speaker = metadata?.speakerName;
 					const prefix =
 						typeof speaker === "string" ? `${speaker}: ` : undefined;
@@ -192,7 +214,9 @@ export function requestedHistory(
 					return (
 						!!prefix &&
 						content.startsWith(prefix) &&
-						quotesCompleteSource(reply, content.slice(prefix.length))
+						quotationTexts.some((text) =>
+							quotesCompleteSource(text, content.slice(prefix.length)),
+						)
 					);
 				})
 			: [];
@@ -292,6 +316,7 @@ export function loadHistoryReferences(
 	let searched = false;
 	let searchAddedSource = false;
 	const emptySearchResults = [...(projection.emptySearchResults ?? [])];
+	const searchResults = [...(projection.searchResults ?? [])];
 	for (const name of requested) {
 		if (name.startsWith(HISTORY_SEARCH_PREFIX)) {
 			searched = true;
@@ -300,6 +325,11 @@ export function loadHistoryReferences(
 			const matches = bound.sources.filter((source) =>
 				source.event.segment.content.toLowerCase().includes(query),
 			);
+			searchResults.push({
+				query: originalQuery,
+				scannedSources: bound.sources.length,
+				matchedSourceIds: matches.map((source) => source.id),
+			});
 			if (matches.length === 0)
 				emptySearchResults.push({
 					query: originalQuery,
@@ -326,6 +356,7 @@ export function loadHistoryReferences(
 		...projection,
 		loadedSourceIds,
 		emptySearchResults,
+		searchResults,
 	};
 }
 
@@ -352,18 +383,24 @@ export function loadedHistorySegments(
 	if (
 		!projection ||
 		(projection.loadedSourceIds.size === 0 &&
-			!projection.emptySearchResults?.length)
+			!projection.emptySearchResults?.length &&
+			!projection.searchResults?.length)
 	)
 		return [];
 	const bound = completionContextSources(context);
 	if (projection.sourceSetId !== bound.sourceSetId) return [];
-	const searchResults: ContextObjectPromptSegment[] = projection
-		.emptySearchResults?.length
+	const receipts =
+		projection.searchResults ??
+		projection.emptySearchResults?.map((result) => ({
+			...result,
+			matchedSourceIds: [],
+		}));
+	const searchResults: ContextObjectPromptSegment[] = receipts?.length
 		? [
 				{
 					id: "history-literal-search-results",
 					stable: false,
-					content: `history_literal_search_results: ${JSON.stringify({ sourceSetId: bound.sourceSetId, matchMode: "case-insensitive literal substring", results: projection.emptySearchResults.map((result) => ({ ...result, matchedSourceIds: [] })) })}\nThese are completed reads of this conversation source set, excluding the current request. Zero matches establishes only no exact substring occurrence. It does not establish semantic absence; read history:all for paraphrases, synonyms, corrections or unresolved interpretation. Other rooms and stored app records were not searched.`,
+					content: `history_literal_search_results: ${JSON.stringify({ sourceSetId: bound.sourceSetId, matchMode: "case-insensitive literal substring", results: receipts })}\nThese are completed reads of this conversation source set, excluding the current request. Every matching complete original is supplied with its source ID and role. A longer query containing a searched literal can only match a subset of these supplied originals; another lookup is not needed to establish that literal coverage. Assistant recaps do not establish user authorship or permission. Zero matches establishes only no exact substring occurrence. It does not establish semantic absence; read history:all for paraphrases, synonyms, corrections or unresolved interpretation. Other rooms and stored app records were not searched.`,
 				},
 			]
 		: [];
